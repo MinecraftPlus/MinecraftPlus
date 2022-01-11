@@ -1,6 +1,6 @@
 {
     "rename": {
-        "version": "org.minecraftplus:vignette:0.3.0.0",
+        "version": "org.minecraftplus:vignette:0.3.0.2",
         "args": ["--jar-in", "{input}", "--jar-out", "{output}", "--mapping-format", "tsrg2", "--mappings", "{mappings}", "--cfg", "{libraries}", "--deduce-param-names", "--dictionary", "{dictionary}", "--create-inits", "--fernflower-meta"],
         "repo": "https://maven.minecraftplus.org/"
     },

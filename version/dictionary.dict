@@ -27,6 +27,12 @@
 
 ^String$ s       # Convert long 'string' to just 's'
 
+# Java Language Keywords
+# https://docs.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
+^Object$ obj         # Convert long 'object' to just 'obj'
+^Class$ clazz        # Cannot use 'class' as name!
+^Enum$ en            # Cannot use 'enum' as name!
+
 #
 # Dictionary rules
 #
@@ -52,7 +58,7 @@
 .*Options$ options
 .*Modifier$ modifier
 .*Category$ category
-.*Interface$ interface
+.*Interface$ inter
 
 .*Level$ level
 .*Socket$ socket
