@@ -1,0 +1,324 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url = 'https://plugins.gradle.org/m2/' }
+        maven { url = 'https://maven.minecraftplus.org/'}
+        maven { url = 'https://maven.minecraftforge.net/'}
+    }
+    dependencies {
+        classpath 'org.minecraftplus:srgutils:0.4.29'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'de.undercouch.download'
+    id 'uk.jamierocks.propatcher' version '2.0.1' apply false
+    id 'org.barfuin.gradle.taskinfo' version '1.0.5'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+}
+
+group = "org.minecraftplus"
+version = "0.0.1-SNAPSHOT"
+
+
+
+import net.minecraftforge.mcpconfig.tasks.*
+import org.minecraftplus.gradle.*
+import uk.jamierocks.propatcher.task.*
+
+net.minecraftforge.mcpconfig.tasks.Utils.init()
+
+project.ext {
+    MINECRAFT_VERSION = '1.15.2'
+
+    PATH_BUILD = file('build').absolutePath + '/'
+    PATH_PROJECT = file('version').absolutePath + '/'
+    PATH_LIBRARIES = PATH_BUILD + 'libraries/'
+
+    CONFIG = file(PATH_PROJECT + 'config.json').json
+    JAVA_TARGET = CONFIG.get('java_target', 8)
+
+
+    FERNFLOWER = Utils.readConfig(CONFIG, 'fernflower', [:])
+    MERGETOOL = Utils.readConfig(CONFIG, 'merge', [
+            version: 'net.minecraftforge:mergetool:1.1.3:fatjar',
+            args: ["--client", "{client}", "--server", "{server}", "--ann", "{version}", "--output", "{output}"]
+    ])
+    RENAMETOOL = Utils.readConfig(CONFIG, 'rename', [
+            version: 'org.minecraftplus:vignette:0.3.0.0',
+            args: ["--jar-in", "{input}", "--jar-out", "{output}", "--mapping-format", "tsrg2", "--mappings", "{mappings}", "--cfg", "{libraries}", "--deduce-param-names", "--dictionary", "{dictionary}", "--create-inits", "--fernflower-meta"]
+    ])
+}
+
+java.toolchain {
+    languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
+}
+
+
+
+task downloadMergeTool(group: 'download', type: DownloadTool) {
+    description = 'Downloads merge tool'
+
+    config MERGETOOL, PATH_LIBRARIES
+}
+task downloadRenameTool(group: 'download', type: DownloadTool) {
+    description = 'Downloads rename tool'
+
+    config RENAMETOOL, PATH_LIBRARIES
+}
+task downloadFernflower(group: 'download', type: DownloadTool) {
+    description = 'Downloads decompiler'
+
+    config FERNFLOWER, PATH_LIBRARIES
+}
+
+task downloadManifest(type: Download) {
+    group = 'download'
+    description = 'Downloads version manifest from mojang.com.'
+
+    src 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json'
+    dest file(PATH_BUILD + 'version/manifest.json')
+    useETag 'all'
+    onlyIfModified true
+    quiet true
+}
+
+task downloadVersionJson(type: Download) {
+    group = 'download'
+    description = 'Downloads minecraft version JSON configuration.'
+    dependsOn rootProject.downloadManifest
+
+    inputs.file rootProject.downloadManifest.dest
+    src { downloadManifest.dest.json.versions.find{ it.id == MINECRAFT_VERSION }.url }
+    dest file(PATH_BUILD + 'version/version.json')
+    useETag 'all'
+    onlyIfModified true
+    quiet true
+}
+
+/**
+ * Download client and server JARs
+ */
+task downloadVersionJars(group: 'download') {
+    description = 'Downloads minecraft version jars (client and server).'
+}
+
+['client', 'server'].each { id ->
+    def taskName = 'downloadVersion' + id.capitalize() + "Jar"
+    def versionTask = task "${taskName}" (type: Download) {
+        group = 'download' + id
+        dependsOn downloadVersionJson
+
+        inputs.file downloadVersionJson.dest
+        src { downloadVersionJson.dest.json.downloads.get(id).url }
+        dest file(PATH_BUILD + 'version/' + id + '.jar')
+        useETag 'all'
+        onlyIfModified true
+        quiet true
+    }
+    downloadVersionJars.dependsOn(versionTask)
+}
+
+/**
+ * Download version libraries
+ */
+task downloadVersionLibraries(type: DownloadLibraries) {
+    group = 'download'
+    description = 'Downloads libraries needed by game version.'
+    dependsOn downloadVersionJson
+
+    json = downloadVersionJson.dest
+    config = CONFIG // TODO check what we need
+    dest = file(PATH_LIBRARIES)
+}
+
+/**
+ * Download client assets
+ */
+task downloadVersionAssets(type: DownloadAssets) {
+    group = 'download'
+    description = 'Downloads assets used by game version.'
+    dependsOn downloadVersionJson
+
+    json = downloadVersionJson.dest
+    dest = file(PATH_BUILD + '/assets/')
+}
+
+
+/**
+ * Download official mappings for client and server
+ */
+task downloadMappings(group: 'download') {
+    description = 'Downloads official mappings.'
+}
+
+['client', 'server'].each { side ->
+    def taskName = 'download' + side.capitalize() + "Mappings"
+    def mappingsTask = task "${taskName}" (type: Download) {
+        group = 'process' + side
+        dependsOn downloadVersionJson
+
+        inputs.file downloadVersionJson.dest
+        src { downloadVersionJson.dest.json.downloads.get(side + '_mappings').url }
+        dest file(PATH_BUILD + 'mappings/' + side + '_mappings.txt')
+        useETag 'all'
+        onlyIfModified true
+        quiet true
+    }
+    downloadMappings.dependsOn(mappingsTask)
+}
+
+/**
+ * Convert official mappings to TSRG2 format
+ */
+task convertMappings(group: 'process') {
+    description = 'Converts official mappings to TSRG format.'
+}
+
+['client', 'server'].each { side ->
+    def taskName = 'convert' + side.capitalize() + "Mappings"
+    def convertTask = task "${taskName}" (type: ConvertMappings) {
+        group = 'process' + side
+        dependsOn tasks.getByPath("download${side.capitalize()}Mappings")
+
+        input =  tasks.getByPath("download${side.capitalize()}Mappings").dest
+        dest = file(PATH_BUILD + 'mappings/' + side + '_mappings.tsrg')
+    }
+    convertMappings.dependsOn(convertTask)
+}
+
+
+/**
+ * Filter version jars to contain only classes
+ */
+task filterVersionJars(group: 'process') {
+    description = 'Filters version jars.'
+}
+
+['client', 'server'].each { side ->
+    def taskName = 'filterVersion' + side.capitalize() + "Jar"
+    def filterTask = task "${taskName}" (type: SplitJar) {
+        group = 'process' + side
+        dependsOn tasks.getByPath("convert${side.capitalize()}Mappings")
+        dependsOn tasks.getByPath("downloadVersion${side.capitalize()}Jar")
+
+        mappings = tasks.getByPath("convert${side.capitalize()}Mappings").dest
+        source = tasks.getByPath("downloadVersion${side.capitalize()}Jar").dest
+        slim = file(PATH_BUILD + 'version/' + side + '.slim.jar')
+        extra = file(PATH_BUILD + 'version/' + side + '.extra.jar')
+    }
+    filterVersionJars.dependsOn(filterTask)
+}
+
+
+/**
+ * Process sides configuration
+ */
+def sides = [
+    client: [Name: 'Client', jsonlibs: true,  extra: 'Client', assets: true,
+             mappings: convertClientMappings,
+             slim: filterVersionClientJar,
+             extra: filterVersionClientJar,
+             bundle: null],
+    server: [Name: 'Server', jsonlibs: false, extra: 'Server', assets: false,
+             mappings: convertServerMappings,
+             slim: filterVersionServerJar,
+             extra: filterVersionServerJar,
+             bundle: downloadVersionServerJar],
+   // joined: [Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,  slim: mergeJars,    extra: filterClient, bundle: null]
+]
+
+
+/**
+ * Prepare list of libraries for Vignette and Fernflower
+ */
+task generateProcessLibraries(group: 'process') {
+    description = 'Renames jars using mappings'
+}
+
+sides.each { s, child ->
+    def taskName = 'generateProcess' + child.Name + 'Libraries'
+    child.librariesTask = task "${taskName}" (type: CreateFernflowerLibraries) {
+        group = 'process' + s
+        dependsOn downloadVersionLibraries
+        dependsOn downloadVersionJson
+        dependsOn child.slim
+
+        meta = downloadVersionJson.dest
+        config = CONFIG
+        side = s
+        root = file(PATH_LIBRARIES)
+        dest file(PATH_BUILD + 'mapped/' + s + '.fernflower.libs.txt')
+
+        doFirst {
+            if ('server'.equals(s)) {
+                extras += [filterVersionServerJar.extra]
+            }
+        }
+    }
+    generateProcessLibraries.dependsOn(child.librariesTask)
+}
+
+/**
+ * Vignette renaming
+ */
+task renameVersionJars(group: 'process') {
+    description = 'Renames jars using mappings'
+}
+
+sides.each { side, child ->
+    def taskName = 'renameVersion' + child.Name + 'Jar'
+    child.renameTask = task "${taskName}" (type: RemapJar) {
+        group = 'process' + side
+        dependsOn downloadRenameTool
+        dependsOn child.slim
+        dependsOn child.mappings
+        dependsOn child.librariesTask
+
+        config RENAMETOOL, downloadRenameTool
+        input = side.equals('joined') ? child.slim.dest : child.slim.slim
+        mappings = child.mappings.dest
+        libraries = child.librariesTask.dest
+        dictionary = file(PATH_PROJECT + 'dictionary.dict')
+        dest = file(PATH_BUILD + 'mapped/' + side + '.mapped.jar')
+        log = file(PATH_BUILD + 'mapped/' + side + '.mapped.log')
+    }
+    renameVersionJars.dependsOn(child.renameTask)
+}
+
+/**
+ * Fernflower decompilation
+ */
+task decompileVersionJars (group: 'process') {
+    description = 'Decompiles jars'
+}
+
+sides.each { side, child ->
+    def taskName = 'decompileVersion' + child.Name + 'Jar'
+    child.decompileTask = task "${taskName}" (type: FernflowerTask) {
+        group = 'process' + side
+        dependsOn downloadFernflower
+        dependsOn child.librariesTask
+        dependsOn child.renameTask
+
+        config FERNFLOWER, downloadFernflower
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
+        }
+        libraries = child.librariesTask.dest
+        input = child.renameTask.dest
+
+        log = file(PATH_BUILD + '/decompile/' + side + '.decompile.log')
+        dest = file(PATH_BUILD + '/decompile/' + side + '.decompile.jar')
+    }
+    decompileVersionJars.dependsOn(child.decompileTask)
+}

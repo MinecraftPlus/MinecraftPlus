@@ -1,0 +1,65 @@
+#
+# PATTERN VALUE
+# PATTERN ACTION:VALUE
+#
+
+#
+# Primitives and wprappers
+#
+^Z$ flag         # boolean
+^Boolean$ flag
+^C$ c            # char
+^Character$ c
+^B$ b            # byte
+^Byte$ b
+^S$ i            # short
+^Short$ i
+^I$ i            # int
+^Integer$ i
+^J$ i            # long
+^Long$ i
+^F$ f            # float
+^Float$ f
+^D$ d            # double
+^Double$ d
+^V$ nothing      # void
+^Void$ nothing
+
+^String$ s       # Convert long 'string' to just 's'
+
+#
+# Dictionary rules
+#
+.*Stream$ stream
+.*Set$ set
+.*Map$ map
+.*List$ list
+.*Array$ array
+.*Iterator$ iterator
+.*File$ file
+.*Path$ path
+
+.*Type$ type
+.*Builder$ builder
+.*Factory$ factory
+.*Context$ context
+
+.*Server$ server
+.*Manager$ manager
+.*Component$ component
+.*Tag$ tag
+.*Option$ option
+.*Options$ options
+.*Modifier$ modifier
+.*Category$ category
+.*Interface$ interface
+
+.*Level$ level
+.*Socket$ socket
+
+.*Matrix.*$ matrix
+.*Rewards$ rewards
+.*Info$ info
+.*(Buffer|Buf)$ buffer
+
+ResourceLocation resource
