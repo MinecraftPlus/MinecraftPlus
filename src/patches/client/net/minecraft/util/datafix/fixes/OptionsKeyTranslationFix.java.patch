@@ -1,0 +1,19 @@
+--- a/net/minecraft/util/datafix/fixes/OptionsKeyTranslationFix.java
++++ b/net/minecraft/util/datafix/fixes/OptionsKeyTranslationFix.java
+@@ -2,6 +2,7 @@
+ 
+ import com.mojang.datafixers.DSL;
+ import com.mojang.datafixers.DataFix;
++import com.mojang.datafixers.Dynamic;
+ import com.mojang.datafixers.TypeRewriteRule;
+ import com.mojang.datafixers.schemas.Schema;
+ import com.mojang.datafixers.util.Pair;
+@@ -26,7 +27,7 @@
+ 
+                   return Pair.of(entry.getKey(), entry.getValue());
+                }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)));
+-            }).orElse(dynamic);
++            }).orElse((Dynamic) dynamic);
+          });
+       });
+    }

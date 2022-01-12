@@ -1,0 +1,10 @@
+--- a/com/mojang/realmsclient/dto/RealmsWorldOptions.java
++++ b/com/mojang/realmsclient/dto/RealmsWorldOptions.java
+@@ -32,6 +32,7 @@
+    private static final long templateIdDefault = -1L;
+    private static final String templateImageDefault = null;
+    private static final boolean adventureMapDefault = false;
++   //This a fancy change :D
+ 
+    public RealmsWorldOptions(Boolean flag, Boolean flag1, Boolean flag2, Boolean flag3, Integer i, Boolean flag4, Integer i1, Integer i2, Boolean flag5, String str) {
+       this.pvp = flag;

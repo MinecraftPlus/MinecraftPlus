@@ -1,0 +1,32 @@
+--- a/net/minecraft/world/inventory/CartographyTableMenu.java
++++ b/net/minecraft/world/inventory/CartographyTableMenu.java
+@@ -57,10 +57,10 @@
+             ItemStack itemstack = super.remove(i);
+             ItemStack itemstack1 = containerlevelaccess.evaluate((level, blockpos) -> {
+                if (!CartographyTableMenu.this.quickMoved && CartographyTableMenu.this.container.getItem(1).getItem() == Items.GLASS_PANE) {
+-                  ItemStack itemstack1 = MapItem.lockMap(level, CartographyTableMenu.this.container.getItem(0));
+-                  if (itemstack1 != null) {
+-                     itemstack1.setCount(1);
+-                     return itemstack1;
++                  ItemStack itemstack2 = MapItem.lockMap(level, CartographyTableMenu.this.container.getItem(0));
++                  if (itemstack2 != null) {
++                     itemstack2.setCount(1);
++                     return itemstack2;
+                   }
+                }
+ 
+@@ -171,10 +171,10 @@
+          if (i == 2) {
+             if (this.container.getItem(1).getItem() == Items.GLASS_PANE) {
+                itemstack2 = this.access.evaluate((level, blockpos) -> {
+-                  ItemStack itemstack1 = MapItem.lockMap(level, this.container.getItem(0));
+-                  if (itemstack1 != null) {
+-                     itemstack1.setCount(1);
+-                     return itemstack1;
++                  ItemStack itemstack3 = MapItem.lockMap(level, this.container.getItem(0));
++                  if (itemstack3 != null) {
++                     itemstack3.setCount(1);
++                     return itemstack3;
+                   } else {
+                      return itemstack1;
+                   }

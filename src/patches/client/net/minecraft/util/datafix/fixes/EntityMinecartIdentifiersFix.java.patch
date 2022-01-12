@@ -1,0 +1,13 @@
+--- a/net/minecraft/util/datafix/fixes/EntityMinecartIdentifiersFix.java
++++ b/net/minecraft/util/datafix/fixes/EntityMinecartIdentifiersFix.java
+@@ -20,8 +20,8 @@
+    }
+ 
+    public TypeRewriteRule makeRule() {
+-      TaggedChoiceType<String> type = this.getInputSchema().findChoiceType(References.ENTITY);
+-      TaggedChoiceType<String> type1 = this.getOutputSchema().findChoiceType(References.ENTITY);
++      TaggedChoiceType<String> type = (TaggedChoiceType<String>) this.getInputSchema().findChoiceType(References.ENTITY);
++      TaggedChoiceType<String> type1 = (TaggedChoiceType<String>) this.getOutputSchema().findChoiceType(References.ENTITY);
+       return this.fixTypeEverywhere("EntityMinecartIdentifiersFix", type, type1, (dynamicops) -> {
+          return (pair) -> {
+             if (!Objects.equals(pair.getFirst(), "Minecart")) {

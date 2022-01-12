@@ -1,0 +1,11 @@
+--- a/net/minecraft/client/renderer/texture/TextureAtlasSprite.java
++++ b/net/minecraft/client/renderer/texture/TextureAtlasSprite.java
+@@ -234,7 +234,7 @@
+       } else if (this.interpolationData != null) {
+          if (!RenderSystem.isOnRenderThread()) {
+             RenderSystem.recordRenderCall(() -> {
+-               interpolationdata.uploadInterpolatedFrame();
++               this.interpolationData.uploadInterpolatedFrame();
+             });
+          } else {
+             this.interpolationData.uploadInterpolatedFrame();

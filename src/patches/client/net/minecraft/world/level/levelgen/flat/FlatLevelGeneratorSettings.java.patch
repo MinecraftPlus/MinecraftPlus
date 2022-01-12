@@ -1,0 +1,13 @@
+--- a/net/minecraft/world/level/levelgen/flat/FlatLevelGeneratorSettings.java
++++ b/net/minecraft/world/level/levelgen/flat/FlatLevelGeneratorSettings.java
+@@ -305,8 +305,8 @@
+             flatlevelgeneratorsettings.updateLayers();
+             flatlevelgeneratorsettings.setBiome(Registry.BIOME.get(new ResourceLocation(dynamic.get("biome").asString(""))));
+             dynamic.get("structures").flatMap(Dynamic::getMapValues).ifPresent((map) -> {
+-               map.keySet().forEach((dynamic) -> {
+-                  dynamic.asString().map((s) -> {
++               map.keySet().forEach((dynamic1) -> {
++                  dynamic1.asString().map((s) -> {
+                      return flatlevelgeneratorsettings.getStructuresOptions().put(s, Maps.newHashMap());
+                   });
+                });

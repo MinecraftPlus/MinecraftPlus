@@ -1,0 +1,23 @@
+--- a/net/minecraft/util/datafix/fixes/LevelFlatGeneratorInfoFix.java
++++ b/net/minecraft/util/datafix/fixes/LevelFlatGeneratorInfoFix.java
+@@ -60,16 +60,16 @@
+             builder.append(StreamSupport.stream(LAYER_SPLITTER.split(s2).spliterator(), false).map((sx) -> {
+                List<String> list = splitter.splitToList(sx);
+                int i1;
+-               String s1;
++               String s4;
+                if (list.size() == 2) {
+                   i1 = NumberUtils.toInt(list.get(0));
+-                  s1 = list.get(1);
++                  s4 = list.get(1);
+                } else {
+                   i1 = 1;
+-                  s1 = list.get(0);
++                  s4 = list.get(0);
+                }
+ 
+-               List<String> list1 = BLOCK_SPLITTER.splitToList(s1);
++               List<String> list1 = BLOCK_SPLITTER.splitToList(s4);
+                int i3 = list1.get(0).equals("minecraft") ? 1 : 0;
+                String s3 = list1.get(i3);
+                int i4 = i == 3 ? EntityBlockStateFix.getBlockId("minecraft:" + s3) : NumberUtils.toInt(s3, 0);

@@ -1,0 +1,31 @@
+--- a/net/minecraft/util/datafix/fixes/ChunkPalettedStorageFix.java
++++ b/net/minecraft/util/datafix/fixes/ChunkPalettedStorageFix.java
+@@ -545,12 +545,12 @@
+          this.x = dynamic.get("xPos").asInt(0) << 4;
+          this.z = dynamic.get("zPos").asInt(0) << 4;
+          dynamic.get("TileEntities").asStreamOpt().ifPresent((stream) -> {
+-            stream.forEach((dynamic) -> {
+-               int i = dynamic.get("x").asInt(0) - this.x & 15;
+-               int i1 = dynamic.get("y").asInt(0);
+-               int i2 = dynamic.get("z").asInt(0) - this.z & 15;
++            stream.forEach((ent) -> {
++               int i = ent.get("x").asInt(0) - this.x & 15;
++               int i1 = ent.get("y").asInt(0);
++               int i2 = ent.get("z").asInt(0) - this.z & 15;
+                int i3 = i1 << 8 | i2 << 4 | i;
+-               if (this.blockEntities.put(i3, dynamic) != null) {
++               if (this.blockEntities.put(i3, ent) != null) {
+                   ChunkPalettedStorageFix.LOGGER.warn("In chunk: {}x{} found a duplicate block entity at position: [{}, {}, {}]", this.x, this.z, i, i1, i2);
+                }
+ 
+@@ -558,8 +558,8 @@
+          });
+          boolean flag = dynamic.get("convertedFromAlphaFormat").asBoolean(false);
+          dynamic.get("Sections").asStreamOpt().ifPresent((stream) -> {
+-            stream.forEach((dynamic) -> {
+-               ChunkPalettedStorageFix.Section section = new ChunkPalettedStorageFix.Section(dynamic);
++            stream.forEach((sec) -> {
++               ChunkPalettedStorageFix.Section section = new ChunkPalettedStorageFix.Section(sec);
+                this.sides = section.upgrade(this.sides);
+                this.sections[section.y] = section;
+             });

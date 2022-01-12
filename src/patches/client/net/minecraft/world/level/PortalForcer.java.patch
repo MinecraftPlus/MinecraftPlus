@@ -1,0 +1,24 @@
+--- a/net/minecraft/world/level/PortalForcer.java
++++ b/net/minecraft/world/level/PortalForcer.java
+@@ -54,16 +54,16 @@
+       List<PoiRecord> list = manager.getInSquare((type) -> {
+          return type == PoiType.NETHER_PORTAL;
+       }, blockpos, 128, PoiManager.Occupancy.ANY).collect(Collectors.toList());
+-      Optional<PoiRecord> optional = list.stream().min(Comparator.comparingDouble((poirecord) -> {
++      Optional<PoiRecord> optional = list.stream().min(Comparator.comparingDouble((PoiRecord poirecord) -> {
+          return poirecord.getPos().distSqr(blockpos);
+       }).thenComparingInt((poirecord) -> {
+          return poirecord.getPos().getY();
+       }));
+       return optional.map((poirecord) -> {
+-         BlockPos blockpos = poirecord.getPos();
+-         this.level.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(blockpos), 3, blockpos);
+-         BlockPattern.BlockPatternMatch blockpatternmatch = NetherPortalBlock.getPortalShape(this.level, blockpos);
+-         return blockpatternmatch.getPortalOutput(direction, blockpos, d1, vec3, d);
++         BlockPos blockpos1 = poirecord.getPos();
++         this.level.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(blockpos1), 3, blockpos1);
++         BlockPattern.BlockPatternMatch blockpatternmatch = NetherPortalBlock.getPortalShape(this.level, blockpos1);
++         return blockpatternmatch.getPortalOutput(direction, blockpos1, d1, vec3, d);
+       }).orElse((BlockPattern.PortalInfo)null);
+    }
+ 

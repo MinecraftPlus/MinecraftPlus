@@ -1,0 +1,11 @@
+--- a/net/minecraft/client/searchtree/SearchRegistry.java
++++ b/net/minecraft/client/searchtree/SearchRegistry.java
+@@ -25,7 +25,7 @@
+    }
+ 
+    public <T> MutableSearchTree<T> getTree(SearchRegistry.Key<T> key) {
+-      return this.searchTrees.get(key);
++      return (MutableSearchTree<T>) this.searchTrees.get(key);
+    }
+ 
+    public static class Key<T> {

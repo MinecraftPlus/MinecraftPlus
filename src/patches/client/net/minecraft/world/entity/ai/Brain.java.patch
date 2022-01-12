@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/ai/Brain.java
++++ b/net/minecraft/world/entity/ai/Brain.java
+@@ -91,7 +91,7 @@
+    }
+ 
+    public <U> Optional<U> getMemory(MemoryModuleType<U> type) {
+-      return this.memories.get(type);
++      return (Optional<U>) this.memories.get(type);
+    }
+ 
+    public boolean checkMemory(MemoryModuleType<?> type, MemoryStatus memorystatus) {

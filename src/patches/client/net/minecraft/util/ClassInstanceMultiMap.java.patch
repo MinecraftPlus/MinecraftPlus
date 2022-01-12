@@ -1,0 +1,11 @@
+--- a/net/minecraft/util/ClassInstanceMultiMap.java
++++ b/net/minecraft/util/ClassInstanceMultiMap.java
+@@ -58,7 +58,7 @@
+          List<T> list = this.byClass.computeIfAbsent(clazz, (clazzx) -> {
+             return this.allInstances.stream().filter(clazzx::isInstance).collect(Collectors.toList());
+          });
+-         return Collections.unmodifiableCollection(list);
++         return (Collection<S>) Collections.unmodifiableCollection(list);
+       }
+    }
+ 

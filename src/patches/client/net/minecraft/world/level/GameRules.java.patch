@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/GameRules.java
++++ b/net/minecraft/world/level/GameRules.java
+@@ -114,7 +114,7 @@
+    }
+ 
+    private static <T extends GameRules.Value<T>> void cap(GameRules.GameRuleTypeVisitor gameruletypevisitor, GameRules.Key<?> key, GameRules.Type<?> type) {
+-      gameruletypevisitor.visit(key, type);
++      gameruletypevisitor.visit((GameRules.Key) key, type);
+    }
+ 
+    public boolean getBoolean(GameRules.Key<GameRules.BooleanValue> key) {

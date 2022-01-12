@@ -1,0 +1,13 @@
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1397,8 +1397,8 @@
+       for(UnopenedPack unopenedpack : this.packRepository.getAvailable()) {
+          if (!leveldata.getDisabledDataPacks().contains(unopenedpack.getId()) && !list.contains(unopenedpack)) {
+             LOGGER.info("Found new data pack {}, loading it automatically", (Object)unopenedpack.getId());
+-            unopenedpack.getDefaultPosition().insert(list, unopenedpack, (unopenedpack) -> {
+-               return unopenedpack;
++            unopenedpack.getDefaultPosition().insert(list, unopenedpack, (pack) -> {
++               return pack;
+             }, false);
+          }
+       }

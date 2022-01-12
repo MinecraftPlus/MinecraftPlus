@@ -1,0 +1,26 @@
+--- a/net/minecraft/util/datafix/fixes/PoiTypeRename.java
++++ b/net/minecraft/util/datafix/fixes/PoiTypeRename.java
+@@ -32,9 +32,9 @@
+    private <T> Dynamic<T> cap(Dynamic<T> dynamic) {
+       return dynamic.update("Sections", (dynamicx) -> {
+          return dynamicx.updateMapValues((pair) -> {
+-            return pair.mapSecond((dynamic) -> {
+-               return dynamic.update("Records", (dynamicx) -> {
+-                  return DataFixUtils.orElse(this.renameRecords(dynamicx), dynamicx);
++            return pair.mapSecond((dynamic1) -> {
++               return dynamic1.update("Records", (dynamicx1) -> {
++                  return DataFixUtils.orElse(this.renameRecords(dynamicx1), dynamicx1);
+                });
+             });
+          });
+@@ -44,8 +44,8 @@
+    private <T> Optional<Dynamic<T>> renameRecords(Dynamic<T> dynamic) {
+       return dynamic.asStreamOpt().map((stream) -> {
+          return dynamic.createList(stream.map((dynamicx) -> {
+-            return dynamicx.update("type", (dynamic) -> {
+-               return DataFixUtils.orElse(dynamic.asString().map(this::rename).map(dynamic::createString), dynamic);
++            return dynamicx.update("type", (dynamic1) -> {
++               return DataFixUtils.orElse(dynamic1.asString().map(this::rename).map(dynamic1::createString), dynamic1);
+             });
+          }));
+       });

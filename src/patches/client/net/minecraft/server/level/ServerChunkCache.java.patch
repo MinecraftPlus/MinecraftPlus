@@ -1,0 +1,24 @@
+--- a/net/minecraft/server/level/ServerChunkCache.java
++++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -190,8 +190,8 @@
+       } else {
+          completablefuture = CompletableFuture.supplyAsync(() -> {
+             return this.getChunkFutureMainThread(i, i1, chunkstatus, flag);
+-         }, this.mainThreadProcessor).thenCompose((completablefuture) -> {
+-            return completablefuture;
++         }, this.mainThreadProcessor).thenCompose((completablefuture3) -> {
++            return completablefuture3;
+          });
+       }
+ 
+@@ -357,8 +357,8 @@
+ 
+                      for(MobCategory category1 : category) {
+                         if (category1 != MobCategory.MISC && (!category1.isFriendly() || this.spawnFriendlies) && (category1.isFriendly() || this.spawnEnemies) && (!category1.isPersistent() || flag2)) {
+-                           int i3 = category1.getMaxInstancesPerChunk() * i3 / MAGIC_NUMBER;
+-                           if (map.getInt(category1) <= i3) {
++                           int j = category1.getMaxInstancesPerChunk() * i3 / MAGIC_NUMBER;
++                           if (map.getInt(category1) <= j) {
+                               NaturalSpawner.spawnCategoryForChunk(category1, this.level, levelchunk, blockpos);
+                            }
+                         }

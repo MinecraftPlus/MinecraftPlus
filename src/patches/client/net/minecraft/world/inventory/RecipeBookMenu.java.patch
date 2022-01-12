@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/inventory/RecipeBookMenu.java
++++ b/net/minecraft/world/inventory/RecipeBookMenu.java
+@@ -12,7 +12,7 @@
+    }
+ 
+    public void handlePlacement(boolean flag, Recipe<?> recipe, ServerPlayer serverplayer) {
+-      (new ServerPlaceRecipe<>(this)).recipeClicked(serverplayer, recipe, flag);
++      (new ServerPlaceRecipe<>(this)).recipeClicked(serverplayer, (Recipe<C>) recipe, flag);
+    }
+ 
+    public abstract void fillCraftSlotsStackedContents(StackedContents stackedcontents);

@@ -1,0 +1,18 @@
+--- a/net/minecraft/client/renderer/debug/GoalSelectorDebugRenderer.java
++++ b/net/minecraft/client/renderer/debug/GoalSelectorDebugRenderer.java
+@@ -37,11 +37,11 @@
+          for(int i1 = 0; i1 < list.size(); ++i1) {
+             GoalSelectorDebugRenderer.DebugGoal debuggoal = list.get(i1);
+             if (blockpos.closerThan(debuggoal.pos, 160.0D)) {
+-               double d = (double)debuggoal.pos.getX() + 0.5D;
+-               double d1 = (double)debuggoal.pos.getY() + 2.0D + (double)i1 * 0.25D;
+-               double d2 = (double)debuggoal.pos.getZ() + 0.5D;
++               double x = (double)debuggoal.pos.getX() + 0.5D;
++               double y = (double)debuggoal.pos.getY() + 2.0D + (double)i1 * 0.25D;
++               double z = (double)debuggoal.pos.getZ() + 0.5D;
+                int i2 = debuggoal.isRunning ? -16711936 : -3355444;
+-               DebugRenderer.renderFloatingText(debuggoal.name, d, d1, d2, i2);
++               DebugRenderer.renderFloatingText(debuggoal.name, x, y, z, i2);
+             }
+          }
+ 

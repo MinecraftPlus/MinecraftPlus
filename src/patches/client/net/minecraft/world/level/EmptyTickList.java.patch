@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/EmptyTickList.java
++++ b/net/minecraft/world/level/EmptyTickList.java
+@@ -7,7 +7,7 @@
+    private static final EmptyTickList<Object> INSTANCE = new EmptyTickList<>();
+ 
+    public static <T> EmptyTickList<T> empty() {
+-      return INSTANCE;
++      return (EmptyTickList<T>) INSTANCE;
+    }
+ 
+    public boolean hasScheduledTick(BlockPos blockpos, T obj) {

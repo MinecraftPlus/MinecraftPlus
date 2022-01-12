@@ -1,0 +1,13 @@
+--- a/net/minecraft/server/commands/data/DataCommands.java
++++ b/net/minecraft/server/commands/data/DataCommands.java
+@@ -159,8 +159,8 @@
+ 
+             for(DataCommands.DataProvider dataprovider1 : SOURCE_PROVIDERS) {
+                biconsumer.accept(builder1, (datamanipulator) -> {
+-                  return dataprovider1.wrap(Commands.literal("from"), (builder) -> {
+-                     return builder.executes((context) -> {
++                  return dataprovider1.wrap(Commands.literal("from"), (builder2) -> {
++                     return builder2.executes((context) -> {
+                         List<Tag> list = Collections.singletonList(dataprovider1.access(context).getData());
+                         return manipulateData(context, dataprovider, datamanipulator, list);
+                      }).then(Commands.argument("sourcePath", NbtPathArgument.nbtPath()).executes((context) -> {

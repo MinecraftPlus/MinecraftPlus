@@ -1,0 +1,32 @@
+--- a/net/minecraft/client/Minecraft.java
++++ b/net/minecraft/client/Minecraft.java
+@@ -1804,9 +1804,9 @@
+          return "Yes";
+       });
+       category.setDetail("Is Modded", () -> {
+-         String s = ClientBrandRetriever.getClientModName();
+-         if (!"vanilla".equals(s)) {
+-            return "Definitely; Client brand changed to '" + s + "'";
++         String brand = ClientBrandRetriever.getClientModName();
++         if (!"vanilla".equals(brand)) {
++            return "Definitely; Client brand changed to '" + brand + "'";
+          } else {
+             return Minecraft.class.getSigners() == null ? "Very likely; Jar signature invalidated" : "Probably not. Jar signature remains and client brand is untouched.";
+          }
+@@ -1816,13 +1816,13 @@
+          category.setDetail("Resource Packs", () -> {
+             StringBuilder builder = new StringBuilder();
+ 
+-            for(String s : options.resourcePacks) {
++            for(String pack : options.resourcePacks) {
+                if (builder.length() > 0) {
+                   builder.append(", ");
+                }
+ 
+-               builder.append(s);
+-               if (options.incompatibleResourcePacks.contains(s)) {
++               builder.append(pack);
++               if (options.incompatibleResourcePacks.contains(pack)) {
+                   builder.append(" (incompatible)");
+                }
+             }

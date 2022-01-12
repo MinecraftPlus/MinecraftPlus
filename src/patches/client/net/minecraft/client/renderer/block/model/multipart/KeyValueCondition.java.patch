@@ -1,0 +1,13 @@
+--- a/net/minecraft/client/renderer/block/model/multipart/KeyValueCondition.java
++++ b/net/minecraft/client/renderer/block/model/multipart/KeyValueCondition.java
+@@ -44,8 +44,8 @@
+                   return this.getBlockStatePredicate(statedefinition, property, sx);
+                }).collect(Collectors.toList());
+                predicate = (blockstate) -> {
+-                  return list1.stream().anyMatch((predicate) -> {
+-                     return predicate.test(blockstate);
++                  return list1.stream().anyMatch((p) -> {
++                     return p.test(blockstate);
+                   });
+                };
+             }

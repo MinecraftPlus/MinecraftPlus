@@ -1,0 +1,11 @@
+--- a/net/minecraft/realms/RealmsObjectSelectionListProxy.java
++++ b/net/minecraft/realms/RealmsObjectSelectionListProxy.java
+@@ -65,7 +65,7 @@
+    }
+ 
+    public boolean mouseClicked(double d, double d1, int i) {
+-      return this.realmsObjectSelectionList.mouseClicked(d, d1, i) ? true : access$001(this, d, d1, i);
++      return this.realmsObjectSelectionList.mouseClicked(d, d1, i) ? true : super.mouseClicked(d, d1, i);
+    }
+ 
+    public boolean mouseReleased(double d, double d1, int i) {
