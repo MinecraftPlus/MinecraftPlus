@@ -31,8 +31,8 @@ version = "0.0.1-SNAPSHOT"
 
 
 
-import net.minecraftforge.mcpconfig.tasks.*
 import org.minecraftplus.gradle.*
+import net.minecraftforge.mcpconfig.tasks.*
 import uk.jamierocks.propatcher.task.*
 
 net.minecraftforge.mcpconfig.tasks.Utils.init()
@@ -211,10 +211,9 @@ task filterVersionJars(group: 'process') {
         dependsOn tasks.getByPath("convert${side.capitalize()}Mappings")
         dependsOn tasks.getByPath("downloadVersion${side.capitalize()}Jar")
 
-        mappings = tasks.getByPath("convert${side.capitalize()}Mappings").dest
-        source = tasks.getByPath("downloadVersion${side.capitalize()}Jar").dest
-        slim = file(PATH_BUILD + 'version/' + side + '.slim.jar')
-        extra = file(PATH_BUILD + 'version/' + side + '.extra.jar')
+        input = tasks.getByPath("downloadVersion${side.capitalize()}Jar").dest
+        sources = file(PATH_BUILD + 'version/' + side + '.sources.jar')
+        resources = file(PATH_BUILD + 'version/' + side + '.resources.jar')
     }
     filterVersionJars.dependsOn(filterTask)
 }
@@ -285,7 +284,7 @@ sides.each { side, child ->
         dependsOn child.librariesTask
 
         config RENAMETOOL, downloadRenameTool
-        input = side.equals('joined') ? child.slim.dest : child.slim.slim
+        input = side.equals('joined') ? child.slim.dest : child.slim.sources
         mappings = child.mappings.dest
         libraries = child.librariesTask.dest
         dictionary = file(PATH_PROJECT + 'dictionary.dict')
