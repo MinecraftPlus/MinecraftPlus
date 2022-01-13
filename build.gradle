@@ -228,14 +228,12 @@ task filterVersionJars(group: 'process') {
  */
 def sides = [
     client: [Name: 'Client', jsonlibs: true,  extra: 'Client', assets: true,
-             mappings: convertClientMappings,
-             slim: filterVersionClientJar,
-             extra: filterVersionClientJar,
+             mappingsTask: convertClientMappings,
+             splitTask: filterVersionClientJar,
              bundle: null],
     server: [Name: 'Server', jsonlibs: false, extra: 'Server', assets: false,
-             mappings: convertServerMappings,
-             slim: filterVersionServerJar,
-             extra: filterVersionServerJar,
+             mappingsTask: convertServerMappings,
+             splitTask: filterVersionServerJar,
              bundle: downloadVersionServerJar],
    // joined: [Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,  slim: mergeJars,    extra: filterClient, bundle: null]
 ]
@@ -254,7 +252,7 @@ sides.each { s, child ->
         group = 'process' + s
         dependsOn downloadVersionLibraries
         dependsOn downloadVersionJson
-        dependsOn child.slim
+        dependsOn child.splitTask
 
         meta = downloadVersionJson.dest
         config = CONFIG
@@ -283,13 +281,13 @@ sides.each { side, child ->
     child.renameTask = task "${taskName}" (type: RemapJar) {
         group = 'process' + side
         dependsOn downloadRenameTool
-        dependsOn child.slim
-        dependsOn child.mappings
+        dependsOn child.splitTask
+        dependsOn child.mappingsTask
         dependsOn child.librariesTask
 
         config RENAMETOOL, downloadRenameTool
-        input = side.equals('joined') ? child.slim.dest : child.slim.sources
-        mappings = child.mappings.dest
+        input = child.splitTask.sources
+        mappings = child.mappingsTask.dest
         libraries = child.librariesTask.dest
         dictionary = file(PATH_PROJECT + 'dictionary.dict')
         dest = file(PATH_BUILD + 'mapped/' + side + '.mapped.jar')
