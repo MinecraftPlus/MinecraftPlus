@@ -212,8 +212,12 @@ task filterVersionJars(group: 'process') {
         dependsOn tasks.getByPath("downloadVersion${side.capitalize()}Jar")
 
         input = tasks.getByPath("downloadVersion${side.capitalize()}Jar").dest
+        mappings = tasks.getByPath("convert${side.capitalize()}Mappings").dest
+        acceptable = [ "assets/", "data/", "net/minecraft/", "com/mojang/blaze3d", "com/mojang/realms",
+                       "log4j2.xml", "pack.mcmeta", "pack.png", "version.json" ]
         sources = file(PATH_BUILD + 'version/' + side + '.sources.jar')
         resources = file(PATH_BUILD + 'version/' + side + '.resources.jar')
+        libraries = file(PATH_BUILD + 'version/' + side + '.libraries.jar')
     }
     filterVersionJars.dependsOn(filterTask)
 }
@@ -260,7 +264,7 @@ sides.each { s, child ->
 
         doFirst {
             if ('server'.equals(s)) {
-                extras += [filterVersionServerJar.extra]
+                extras += [filterVersionServerJar.libraries]
             }
         }
     }
