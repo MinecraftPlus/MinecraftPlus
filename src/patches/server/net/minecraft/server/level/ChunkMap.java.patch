@@ -1,0 +1,60 @@
+--- a/net/minecraft/server/level/ChunkMap.java
++++ b/net/minecraft/server/level/ChunkMap.java
+@@ -417,17 +417,17 @@
+ 
+                ChunkAccess chunkaccess = optional.get();
+                if (chunkaccess.getStatus().isOrAfter(chunkstatus)) {
+-                  CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> completablefuture;
++                  CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> completablefuture1;
+                   if (chunkstatus == ChunkStatus.LIGHT) {
+-                     completablefuture = this.scheduleChunkGeneration(chunkholder, chunkstatus);
++                     completablefuture1 = this.scheduleChunkGeneration(chunkholder, chunkstatus);
+                   } else {
+-                     completablefuture = chunkstatus.load(this.level, this.structureManager, this.lightEngine, (chunkaccessx) -> {
++                     completablefuture1 = chunkstatus.load(this.level, this.structureManager, this.lightEngine, (chunkaccessx) -> {
+                         return this.protoChunkToFullChunk(chunkholder);
+                      }, chunkaccess);
+                   }
+ 
+                   this.progressListener.onStatusChange(chunkpos, chunkstatus);
+-                  return completablefuture;
++                  return completablefuture1;
+                } else {
+                   return this.scheduleChunkGeneration(chunkholder, chunkstatus);
+                }
+@@ -477,11 +477,11 @@
+       return completablefuture.thenComposeAsync((either) -> {
+          return either.map((list) -> {
+             try {
+-               CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> completablefuture = chunkstatus.generate(this.level, this.generator, this.structureManager, this.lightEngine, (chunkaccess) -> {
++               CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> completablefuture1 = chunkstatus.generate(this.level, this.generator, this.structureManager, this.lightEngine, (chunkaccess) -> {
+                   return this.protoChunkToFullChunk(chunkholder);
+                }, list);
+                this.progressListener.onStatusChange(chunkpos, chunkstatus);
+-               return completablefuture;
++               return completablefuture1;
+             } catch (Exception var8) {
+                CrashReport crashreport = CrashReport.forThrowable(var8, "Exception generating new chunk");
+                CrashReportCategory category = crashreport.addCategory("Chunk to be generated");
+@@ -540,7 +540,7 @@
+                levelchunk.setLoaded(true);
+                this.level.addAllPendingBlockEntities(levelchunk.getBlockEntities().values());
+                List<Entity> list = null;
+-               ClassInstanceMultiMap[] var6 = levelchunk.getEntitySections();
++               ClassInstanceMultiMap<Entity>[] var6 = levelchunk.getEntitySections();
+                int var7 = var6.length;
+ 
+                for(int var8 = 0; var8 < var7; ++var8) {
+@@ -663,9 +663,9 @@
+             ChunkPos chunkpos = chunkholder.getPos();
+             Packet<?>[] apacket = new Packet[2];
+             this.getPlayers(chunkpos, false).forEach((serverplayer) -> {
+-               int i1 = checkerboardDistance(chunkpos, serverplayer, true);
+-               boolean flag = i1 <= i2;
+-               boolean flag1 = i1 <= this.viewDistance;
++               int j = checkerboardDistance(chunkpos, serverplayer, true);
++               boolean flag = j <= i2;
++               boolean flag1 = j <= this.viewDistance;
+                this.updateChunkTracking(serverplayer, chunkpos, apacket, flag, flag1);
+             });
+          }

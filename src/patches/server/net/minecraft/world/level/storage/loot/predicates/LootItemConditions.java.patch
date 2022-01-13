@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/level/storage/loot/predicates/LootItemConditions.java
++++ b/net/minecraft/world/level/storage/loot/predicates/LootItemConditions.java
+@@ -21,7 +21,7 @@
+ 
+    public static <T extends LootItemCondition> void register(LootItemCondition.Serializer<? extends T> serializer) {
+       ResourceLocation resource = serializer.getName();
+-      Class<T> clazz = serializer.getPredicateClass();
++      Class<T> clazz = (Class<T>) serializer.getPredicateClass();
+       if (CONDITIONS_BY_NAME.containsKey(resource)) {
+          throw new IllegalArgumentException("Can't re-register item condition name " + resource);
+       } else if (CONDITIONS_BY_CLASS.containsKey(clazz)) {
+@@ -42,7 +42,7 @@
+    }
+ 
+    public static <T extends LootItemCondition> LootItemCondition.Serializer<T> getSerializer(T lootitemcondition) {
+-      LootItemCondition.Serializer<T> serializer = CONDITIONS_BY_CLASS.get(lootitemcondition.getClass());
++      LootItemCondition.Serializer<T> serializer = (LootItemCondition.Serializer<T>) CONDITIONS_BY_CLASS.get(lootitemcondition.getClass());
+       if (serializer == null) {
+          throw new IllegalArgumentException("Unknown loot item condition " + lootitemcondition);
+       } else {

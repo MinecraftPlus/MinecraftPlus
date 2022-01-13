@@ -1,0 +1,11 @@
+--- a/net/minecraft/network/syncher/SynchedEntityData.java
++++ b/net/minecraft/network/syncher/SynchedEntityData.java
+@@ -95,7 +95,7 @@
+ 
+       SynchedEntityData.DataItem<T> dataitem;
+       try {
+-         dataitem = this.itemsById.get(entitydataaccessor.getId());
++         dataitem = (DataItem<T>) this.itemsById.get(entitydataaccessor.getId());
+       } catch (Throwable var9) {
+          CrashReport crashreport = CrashReport.forThrowable(var9, "Getting synched entity data");
+          CrashReportCategory category = crashreport.addCategory("Synched entity data");

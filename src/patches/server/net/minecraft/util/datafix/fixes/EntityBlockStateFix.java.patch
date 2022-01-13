@@ -1,0 +1,13 @@
+--- a/net/minecraft/util/datafix/fixes/EntityBlockStateFix.java
++++ b/net/minecraft/util/datafix/fixes/EntityBlockStateFix.java
+@@ -327,8 +327,8 @@
+       Dynamic<?> dynamic = typed.get(DSL.remainderFinder());
+       return typed.update(type.finder(), type1, (either) -> {
+          int i = either.map((pair) -> {
+-            return pair.getSecond().map((i) -> {
+-               return i;
++            return pair.getSecond().map((s) -> {
++               return s;
+             }, EntityBlockStateFix::getBlockId);
+          }, (unit) -> {
+             Optional<Number> optional = dynamic.get("TileID").asNumber();

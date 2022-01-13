@@ -1,0 +1,13 @@
+--- a/net/minecraft/server/level/ServerChunkCache.java
++++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -340,8 +340,8 @@
+ 
+                      for(MobCategory category1 : category) {
+                         if (category1 != MobCategory.MISC && (!category1.isFriendly() || this.spawnFriendlies) && (category1.isFriendly() || this.spawnEnemies) && (!category1.isPersistent() || flag2)) {
+-                           int i3 = category1.getMaxInstancesPerChunk() * i3 / MAGIC_NUMBER;
+-                           if (map.getInt(category1) <= i3) {
++                           int i4 = category1.getMaxInstancesPerChunk() * i3 / MAGIC_NUMBER;
++                           if (map.getInt(category1) <= i4) {
+                               NaturalSpawner.spawnCategoryForChunk(category1, this.level, levelchunk, blockpos);
+                            }
+                         }

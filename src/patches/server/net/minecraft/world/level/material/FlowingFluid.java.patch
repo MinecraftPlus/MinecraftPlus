@@ -1,0 +1,46 @@
+--- a/net/minecraft/world/level/material/FlowingFluid.java
++++ b/net/minecraft/world/level/material/FlowingFluid.java
+@@ -265,16 +265,16 @@
+             BlockPos blockpos2 = blockpos.relative(direction1);
+             short i2 = getCacheKey(blockpos1, blockpos2);
+             Pair<BlockState, FluidState> pair = map.computeIfAbsent(i2, (ix) -> {
+-               BlockState blockstate = levelreader.getBlockState(blockpos2);
+-               return Pair.of(blockstate, blockstate.getFluidState());
++               BlockState blockstate1 = levelreader.getBlockState(blockpos2);
++               return Pair.of(blockstate1, blockstate1.getFluidState());
+             });
+             BlockState blockstate1 = pair.getFirst();
+             FluidState fluidstate = pair.getSecond();
+             if (this.canPassThrough(levelreader, this.getFlowing(), blockpos, blockstate, direction1, blockpos2, blockstate1, fluidstate)) {
+                boolean flag = map1.computeIfAbsent(i2, (ix) -> {
+-                  BlockPos blockpos1 = blockpos2.below();
+-                  BlockState blockstate1 = levelreader.getBlockState(blockpos1);
+-                  return this.isWaterHole(levelreader, this.getFlowing(), blockpos2, blockstate1, blockpos1, blockstate1);
++                  BlockPos blockpos3 = blockpos2.below();
++                  BlockState blockstate2 = levelreader.getBlockState(blockpos3);
++                  return this.isWaterHole(levelreader, this.getFlowing(), blockpos2, blockstate1, blockpos1, blockstate2);
+                });
+                if (flag) {
+                   return i;
+@@ -335,8 +335,8 @@
+          BlockPos blockpos1 = blockpos.relative(direction);
+          short i1 = getCacheKey(blockpos, blockpos1);
+          Pair<BlockState, FluidState> pair = map1.computeIfAbsent(i1, (ix) -> {
+-            BlockState blockstate = levelreader.getBlockState(blockpos1);
+-            return Pair.of(blockstate, blockstate.getFluidState());
++            BlockState blockstate1 = levelreader.getBlockState(blockpos1);
++            return Pair.of(blockstate1, blockstate1.getFluidState());
+          });
+          BlockState blockstate1 = pair.getFirst();
+          FluidState fluidstate = pair.getSecond();
+@@ -344,8 +344,8 @@
+          if (this.canPassThrough(levelreader, fluidstate1.getType(), blockpos, blockstate, direction, blockpos1, blockstate1, fluidstate)) {
+             BlockPos blockpos2 = blockpos1.below();
+             boolean flag = map2.computeIfAbsent(i1, (ix) -> {
+-               BlockState blockstate1 = levelreader.getBlockState(blockpos2);
+-               return this.isWaterHole(levelreader, this.getFlowing(), blockpos1, blockstate1, blockpos2, blockstate1);
++               BlockState blockstate2 = levelreader.getBlockState(blockpos2);
++               return this.isWaterHole(levelreader, this.getFlowing(), blockpos1, blockstate1, blockpos2, blockstate2);
+             });
+             int i2;
+             if (flag) {

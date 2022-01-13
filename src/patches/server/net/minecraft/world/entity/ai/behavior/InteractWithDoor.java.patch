@@ -1,0 +1,17 @@
+--- a/net/minecraft/world/entity/ai/behavior/InteractWithDoor.java
++++ b/net/minecraft/world/entity/ai/behavior/InteractWithDoor.java
+@@ -54,11 +54,11 @@
+             if (!brain.getMemory(MemoryModuleType.OPENED_DOORS).isPresent() && flag) {
+                brain.setMemory(MemoryModuleType.OPENED_DOORS, Sets.newHashSet(globalpos));
+             } else {
+-               brain.getMemory(MemoryModuleType.OPENED_DOORS).ifPresent((set) -> {
++               brain.getMemory(MemoryModuleType.OPENED_DOORS).ifPresent((opened) -> {
+                   if (flag) {
+-                     set.add(globalpos);
++                     opened.add(globalpos);
+                   } else {
+-                     set.remove(globalpos);
++                     opened.remove(globalpos);
+                   }
+ 
+                });

@@ -30,8 +30,10 @@
 # Java Language Keywords
 # https://docs.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
 ^Object$ obj         # Convert long 'object' to just 'obj'
+^Package$ pkg        # Cannot use 'package' as name!
 ^Class$ clazz        # Cannot use 'class' as name!
 ^Enum$ en            # Cannot use 'enum' as name!
+^Const$ constant     # Cannot use 'const' as name!
 
 #
 # Dictionary rules

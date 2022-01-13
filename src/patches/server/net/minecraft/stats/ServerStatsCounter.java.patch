@@ -1,0 +1,27 @@
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -96,17 +96,17 @@
+             for(String s1 : tag1.getAllKeys()) {
+                if (tag1.contains(s1, 10)) {
+                   Util.ifElse(Registry.STAT_TYPE.getOptional(new ResourceLocation(s1)), (type) -> {
+-                     CompoundTag tag1 = tag1.getCompound(s1);
++                     CompoundTag tag2 = tag1.getCompound(s1);
+ 
+-                     for(String s1 : tag1.getAllKeys()) {
+-                        if (tag1.contains(s1, 99)) {
+-                           Util.ifElse(this.getStat(type, s1), (stat) -> {
+-                              this.stats.put(stat, tag1.getInt(s1));
++                     for(String s2 : tag2.getAllKeys()) {
++                        if (tag2.contains(s2, 99)) {
++                           Util.ifElse(this.getStat(type, s2), (stat) -> {
++                              this.stats.put(stat, tag2.getInt(s2));
+                            }, () -> {
+-                              LOGGER.warn("Invalid statistic in {}: Don't know what {} is", this.file, s1);
++                              LOGGER.warn("Invalid statistic in {}: Don't know what {} is", this.file, s2);
+                            });
+                         } else {
+-                           LOGGER.warn("Invalid statistic value in {}: Don't know what {} is for key {}", this.file, tag1.get(s1), s1);
++                           LOGGER.warn("Invalid statistic value in {}: Don't know what {} is for key {}", this.file, tag2.get(s2), s2);
+                         }
+                      }
+ 

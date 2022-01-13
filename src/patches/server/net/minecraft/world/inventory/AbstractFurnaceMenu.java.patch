@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/inventory/AbstractFurnaceMenu.java
++++ b/net/minecraft/world/inventory/AbstractFurnaceMenu.java
+@@ -61,7 +61,7 @@
+    }
+ 
+    public void handlePlacement(boolean flag, Recipe<?> recipe, ServerPlayer serverplayer) {
+-      (new ServerPlaceSmeltingRecipe<>(this)).recipeClicked(serverplayer, recipe, flag);
++      (new ServerPlaceSmeltingRecipe<>(this)).recipeClicked(serverplayer, (Recipe<Container>) recipe, flag);
+    }
+ 
+    public boolean recipeMatches(Recipe<? super Container> recipe) {

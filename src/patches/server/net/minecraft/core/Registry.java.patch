@@ -1,0 +1,16 @@
+--- a/net/minecraft/core/Registry.java
++++ b/net/minecraft/core/Registry.java
+@@ -233,11 +233,11 @@
+    }
+ 
+    public static <T> T register(Registry<? super T> registry, ResourceLocation resource, T obj) {
+-      return ((WritableRegistry)registry).register(resource, obj);
++      return ((WritableRegistry<T>)registry).register(resource, obj);
+    }
+ 
+    public static <T> T registerMapping(Registry<? super T> registry, int i, String s, T obj) {
+-      return ((WritableRegistry)registry).registerMapping(i, new ResourceLocation(s), obj);
++      return ((WritableRegistry<T>)registry).registerMapping(i, new ResourceLocation(s), obj);
+    }
+ 
+    static {

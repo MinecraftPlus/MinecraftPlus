@@ -1,0 +1,13 @@
+--- a/net/minecraft/util/datafix/fixes/EntityRenameFix.java
++++ b/net/minecraft/util/datafix/fixes/EntityRenameFix.java
+@@ -18,8 +18,8 @@
+    }
+ 
+    public TypeRewriteRule makeRule() {
+-      TaggedChoiceType<String> type = this.getInputSchema().findChoiceType(References.ENTITY);
+-      TaggedChoiceType<String> type1 = this.getOutputSchema().findChoiceType(References.ENTITY);
++      TaggedChoiceType<String> type = (TaggedChoiceType<String>) this.getInputSchema().findChoiceType(References.ENTITY);
++      TaggedChoiceType<String> type1 = (TaggedChoiceType<String>) this.getOutputSchema().findChoiceType(References.ENTITY);
+       return this.fixTypeEverywhere(this.name, type, type1, (dynamicops) -> {
+          return (pair) -> {
+             String s = pair.getFirst();

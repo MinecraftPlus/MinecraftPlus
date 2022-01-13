@@ -1,0 +1,26 @@
+--- a/net/minecraft/core/BlockPos.java
++++ b/net/minecraft/core/BlockPos.java
+@@ -8,6 +8,7 @@
+ import java.util.Spliterator.OfInt;
+ import java.util.Spliterators.AbstractSpliterator;
+ import java.util.function.Consumer;
++import java.util.function.IntConsumer;
+ import java.util.stream.IntStream;
+ import java.util.stream.Stream;
+ import java.util.stream.StreamSupport;
+@@ -61,12 +62,12 @@
+    public static <T> BlockPos deserialize(Dynamic<T> dynamic) {
+       OfInt ofint = dynamic.asIntStream().spliterator();
+       int[] ai = new int[3];
+-      if (ofint.tryAdvance((i) -> {
++      if (ofint.tryAdvance((Integer i) -> {
+          ai[0] = i;
+-      }) && ofint.tryAdvance((i) -> {
++      }) && ofint.tryAdvance((Integer i) -> {
+          ai[1] = i;
+       })) {
+-         ofint.tryAdvance((i) -> {
++         ofint.tryAdvance((Integer i) -> {
+             ai[2] = i;
+          });
+       }

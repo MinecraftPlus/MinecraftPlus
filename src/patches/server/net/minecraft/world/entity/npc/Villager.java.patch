@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/npc/Villager.java
++++ b/net/minecraft/world/entity/npc/Villager.java
+@@ -117,7 +117,7 @@
+    }
+ 
+    public Brain<Villager> getBrain() {
+-      return super.getBrain();
++      return (Brain<Villager>) super.getBrain();
+    }
+ 
+    protected Brain<?> makeBrain(Dynamic<?> dynamic) {

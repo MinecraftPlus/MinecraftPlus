@@ -1,0 +1,15 @@
+--- a/net/minecraft/util/datafix/fixes/AddNewChoices.java
++++ b/net/minecraft/util/datafix/fixes/AddNewChoices.java
+@@ -28,10 +28,10 @@
+       } else {
+          return this.fixTypeEverywhere(s, type, type1, (dynamicops) -> {
+             return (pair) -> {
+-               if (!type1.hasType(pair.getFirst())) {
++               if (!((TaggedChoiceType<K>)type1).hasType(pair.getFirst())) {
+                   throw new IllegalArgumentException(String.format("Unknown type %s in %s ", pair.getFirst(), this.type));
+                } else {
+-                  return pair;
++                  return (com.mojang.datafixers.util.Pair)pair;
+                }
+             };
+          });

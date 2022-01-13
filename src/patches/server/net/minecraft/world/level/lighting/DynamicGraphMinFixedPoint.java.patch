@@ -1,0 +1,27 @@
+--- a/net/minecraft/world/level/lighting/DynamicGraphMinFixedPoint.java
++++ b/net/minecraft/world/level/lighting/DynamicGraphMinFixedPoint.java
+@@ -5,6 +5,8 @@
+ import it.unimi.dsi.fastutil.longs.LongArrayList;
+ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+ import it.unimi.dsi.fastutil.longs.LongList;
++
++import java.util.function.LongConsumer;
+ import java.util.function.LongPredicate;
+ import net.minecraft.util.Mth;
+ 
+@@ -84,13 +86,13 @@
+ 
+    public void removeIf(LongPredicate longpredicate) {
+       LongList list = new LongArrayList();
+-      this.computedLevels.keySet().forEach((i) -> {
++      this.computedLevels.keySet().forEach((long i) -> {
+          if (longpredicate.test(i)) {
+             list.add(i);
+          }
+ 
+       });
+-      list.forEach(this::removeFromQueue);
++      list.forEach((LongConsumer) this::removeFromQueue);
+    }
+ 
+    private void dequeue(long i, int i1, int i2, boolean flag) {

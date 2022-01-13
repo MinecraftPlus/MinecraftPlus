@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/item/crafting/RecipeManager.java
++++ b/net/minecraft/world/item/crafting/RecipeManager.java
+@@ -80,7 +80,7 @@
+    }
+ 
+    private <C extends Container, T extends Recipe<C>> Map<ResourceLocation, Recipe<C>> byType(RecipeType<T> type) {
+-      return this.recipes.getOrDefault(type, Collections.emptyMap());
++      return (Map) this.recipes.getOrDefault(type, Collections.emptyMap());
+    }
+ 
+    public <C extends Container, T extends Recipe<C>> NonNullList<ItemStack> getRemainingItemsFor(RecipeType<T> type, C container, Level level) {
