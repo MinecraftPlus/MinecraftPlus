@@ -1,0 +1,15 @@
+--- a/net/minecraft/util/datafix/fixes/MobSpawnerEntityIdentifiersFix.java
++++ b/net/minecraft/util/datafix/fixes/MobSpawnerEntityIdentifiersFix.java
+@@ -32,9 +32,9 @@
+          Optional<? extends Stream<? extends Dynamic<?>>> optional1 = dynamic.get("SpawnPotentials").asStreamOpt();
+          if (optional1.isPresent()) {
+             dynamic = dynamic.set("SpawnPotentials", dynamic.createList(optional1.get().map((dynamicx) -> {
+-               Optional<String> optional = dynamicx.get("Type").asString();
+-               if (optional.isPresent()) {
+-                  Dynamic<?> dynamic1 = DataFixUtils.orElse(dynamicx.get("Properties").get(), dynamicx.emptyMap()).set("id", dynamicx.createString(optional.get()));
++               Optional<String> optional2 = dynamicx.get("Type").asString();
++               if (optional2.isPresent()) {
++                  Dynamic<?> dynamic1 = DataFixUtils.orElse(dynamicx.get("Properties").get(), dynamicx.emptyMap()).set("id", dynamicx.createString(optional2.get()));
+                   return dynamicx.set("Entity", dynamic1).remove("Type").remove("Properties");
+                } else {
+                   return dynamicx;

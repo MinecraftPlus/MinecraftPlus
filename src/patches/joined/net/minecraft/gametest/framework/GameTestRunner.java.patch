@@ -1,0 +1,38 @@
+--- a/net/minecraft/gametest/framework/GameTestRunner.java
++++ b/net/minecraft/gametest/framework/GameTestRunner.java
+@@ -61,17 +61,17 @@
+       Map<String, Collection<TestFunction>> map = Maps.newHashMap();
+       collection.forEach((testfunction) -> {
+          String s = testfunction.getBatchName();
+-         Collection<TestFunction> collection = map.computeIfAbsent(s, (sx) -> {
++         Collection<TestFunction> collection1 = map.computeIfAbsent(s, (sx) -> {
+             return Lists.newArrayList();
+          });
+-         collection.add(testfunction);
++         collection1.add(testfunction);
+       });
+       return map.keySet().stream().flatMap((s) -> {
+-         Collection<TestFunction> collection = map.get(s);
++         Collection<TestFunction> collection1 = map.get(s);
+          Consumer<ServerLevel> consumer = GameTestRegistry.getBeforeBatchFunction(s);
+          AtomicInteger atomicinteger = new AtomicInteger();
+-         return Streams.stream(Iterables.partition(collection, 100)).map((list) -> {
+-            return new GameTestBatch(s + ":" + atomicinteger.incrementAndGet(), collection, consumer);
++         return Streams.stream(Iterables.partition(collection1, 100)).map((list) -> {
++            return new GameTestBatch(s + ":" + atomicinteger.incrementAndGet(), collection1, consumer);
+          });
+       }).collect(Collectors.toList());
+    }
+@@ -156,9 +156,9 @@
+          return level.getBlockState(blockposx).getBlock() == Blocks.STRUCTURE_BLOCK;
+       }).forEach((blockposx) -> {
+          StructureBlockEntity structureblockentity = (StructureBlockEntity)level.getBlockEntity(blockposx);
+-         BlockPos blockpos1 = structureblockentity.getBlockPos();
+-         BoundingBox boundingbox = StructureUtils.createStructureBoundingBox(blockpos1, structureblockentity.getStructureSize(), 2);
+-         StructureUtils.clearSpaceForStructure(boundingbox, blockpos1.getY(), level);
++         BlockPos blockpos3 = structureblockentity.getBlockPos();
++         BoundingBox boundingbox = StructureUtils.createStructureBoundingBox(blockpos3, structureblockentity.getStructureSize(), 2);
++         StructureUtils.clearSpaceForStructure(boundingbox, blockpos3.getY(), level);
+       });
+    }
+ }

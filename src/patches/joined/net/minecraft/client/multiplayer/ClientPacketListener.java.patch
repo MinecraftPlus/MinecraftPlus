@@ -1,0 +1,32 @@
+--- a/net/minecraft/client/multiplayer/ClientPacketListener.java
++++ b/net/minecraft/client/multiplayer/ClientPacketListener.java
+@@ -1544,23 +1544,23 @@
+                this.minecraft.execute(() -> {
+                   this.minecraft.setScreen(new ConfirmScreen((flag) -> {
+                      this.minecraft = Minecraft.getInstance();
+-                     ServerData serverdata = this.minecraft.getCurrentServer();
++                     ServerData serverdata1 = this.minecraft.getCurrentServer();
+                      if (flag) {
+-                        if (serverdata != null) {
+-                           serverdata.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
++                        if (serverdata1 != null) {
++                           serverdata1.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
+                         }
+ 
+                         this.send(ServerboundResourcePackPacket.Action.ACCEPTED);
+                         this.downloadCallback(this.minecraft.getClientPackSource().downloadAndSelectResourcePack(s, s1));
+                      } else {
+-                        if (serverdata != null) {
+-                           serverdata.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
++                        if (serverdata1 != null) {
++                           serverdata1.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
+                         }
+ 
+                         this.send(ServerboundResourcePackPacket.Action.DECLINED);
+                      }
+ 
+-                     ServerList.saveSingleServer(serverdata);
++                     ServerList.saveSingleServer(serverdata1);
+                      this.minecraft.setScreen((Screen)null);
+                   }, new TranslatableComponent("multiplayer.texturePrompt.line1"), new TranslatableComponent("multiplayer.texturePrompt.line2")));
+                });

@@ -1,0 +1,21 @@
+--- a/net/minecraft/gametest/framework/GameTestBatchRunner.java
++++ b/net/minecraft/gametest/framework/GameTestBatchRunner.java
+@@ -27,15 +27,15 @@
+       this.level = level;
+       this.testTicker = gametestticker;
+       collection.forEach((gametestbatch) -> {
+-         Collection<GameTestInfo> collection = Lists.newArrayList();
++         Collection<GameTestInfo> collection1 = Lists.newArrayList();
+ 
+          for(TestFunction testfunction : gametestbatch.getTestFunctions()) {
+             GameTestInfo info = new GameTestInfo(testfunction, level);
+-            collection.add(info);
++            collection1.add(info);
+             this.allTestInfos.add(info);
+          }
+ 
+-         this.batches.add(Pair.of(gametestbatch, collection));
++         this.batches.add(Pair.of(gametestbatch, collection1));
+       });
+    }
+ 

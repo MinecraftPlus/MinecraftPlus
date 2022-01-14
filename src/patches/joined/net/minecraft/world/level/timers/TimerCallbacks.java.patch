@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/timers/TimerCallbacks.java
++++ b/net/minecraft/world/level/timers/TimerCallbacks.java
+@@ -23,7 +23,7 @@
+    }
+ 
+    private <T extends TimerCallback<C>> TimerCallback.Serializer<C, T> getSerializer(Class<?> clazz) {
+-      return this.classToSerializer.get(clazz);
++      return (TimerCallback.Serializer<C, T>) this.classToSerializer.get(clazz);
+    }
+ 
+    public <T extends TimerCallback<C>> CompoundTag serialize(T timercallback) {

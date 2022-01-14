@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/ai/behavior/WeightedList.java
++++ b/net/minecraft/world/entity/ai/behavior/WeightedList.java
+@@ -40,7 +40,7 @@
+    }
+ 
+    public WeightedList<U> add(U obj, int i) {
+-      this.entries.add(new WeightedList.WeightedEntry<>(obj, i));
++      this.entries.add(new WeightedList.WeightedEntry(obj, i));
+       return this;
+    }
+ 

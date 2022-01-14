@@ -1,0 +1,30 @@
+--- a/net/minecraft/client/resources/model/ModelBakery.java
++++ b/net/minecraft/client/resources/model/ModelBakery.java
+@@ -375,13 +375,13 @@
+                   blockmodeldefinition.getVariants().forEach((s, multivariant) -> {
+                      try {
+                         list1.stream().filter(predicate(statedefinition, s)).forEach((blockstate) -> {
+-                           Pair<UnbakedModel, Supplier<ModelBakery.ModelGroupKey>> pair1 = map3.put(blockstate, Pair.of(multivariant, () -> {
++                           Pair<UnbakedModel, Supplier<ModelBakery.ModelGroupKey>> pair2 = map3.put(blockstate, Pair.of(multivariant, () -> {
+                               return ModelBakery.ModelGroupKey.create(blockstate, multivariant, list);
+                            }));
+-                           if (pair1 != null && pair1.getFirst() != multipart) {
++                           if (pair2 != null && pair2.getFirst() != multipart) {
+                               map3.put(blockstate, pair);
+                               throw new RuntimeException("Overlapping definition with: " + (String)blockmodeldefinition.getVariants().entrySet().stream().filter((entry) -> {
+-                                 return entry.getValue() == pair1.getFirst();
++                                 return entry.getValue() == pair2.getFirst();
+                               }).findFirst().get().getKey());
+                            }
+                         });
+@@ -409,8 +409,8 @@
+                   this.cacheAndQueueDependencies(modelresourcelocationx, pair1.getFirst());
+ 
+                   try {
+-                     ModelBakery.ModelGroupKey modelgroupkey = pair1.getSecond().get();
+-                     map5.computeIfAbsent(modelgroupkey, (modelgroupkey) -> {
++                     ModelBakery.ModelGroupKey groupkey = pair1.getSecond().get();
++                     map5.computeIfAbsent(groupkey, (key) -> {
+                         return Sets.newIdentityHashSet();
+                      }).add(blockstate);
+                   } catch (Exception var9) {

@@ -1,0 +1,11 @@
+--- a/net/minecraft/util/thread/StrictQueue.java
++++ b/net/minecraft/util/thread/StrictQueue.java
+@@ -21,7 +21,7 @@
+ 
+       public FixedPriorityQueue(int i) {
+          this.queueList = IntStream.range(0, i).mapToObj((ix) -> {
+-            return Queues.newConcurrentLinkedQueue();
++            return Queues.<Runnable>newConcurrentLinkedQueue();
+          }).collect(Collectors.toList());
+       }
+ 
