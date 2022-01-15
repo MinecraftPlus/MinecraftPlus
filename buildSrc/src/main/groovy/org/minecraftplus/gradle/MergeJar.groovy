@@ -1,21 +1,25 @@
-package net.minecraftforge.mcpconfig.tasks;
+package org.minecraftplus.gradle
 
-import org.gradle.api.*
-import org.gradle.api.tasks.*
+import net.minecraftforge.mcpconfig.tasks.ToolJarExec
+import net.minecraftforge.mcpconfig.tasks.Utils
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputFile
 
 class MergeJar extends ToolJarExec {
     @InputFile File client
     @InputFile File server
-    @Input String version
     @OutputFile File dest
+    @Optional @Input String annotations
     
     @Override
     protected void preExec() {
         setArgs(Utils.fillVariables(args, [
             'client': client.absolutePath,
             'server': server.absolutePath,
-            'version': version,
-            'output': dest.absolutePath
+            'output': dest.absolutePath,
+            'annotations': annotations
         ]))
     }
 }

@@ -231,6 +231,24 @@ task filterVersionJars(group: 'process') {
 
 
 /**
+ * Merge client and server JAR to one annotated with @OnlyIn(Dist.<SIDE>)
+ */
+task mergeVersionJars(type: MergeJar) {
+    group = 'process'
+    description = 'Merges source JARs into one annotated with Dist marker.'
+    dependsOn downloadMergeTool
+    dependsOn filterVersionClientJar
+    dependsOn filterVersionServerJar
+
+    config MERGETOOL, downloadMergeTool
+    client filterVersionClientJar.sources
+    server filterVersionServerJar.sources
+    dest file(PATH_BUILD + 'version/joined.jar')
+    annotations 'API'
+}
+
+
+/**
  * Process sides configuration
  */
 def sides = [
