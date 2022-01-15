@@ -38,17 +38,24 @@ import uk.jamierocks.propatcher.task.*
 net.minecraftforge.mcpconfig.tasks.Utils.init()
 
 project.ext {
-    MINECRAFT_VERSION = '1.15.2'
-
     PATH_BUILD = file('build').absolutePath + '/'
     PATH_PROJECT = file('version').absolutePath + '/'
     PATH_LIBRARIES = PATH_BUILD + 'libraries/'
 
+    PATH_PROJECTS = file('projects').absolutePath + '/'
+    PATH_PROJECTS_ASSETS = PATH_PROJECTS + 'assets'
+    PATH_PROJECTS_NATIVES = PATH_PROJECTS + 'natives'
+
     CONFIG = file(PATH_PROJECT + 'config.json').json
+
+    MINECRAFT_VERSION = CONFIG.get('minecraft_version', '1.15.2')
     JAVA_TARGET = CONFIG.get('java_target', 8)
 
-
-    FERNFLOWER = Utils.readConfig(CONFIG, 'fernflower', [:])
+    FERNFLOWER = Utils.readConfig(CONFIG, 'fernflower', [
+            version: 'net.minecraftforge:forgeflower:1.5.498.22',
+            args: ["-din=1", "-rbr=1", "-dgs=1", "-asc=1", "-rsy=1", "-iec=1", "-isl=0", "-log=TRACE", "-cfg", "{libraries}", "{input}", "{output}"],
+            jvmargs: ["-Xmx4G"]
+    ])
     MERGETOOL = Utils.readConfig(CONFIG, 'merge', [
             version: 'net.minecraftforge:mergetool:1.1.3:fatjar',
             args: ["--client", "{client}", "--server", "{server}", "--ann", "{version}", "--output", "{output}"]

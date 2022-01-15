@@ -1,4 +1,7 @@
 {
+	"minecraft_version": "1.15.2",
+	"java_target": 8,
+
     "rename": {
         "version": "org.minecraftplus:vignette:0.3.0.2",
         "args": ["--jar-in", "{input}", "--jar-out", "{output}", "--mapping-format", "tsrg2", "--mappings", "{mappings}", "--cfg", "{libraries}", "--deduce-param-names", "--dictionary", "{dictionary}", "--create-inits", "--fernflower-meta"],
