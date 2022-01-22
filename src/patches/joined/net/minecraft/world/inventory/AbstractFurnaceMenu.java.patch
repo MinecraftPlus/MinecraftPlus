@@ -9,3 +9,12 @@
     }
  
     public boolean recipeMatches(Recipe<? super Container> recipe) {
+@@ -140,7 +140,7 @@
+    }
+
+    protected boolean canSmelt(ItemStack itemstack) {
+-      return this.level.getRecipeManager().getRecipeFor(this.recipeType, new SimpleContainer(itemstack), this.level).isPresent();
++      return this.level.getRecipeManager().getRecipeFor((RecipeType)this.recipeType, new SimpleContainer(itemstack), this.level).isPresent();
+    }
+
+    protected boolean isFuel(ItemStack itemstack) {

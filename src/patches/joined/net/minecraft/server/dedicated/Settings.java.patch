@@ -5,7 +5,7 @@
        V obj1 = MoreObjects.firstNonNull((V)(s1 != null ? function.apply(s1) : null), obj);
        this.properties.put(s, function1.apply(obj1));
 -      return new Settings.MutableValue<>(s, obj1, function1);
-+      return new Settings<T>.MutableValue<V>(s, obj1, function1);
++      return new Settings.MutableValue(s, obj1, function1);
     }
  
     protected <V> V get(String s, Function<String, V> function, UnaryOperator<V> unaryoperator, Function<V, String> function1, V obj) {
