@@ -16,4 +16,6 @@ dependencies {
     implementation 'net.minecraftforge:mapping-verifier:2.0.2'
     implementation 'net.sf.jopt-simple:jopt-simple:5.0.4' // Needed for verifier
     implementation 'org.minecraftplus:srgprocessor:1.1.+'
+
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.0.0.202111291000-r'
 }

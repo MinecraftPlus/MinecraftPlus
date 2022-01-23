@@ -252,15 +252,21 @@ task mergeVersionJars(type: MergeJar) {
  * Process sides configuration
  */
 def sides = [
+    joined: [Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,
+             mappingsTask: convertClientMappings,
+             splitTask: mergeVersionJars,
+             resources: [filterVersionClientJar.resources, filterVersionServerJar.resources],
+             bundle: null],
     client: [Name: 'Client', jsonlibs: true,  extra: 'Client', assets: true,
              mappingsTask: convertClientMappings,
              splitTask: filterVersionClientJar,
+             resources: [filterVersionClientJar.resources],
              bundle: null],
     server: [Name: 'Server', jsonlibs: false, extra: 'Server', assets: false,
              mappingsTask: convertServerMappings,
              splitTask: filterVersionServerJar,
-             bundle: downloadVersionServerJar],
-   // joined: [Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,  slim: mergeJars,    extra: filterClient, bundle: null]
+             resources: [filterVersionServerJar.resources],
+             bundle: downloadVersionServerJar]
 ]
 
 
@@ -284,12 +290,6 @@ sides.each { s, child ->
         side = s
         root = file(PATH_LIBRARIES)
         dest file(PATH_BUILD + 'mapped/' + s + '.fernflower.libs.txt')
-
-        doFirst {
-            if ('server'.equals(s)) {
-                extras += [filterVersionServerJar.libraries]
-            }
-        }
     }
     generateProcessLibraries.dependsOn(child.librariesTask)
 }
@@ -311,7 +311,7 @@ sides.each { side, child ->
         dependsOn child.librariesTask
 
         config RENAMETOOL, downloadRenameTool
-        input = child.splitTask.sources
+        input = 'joined'.equals(side) ? child.splitTask.dest : child.splitTask.sources // Use dest if input is from MergeJars
         mappings = child.mappingsTask.dest
         libraries = child.librariesTask.dest
         dictionary = file(PATH_PROJECT + 'dictionary.dict')
@@ -347,4 +347,179 @@ sides.each { side, child ->
         dest = file(PATH_BUILD + '/decompile/' + side + '.decompile.jar')
     }
     decompileVersionJars.dependsOn(child.decompileTask)
+}
+
+
+
+
+task createProjectsRoot(type: Copy) {
+    group = 'project'
+
+    from rootProject.file('templates/root_settings.gradle')
+    into file('projects/')
+    rename { 'settings.gradle' }
+    expand([version: project.name])
+}
+
+task extractNatives(type: ExtractNatives) {
+    group = 'project'
+    dependsOn downloadVersionJson
+    dependsOn downloadVersionLibraries
+
+    meta downloadVersionJson.dest
+    cache file(PATH_LIBRARIES)
+    dest file(PATH_PROJECTS_NATIVES)
+}
+
+
+
+/**
+ * Apply patches
+ */
+task projectApplyPatches (group: 'project') {
+    description = 'Applies patches to projects'
+}
+
+/**
+ * Init repositories
+ */
+task repositoryInits (group: 'repository') {
+    description = 'Inits repositories in all projects'
+}
+
+sides.each { side, child ->
+    def project_dir = project.file("projects/${side}")
+    def patches_dir = project.file("src/patches/${side}")
+
+
+    child.projectTask = task "project${child.Name}"(type: CreateProjectTemplate) {
+        group = 'project' + side
+
+        dependsOn createProjectsRoot
+//        dependsOn child.splitTask
+        dependsOn child.decompileTask
+//        dependsOn child.pkgs
+        dependsOn(child.jsonlibs ? [downloadVersionJson, extractNatives] : [])
+        dependsOn(child.assets ? [downloadVersionAssets] : [])
+//        dependsOn (child.bundle != null ? [child.bundle] : [])
+
+//        mustRunAfter child.delete
+
+        dest project_dir
+        distro side
+        template rootProject.file('templates/build.gradle')
+        if (child.jsonlibs)
+            meta downloadVersionJson.dest
+        if (child.bundle != null)
+            bundle = child.bundle.dest
+        CONFIG?.libraries?.get(side)?.each { library "'${it}'" }
+
+        if (child.resources != null)
+            child.resources.each { res -> libraryFile res }
+
+        //libraryFile child.splitTask.libraries
+
+        replace '{java_target}', JAVA_TARGET + ''
+        //replaceFile '{inject}', PATH_INJECT
+        replaceFile '{assets}', child.assets ? downloadVersionAssets.dest : null
+        replaceFile '{natives}', child.jsonlibs ? extractNatives.dest : null
+        //replaceFile '{merged_src}', MERGE_PATCHES ? projectSharedReset.target : null
+
+        doLast {
+            def directory = new File(project_dir, 'src/main/java')
+            System.out.println("Creating directory " + directory)
+            mkdir directory
+        }
+    }
+
+    child.resetTask = task "project${child.Name}Reset"(type: ResetSourcesTask) {
+        group = 'project' + side
+//        dependsOn child.resetPkgs
+//        dependsOn child.makeSrcDir
+        dependsOn child.projectTask
+        dependsOn child.decompileTask
+
+//        mustRunAfter child.project
+
+        rootZip child.decompileTask.dest
+        target new File(project_dir, 'src/main/java')
+    }
+
+    child.makePatchesDir = task "project${child.Name}MakePatchesDir"() {
+        group = 'project' + side
+        doLast {
+            mkdir patches_dir
+        }
+    }
+
+    child.apply = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
+        group = 'project' + side
+        dependsOn child.resetTask
+        dependsOn child.makePatchesDir
+
+        target new File(project_dir, 'src/main/java')
+        patches patches_dir
+    }
+    projectApplyPatches.dependsOn(child.apply)
+
+    child.makePatches = task "project${child.Name}MakePatches"(type: MakePatchesTask) {
+        group = 'project' + side
+        dependsOn child.decompileTask
+        dependsOn child.makePatchesDir
+        //dependsOn MERGE_PATCHES ? [deduplicateSources, projectSharedMakePatches]
+
+        rootZip child.decompileTask.dest
+        target new File(project_dir, 'src/main/java')
+        patches patches_dir
+    }
+
+
+//    task cloneGitRepo(type: GitClone) {
+//        group = 'repository' + side
+//
+//
+//        def destination = file("destination_folder")
+//        uri = "your_git_repo_uri"
+//        destinationPath = destination
+//        bare = false
+//        enabled = !destination.exists() //to clone only once
+//    }
+
+    child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
+        group = 'repository' + side
+
+        target = project_dir
+        lock = new File(project_dir, '.freshinit')
+    }
+    repositoryInits.dependsOn(child.repoInitTask)
+
+    /**
+     * Configure repositories of distro releases
+     *  - it adds a remote to joined source on master branch
+     */
+    if (!side.equals('joined')) {
+//        child.repoAddRemoteTask = task "repository${child.Name}Config"(type: ConfigDistroRepository) {
+//            group = 'repository' + side
+//            dependsOn child.repoInitTask
+//            dependsOn sides.joined.repoInitTask
+//            mustRunAfter sides.joined.repoInitTask
+//
+//            target = child.repoInitTask.target
+//            remoteName = "joined"
+//            remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
+//        }
+
+        child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
+            group = 'repository' + side
+            dependsOn child.repoInitTask
+            dependsOn sides.joined.repoInitTask
+            mustRunAfter sides.joined.repoInitTask
+
+            target = child.repoInitTask.target
+            if (child.repoInitTask.lock?.exists())
+                freshinit = child.repoInitTask.lock
+            remoteName = "joined"
+            remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
+        }
+    }
 }

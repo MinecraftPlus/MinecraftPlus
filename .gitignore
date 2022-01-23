@@ -13,3 +13,6 @@ build/
 
 # Other
 bin/
+
+# Projects
+projects/
