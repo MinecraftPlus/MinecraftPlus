@@ -474,50 +474,25 @@ sides.each { side, child ->
     }
 
 
-//    task cloneGitRepo(type: GitClone) {
-//        group = 'repository' + side
-//
-//
-//        def destination = file("destination_folder")
-//        uri = "your_git_repo_uri"
-//        destinationPath = destination
-//        bare = false
-//        enabled = !destination.exists() //to clone only once
-//    }
-
     child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
         group = 'repository' + side
+        dependsOn child.projectTask
 
         target = project_dir
-        lock = new File(project_dir, '.freshinit')
     }
     repositoryInits.dependsOn(child.repoInitTask)
 
     /**
-     * Configure repositories of distro releases
-     *  - it adds a remote to joined source on master branch
+     * Tasks for distro (client, server) only repositories
      */
     if (!side.equals('joined')) {
-//        child.repoAddRemoteTask = task "repository${child.Name}Config"(type: ConfigDistroRepository) {
-//            group = 'repository' + side
-//            dependsOn child.repoInitTask
-//            dependsOn sides.joined.repoInitTask
-//            mustRunAfter sides.joined.repoInitTask
-//
-//            target = child.repoInitTask.target
-//            remoteName = "joined"
-//            remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
-//        }
-
         child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
             group = 'repository' + side
             dependsOn child.repoInitTask
-            dependsOn sides.joined.repoInitTask
+            dependsOn sides.joined.repoInitTask // depend both on JOINED
             mustRunAfter sides.joined.repoInitTask
 
             target = child.repoInitTask.target
-            if (child.repoInitTask.lock?.exists())
-                freshinit = child.repoInitTask.lock
             remoteName = "joined"
             remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
         }
