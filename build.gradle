@@ -42,6 +42,9 @@ project.ext {
     PATH_PROJECT = file('version').absolutePath + '/'
     PATH_LIBRARIES = PATH_BUILD + 'libraries/'
 
+    PATH_SOURCE = file('src').absolutePath + '/'
+    PATH_SOURCE_PATCHES = PATH_SOURCE + 'patches/'
+
     PATH_PROJECTS = file('projects').absolutePath + '/'
     PATH_PROJECTS_ASSETS = PATH_PROJECTS + 'assets'
     PATH_PROJECTS_NATIVES = PATH_PROJECTS + 'natives'
@@ -72,24 +75,24 @@ java.toolchain {
 
 
 
-task downloadMergeTool(group: 'download', type: DownloadTool) {
+task downloadMergeTool(group: 'mcplus download', type: DownloadTool) {
     description = 'Downloads merge tool'
 
     config MERGETOOL, PATH_LIBRARIES
 }
-task downloadRenameTool(group: 'download', type: DownloadTool) {
+task downloadRenameTool(group: 'mcplus download', type: DownloadTool) {
     description = 'Downloads rename tool'
 
     config RENAMETOOL, PATH_LIBRARIES
 }
-task downloadFernflower(group: 'download', type: DownloadTool) {
+task downloadFernflower(group: 'mcplus download', type: DownloadTool) {
     description = 'Downloads decompiler'
 
     config FERNFLOWER, PATH_LIBRARIES
 }
 
 task downloadManifest(type: Download) {
-    group = 'download'
+    group = 'mcplus download'
     description = 'Downloads version manifest from mojang.com.'
 
     src 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json'
@@ -100,7 +103,7 @@ task downloadManifest(type: Download) {
 }
 
 task downloadVersionJson(type: Download) {
-    group = 'download'
+    group = 'mcplus download'
     description = 'Downloads minecraft version JSON configuration.'
     dependsOn rootProject.downloadManifest
 
@@ -115,14 +118,14 @@ task downloadVersionJson(type: Download) {
 /**
  * Download client and server JARs
  */
-task downloadVersionJars(group: 'download') {
+task downloadVersionJars(group: 'mcplus download') {
     description = 'Downloads minecraft version jars (client and server).'
 }
 
 ['client', 'server'].each { id ->
     def taskName = 'downloadVersion' + id.capitalize() + "Jar"
     def versionTask = task "${taskName}" (type: Download) {
-        group = 'download' + id
+        group = 'mcplus download ' + id
         dependsOn downloadVersionJson
 
         inputs.file downloadVersionJson.dest
@@ -139,7 +142,7 @@ task downloadVersionJars(group: 'download') {
  * Download version libraries
  */
 task downloadVersionLibraries(type: DownloadLibraries) {
-    group = 'download'
+    group = 'mcplus download'
     description = 'Downloads libraries needed by game version.'
     dependsOn downloadVersionJson
 
@@ -152,7 +155,7 @@ task downloadVersionLibraries(type: DownloadLibraries) {
  * Download client assets
  */
 task downloadVersionAssets(type: DownloadAssets) {
-    group = 'download'
+    group = 'mcplus download'
     description = 'Downloads assets used by game version.'
     dependsOn downloadVersionJson
 
@@ -164,14 +167,14 @@ task downloadVersionAssets(type: DownloadAssets) {
 /**
  * Download official mappings for client and server
  */
-task downloadMappings(group: 'download') {
+task downloadMappings(group: 'mcplus download') {
     description = 'Downloads official mappings.'
 }
 
 ['client', 'server'].each { side ->
     def taskName = 'download' + side.capitalize() + "Mappings"
     def mappingsTask = task "${taskName}" (type: Download) {
-        group = 'process' + side
+        group = 'mcplus process ' + side
         dependsOn downloadVersionJson
 
         inputs.file downloadVersionJson.dest
@@ -187,14 +190,14 @@ task downloadMappings(group: 'download') {
 /**
  * Convert official mappings to TSRG2 format
  */
-task convertMappings(group: 'process') {
+task convertMappings(group: 'mcplus process') {
     description = 'Converts official mappings to TSRG format.'
 }
 
 ['client', 'server'].each { side ->
     def taskName = 'convert' + side.capitalize() + "Mappings"
     def convertTask = task "${taskName}" (type: ConvertMappings) {
-        group = 'process' + side
+        group = 'mcplus process ' + side
         dependsOn tasks.getByPath("download${side.capitalize()}Mappings")
 
         input =  tasks.getByPath("download${side.capitalize()}Mappings").dest
@@ -207,14 +210,14 @@ task convertMappings(group: 'process') {
 /**
  * Filter version jars to contain only classes
  */
-task filterVersionJars(group: 'process') {
+task filterVersionJars(group: 'mcplus process') {
     description = 'Filters version jars.'
 }
 
 ['client', 'server'].each { side ->
     def taskName = 'filterVersion' + side.capitalize() + "Jar"
     def filterTask = task "${taskName}" (type: SplitJar) {
-        group = 'process' + side
+        group = 'mcplus process ' + side
         dependsOn tasks.getByPath("convert${side.capitalize()}Mappings")
         dependsOn tasks.getByPath("downloadVersion${side.capitalize()}Jar")
 
@@ -234,7 +237,7 @@ task filterVersionJars(group: 'process') {
  * Merge client and server JAR to one annotated with @OnlyIn(Dist.<SIDE>)
  */
 task mergeVersionJars(type: MergeJar) {
-    group = 'process'
+    group = 'mcplus process'
     description = 'Merges source JARs into one annotated with Dist marker.'
     dependsOn downloadMergeTool
     dependsOn filterVersionClientJar
@@ -273,14 +276,14 @@ def sides = [
 /**
  * Prepare list of libraries for Vignette and Fernflower
  */
-task generateProcessLibraries(group: 'process') {
+task generateProcessLibraries(group: 'mcplus process') {
     description = 'Renames jars using mappings'
 }
 
 sides.each { s, child ->
     def taskName = 'generateProcess' + child.Name + 'Libraries'
     child.librariesTask = task "${taskName}" (type: CreateFernflowerLibraries) {
-        group = 'process' + s
+        group = 'mcplus process ' + s
         dependsOn downloadVersionLibraries
         dependsOn downloadVersionJson
         dependsOn child.splitTask
@@ -297,14 +300,14 @@ sides.each { s, child ->
 /**
  * Vignette renaming
  */
-task renameVersionJars(group: 'process') {
+task renameVersionJars(group: 'mcplus process') {
     description = 'Renames jars using mappings'
 }
 
 sides.each { side, child ->
     def taskName = 'renameVersion' + child.Name + 'Jar'
     child.renameTask = task "${taskName}" (type: RemapJar) {
-        group = 'process' + side
+        group = 'mcplus process ' + side
         dependsOn downloadRenameTool
         dependsOn child.splitTask
         dependsOn child.mappingsTask
@@ -324,14 +327,14 @@ sides.each { side, child ->
 /**
  * Fernflower decompilation
  */
-task decompileVersionJars (group: 'process') {
+task decompileVersionJars (group: 'mcplus process') {
     description = 'Decompiles jars'
 }
 
 sides.each { side, child ->
     def taskName = 'decompileVersion' + child.Name + 'Jar'
     child.decompileTask = task "${taskName}" (type: FernflowerTask) {
-        group = 'process' + side
+        group = 'mcplus process ' + side
         dependsOn downloadFernflower
         dependsOn child.librariesTask
         dependsOn child.renameTask
@@ -353,16 +356,16 @@ sides.each { side, child ->
 
 
 task createProjectsRoot(type: Copy) {
-    group = 'project'
+    group = 'mcplus project'
 
     from rootProject.file('templates/root_settings.gradle')
-    into file('projects/')
+    into file(PATH_PROJECTS)
     rename { 'settings.gradle' }
     expand([version: project.name])
 }
 
 task extractNatives(type: ExtractNatives) {
-    group = 'project'
+    group = 'mcplus project'
     dependsOn downloadVersionJson
     dependsOn downloadVersionLibraries
 
@@ -376,24 +379,17 @@ task extractNatives(type: ExtractNatives) {
 /**
  * Apply patches
  */
-task projectApplyPatches (group: 'project') {
+task projectApplyPatches (group: 'mcplus project') {
     description = 'Applies patches to projects'
 }
 
-/**
- * Init repositories
- */
-task repositoryInits (group: 'repository') {
-    description = 'Inits repositories in all projects'
-}
-
 sides.each { side, child ->
-    def project_dir = project.file("projects/${side}")
-    def patches_dir = project.file("src/patches/${side}")
+    def project_dir = project.file(PATH_PROJECTS + side)
+    def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
 
 
     child.projectTask = task "project${child.Name}"(type: CreateProjectTemplate) {
-        group = 'project' + side
+        group = 'mcplus project ' + side
 
         dependsOn createProjectsRoot
 //        dependsOn child.splitTask
@@ -433,7 +429,7 @@ sides.each { side, child ->
     }
 
     child.resetTask = task "project${child.Name}Reset"(type: ResetSourcesTask) {
-        group = 'project' + side
+        group = 'mcplus project ' + side
 //        dependsOn child.resetPkgs
 //        dependsOn child.makeSrcDir
         dependsOn child.projectTask
@@ -446,14 +442,14 @@ sides.each { side, child ->
     }
 
     child.makePatchesDir = task "project${child.Name}MakePatchesDir"() {
-        group = 'project' + side
+        group = 'mcplus project ' + side
         doLast {
             mkdir patches_dir
         }
     }
 
     child.apply = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
-        group = 'project' + side
+        group = 'mcplus project ' + side
         dependsOn child.resetTask
         dependsOn child.makePatchesDir
 
@@ -463,7 +459,7 @@ sides.each { side, child ->
     projectApplyPatches.dependsOn(child.apply)
 
     child.makePatches = task "project${child.Name}MakePatches"(type: MakePatchesTask) {
-        group = 'project' + side
+        group = 'mcplus project ' + side
         dependsOn child.decompileTask
         dependsOn child.makePatchesDir
         //dependsOn MERGE_PATCHES ? [deduplicateSources, projectSharedMakePatches]
@@ -472,22 +468,39 @@ sides.each { side, child ->
         target new File(project_dir, 'src/main/java')
         patches patches_dir
     }
+}
 
+/**
+ * Init repositories
+ */
+task repositoryInitAll (group: 'mcplus repository') {
+    description = 'Inits repositories in all projects'
+}
+
+/**
+ * Synchronize repos
+ */
+task repositorySyncAll (group: 'mcplus repository') {
+    description = 'Synchronizes distro repositories with JOINED'
+}
+
+sides.each { side, child ->
+    def project_dir = project.file(PATH_PROJECTS + side)
 
     child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
-        group = 'repository' + side
+        group = 'mcplus repository ' + side
         dependsOn child.projectTask
 
         target = project_dir
     }
-    repositoryInits.dependsOn(child.repoInitTask)
+    repositoryInitAll.dependsOn(child.repoInitTask)
 
     /**
      * Tasks for distro (client, server) only repositories
      */
     if (!side.equals('joined')) {
         child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
-            group = 'repository' + side
+            group = 'mcplus repository ' + side
             dependsOn child.repoInitTask
             dependsOn sides.joined.repoInitTask // depend both on JOINED
             mustRunAfter sides.joined.repoInitTask
@@ -496,5 +509,6 @@ sides.each { side, child ->
             remoteName = "joined"
             remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
         }
+        repositorySyncAll.dependsOn(child.repoSyncTask)
     }
 }
