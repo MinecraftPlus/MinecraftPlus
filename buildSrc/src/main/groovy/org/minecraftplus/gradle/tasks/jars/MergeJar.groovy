@@ -1,4 +1,4 @@
-package org.minecraftplus.gradle
+package org.minecraftplus.gradle.tasks.jars
 
 import net.minecraftforge.mcpconfig.tasks.ToolJarExec
 import net.minecraftforge.mcpconfig.tasks.Utils

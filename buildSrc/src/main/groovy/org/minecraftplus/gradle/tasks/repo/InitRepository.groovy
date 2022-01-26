@@ -1,4 +1,4 @@
-package org.minecraftplus.gradle
+package org.minecraftplus.gradle.tasks.repo
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException

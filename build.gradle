@@ -32,6 +32,8 @@ version = "0.0.1-SNAPSHOT"
 
 
 import org.minecraftplus.gradle.*
+import org.minecraftplus.gradle.tasks.jars.*
+import org.minecraftplus.gradle.tasks.repo.*
 import net.minecraftforge.mcpconfig.tasks.*
 import uk.jamierocks.propatcher.task.*
 
