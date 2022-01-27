@@ -166,6 +166,20 @@ task downloadVersionAssets(type: DownloadAssets) {
 }
 
 /**
+ * Package client assets
+ */
+task packageVersionAssets(type: PackageAssets) {
+    group = 'mcplus process'
+    description = 'Packages assets used by game version into JAR.'
+    dependsOn tasks.downloadVersionJson
+    dependsOn tasks.downloadVersionAssets
+
+    json = tasks.downloadVersionJson.dest
+    input = tasks.downloadVersionAssets.dest
+    dest = file(PATH_BUILD + 'assets/package.jar')
+}
+
+/**
  * Extract natives for client
  */
 task extractNatives(type: ExtractNatives) {
