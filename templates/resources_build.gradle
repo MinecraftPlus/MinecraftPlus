@@ -1,0 +1,72 @@
+import org.minecraftplus.gradle.tasks.assets.GenerateAssets
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+ext {
+    PATH_BUILD = file('build').absolutePath + '/'
+
+    PATH_BUILD_ASSETS = PATH_BUILD + 'assets/'
+
+    INDEX_ID = 'test'
+}
+
+sourceSets {
+    main {
+        resources.srcDirs = ['src/main/internal', 'src/main/remote']
+    }
+    remote {
+        resources.srcDirs = ['src/main/remote']
+    }
+    internal {
+        resources.srcDirs = ['src/main/internal']
+    }
+    shared {
+        resources {
+            srcDirs = ['src/main/internal']
+
+            // Resources shared between client and server
+            include "assets/.mcassetsroot"
+            include "data/**"
+            include "log4j2.xml"
+            include "pack.mcmeta"
+            include "version.json"
+        }
+    }
+    client {
+        resources {
+            srcDirs = ['src/main/internal']
+            setIncludes shared.resources.getIncludes()
+
+            // Resources special to client
+            include "assets/**"
+            include "pack.png"
+        }
+    }
+    server {
+        resources {
+            srcDirs = ['src/main/internal']
+            setIncludes shared.resources.getIncludes()
+
+            // Resources special to server
+            include "assets/minecraft/lang/en_us.json"
+            include "Log4j-config.xsd"
+            include "Log4j-events.dtd"
+            include "Log4j-events.xsd"
+            include "Log4j-levels.xsd"
+        }
+    }
+}
+
+/**
+ * Generate asset index to use in client launcher
+ */
+task generateAssetsIndex (type: GenerateAssets) {
+    group = 'mcplus project resources'
+    description = 'Generates assets project'
+
+    input sourceSets.remote.resources.srcDirs as File[]
+    dest file(PATH_BUILD_ASSETS + 'indexes/' + INDEX_ID + '.json')
+    objectsDir file(PATH_BUILD_ASSETS + 'objects/')
+}

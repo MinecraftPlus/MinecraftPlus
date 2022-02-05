@@ -31,7 +31,7 @@ version = "0.0.1-SNAPSHOT"
 
 
 
-import org.minecraftplus.gradle.*
+import org.minecraftplus.gradle.tasks.*
 import org.minecraftplus.gradle.tasks.jars.*
 import org.minecraftplus.gradle.tasks.repo.*
 import net.minecraftforge.mcpconfig.tasks.*
@@ -166,11 +166,11 @@ task downloadVersionAssets(type: DownloadAssets) {
 }
 
 /**
- * Package client assets
+ * Package remote assets
  */
 task packageVersionAssets(type: PackageAssets) {
     group = 'mcplus process'
-    description = 'Packages assets used by game version into JAR.'
+    description = 'Packages remote assets used by game version into JAR.'
     dependsOn tasks.downloadVersionJson
     dependsOn tasks.downloadVersionAssets
 
@@ -252,7 +252,8 @@ task filterVersionJars(group: 'mcplus process') {
         input = tasks.getByPath("downloadVersion${side.capitalize()}Jar").dest
         mappings = tasks.getByPath("convert${side.capitalize()}Mappings").dest
         acceptable = [ "assets/", "data/", "net/minecraft/", "com/mojang/blaze3d", "com/mojang/realms",
-                       "log4j2.xml", "pack.mcmeta", "pack.png", "version.json" ]
+                       "log4j2.xml", "Log4j-config.xsd", "Log4j-events.dtd", "Log4j-events.xsd", "Log4j-levels.xsd",
+                       "pack.mcmeta", "pack.png", "version.json"]
         sources = file(PATH_BUILD + 'version/' + side + '.sources.jar')
         resources = file(PATH_BUILD + 'version/' + side + '.resources.jar')
         libraries = file(PATH_BUILD + 'version/' + side + '.libraries.jar')
@@ -264,45 +265,76 @@ task filterVersionJars(group: 'mcplus process') {
 /**
  * Merge client and server JAR to one annotated with @OnlyIn(Dist.<SIDE>)
  */
-task mergeVersionJars(type: MergeJar) {
+task mergeVersionJoinedJar(type: MergeJar) {
     group = 'mcplus process'
     description = 'Merges source JARs into one annotated with Dist marker.'
     dependsOn tasks.downloadMergeTool
-    dependsOn filterVersionClientJar
-    dependsOn filterVersionServerJar
+    dependsOn tasks.filterVersionClientJar
+    dependsOn tasks.filterVersionServerJar
 
     config MERGETOOL, tasks.downloadMergeTool
-    client filterVersionClientJar.sources
-    server filterVersionServerJar.sources
+    client tasks.filterVersionClientJar.sources
+    server tasks.filterVersionServerJar.sources
     dest file(PATH_BUILD + 'version/joined.jar')
     annotations 'API'
 }
 
 
 /**
+ * Merge client and server internal resources to joined
+ */
+task mergeJoinedResources(type: CombineArchives) {
+    def side = 'joined'
+    group = 'mcplus process ' + side
+    description = 'Merges JARs into one.'
+    dependsOn tasks.filterVersionClientJar
+    dependsOn tasks.filterVersionServerJar
+
+    first tasks.filterVersionClientJar.resources
+    second tasks.filterVersionServerJar.resources
+    dest file(PATH_BUILD + 'version/joined.resources.jar')
+}
+tasks.filterVersionJars.dependsOn(tasks.mergeJoinedResources)
+
+
+/**
  * Process sides configuration
  */
-def sides = [
+def configs = [
     joined: [Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,
+             projectTemplate: 'distro_build.gradle',
              mappingsTask: tasks.convertClientMappings,
-             splitTask: tasks.mergeVersionJars,
+             splitTask: tasks.mergeVersionJoinedJar,
              resources: [tasks.filterVersionClientJar.resources, tasks.filterVersionServerJar.resources],
              natives: tasks.extractNatives.dest
     ],
     client: [Name: 'Client', jsonlibs: true,  extra: 'Client', assets: true,
+             projectTemplate: 'distro_build.gradle',
              mappingsTask: tasks.convertClientMappings,
              splitTask: tasks.filterVersionClientJar,
              resources: [tasks.filterVersionClientJar.resources],
              natives: tasks.extractNatives.dest
     ],
     server: [Name: 'Server', jsonlibs: false, extra: 'Server', assets: false,
+             projectTemplate: 'distro_build.gradle',
              mappingsTask: tasks.convertServerMappings,
              splitTask: tasks.filterVersionServerJar,
              resources: [tasks.filterVersionServerJar.resources],
              natives: null
+    ],
+    resources: [
+            Name: 'Resources',
+            projectTemplate: 'resources_build.gradle',
+            sourceSets: [
+                    [ suffix: 'Internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/internal' ],
+                    [ suffix: 'Remote', task: tasks.packageVersionAssets, outputDir: 'src/main/remote' ]
+            ]
     ]
 ]
 
+def sides = configs.findAll {
+    ['joined', 'client', 'server'].contains(it.key)
+}
 
 /**
  * Prepare list of libraries for Vignette and Fernflower
@@ -419,7 +451,7 @@ task projectResetAll (group: 'mcplus project') {
     description = 'Resets sources in all projects'
 }
 
-sides.each { side, child ->
+configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
 
@@ -439,7 +471,7 @@ sides.each { side, child ->
 
         dest project_dir
         distro side
-        template rootProject.file('templates/build.gradle')
+        template rootProject.file('templates/' + child.projectTemplate)
         if (child.jsonlibs)
             meta tasks.downloadVersionJson.dest
         CONFIG?.libraries?.get(side)?.each { library "'${it}'" }
@@ -452,21 +484,55 @@ sides.each { side, child ->
         replaceFile '{natives}', child.jsonlibs ? tasks.extractNatives.dest : null
 
         doFirst {
-            def directory = new File(project_dir, 'src/main/java')
-            System.out.println("Creating directory " + directory)
-            mkdir directory
+            if (child.sourceSets) {
+                child.sourceSets.each {
+                    def directory = new File(project_dir,  it.outputDir as String)
+                    logger.lifecycle("Creating sourceset directory {}", directory)
+                    mkdir directory
+                }
+            } else {
+                def directory = new File(project_dir, 'src/main/java')
+                logger.lifecycle("Creating standard directory {}", directory)
+                mkdir directory
+            }
         }
     }
     tasks.projectCreateAll.dependsOn(child.projectCreateTask)
 
-    child.projectResetTask = task "project${child.Name}Reset"(type: ResetSourcesTask) {
-        group = 'mcplus project ' + side
-        dependsOn child.projectCreateTask
-        dependsOn child.decompileTask
-        mustRunAfter child.projectCreateTask
+    // Reset tasks
+    if (child.sourceSets == null) {
+        child.projectResetTask = task "project${child.Name}Reset" (type: ResetSourcesTask) {
+            group = 'mcplus project ' + side
+            dependsOn child.projectCreateTask
+            dependsOn child.decompileTask
+            mustRunAfter child.projectCreateTask
 
-        rootZip child.decompileTask.dest
-        target new File(project_dir, 'src/main/java')
+            rootZip child.decompileTask.dest
+            target new File(project_dir, 'src/main/java')
+        }
+    } else {
+        child.projectResetTask = task "project${child.Name}Reset" {
+            group = 'mcplus project ' + side
+            description = 'Resets all sourcesets in project'
+        }
+
+        child.sourceSets.each {
+            def taskSuffix = it.suffix as String
+            def sourceTask = it.task as Task
+            def outputDirectory = new File(project_dir, it.outputDir as String)
+
+            def taskName = 'project' + child.Name + "Reset" + taskSuffix
+            def resetTask = task "${taskName}" (type: ResetSourcesTaskNew) {
+                group = 'mcplus project ' + side
+                dependsOn child.projectCreateTask
+                dependsOn sourceTask
+                mustRunAfter child.projectCreateTask
+
+                rootZip sourceTask.dest
+                target outputDirectory
+            }
+            child.projectResetTask.dependsOn(resetTask)
+        }
     }
     tasks.projectResetAll.dependsOn(child.projectResetTask)
 }
@@ -486,7 +552,7 @@ task projectMakePatchesAll (group: 'mcplus project') {
     description = 'Makes patches for all projects'
 }
 
-sides.each { side, child ->
+configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
 
@@ -496,16 +562,6 @@ sides.each { side, child ->
             mkdir patches_dir
         }
     }
-
-    child.applyPatchesTask = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
-        group = 'mcplus project ' + side
-        dependsOn child.projectResetTask
-        dependsOn child.makePatchesDirTask
-
-        target new File(project_dir, 'src/main/java')
-        patches patches_dir
-    }
-    tasks.projectApplyPatchesAll.dependsOn(child.applyPatchesTask)
 
     child.makePatchesTask = task "project${child.Name}MakePatches"(type: MakePatchesTask) {
         group = 'mcplus project ' + side
@@ -517,6 +573,17 @@ sides.each { side, child ->
         patches patches_dir
     }
     tasks.projectMakePatchesAll.dependsOn(child.makePatchesTask)
+
+    child.applyPatchesTask = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
+        group = 'mcplus project ' + side
+        dependsOn child.projectResetTask
+        dependsOn child.makePatchesDirTask
+        dependsOn child.makePatchesTask
+
+        target child.makePatchesTask.target
+        patches child.makePatchesTask.patches
+    }
+    tasks.projectApplyPatchesAll.dependsOn(child.applyPatchesTask)
 }
 
 
