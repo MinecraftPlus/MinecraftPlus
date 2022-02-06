@@ -305,29 +305,28 @@ def configs = [
              projectTemplate: 'distro_build.gradle',
              mappingsTask: tasks.convertClientMappings,
              splitTask: tasks.mergeVersionJoinedJar,
-             resources: [tasks.filterVersionClientJar.resources, tasks.filterVersionServerJar.resources],
+             resources: 'internal',
              natives: tasks.extractNatives.dest
     ],
     client: [Name: 'Client', jsonlibs: true,  extra: 'Client', assets: true,
              projectTemplate: 'distro_build.gradle',
              mappingsTask: tasks.convertClientMappings,
              splitTask: tasks.filterVersionClientJar,
-             resources: [tasks.filterVersionClientJar.resources],
              natives: tasks.extractNatives.dest
     ],
     server: [Name: 'Server', jsonlibs: false, extra: 'Server', assets: false,
              projectTemplate: 'distro_build.gradle',
              mappingsTask: tasks.convertServerMappings,
              splitTask: tasks.filterVersionServerJar,
-             resources: [tasks.filterVersionServerJar.resources],
              natives: null
     ],
     resources: [
             Name: 'Resources',
             projectTemplate: 'resources_build.gradle',
+            decompileTask: tasks.packageVersionAssets, // TODO Make this not needed, as it is in remote sourceset
             sourceSets: [
-                    [ suffix: 'Internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/internal' ],
-                    [ suffix: 'Remote', task: tasks.packageVersionAssets, outputDir: 'src/main/remote' ]
+                    [ suffix: 'internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/internal' ],
+                    [ suffix: 'remote', task: tasks.packageVersionAssets, outputDir: 'src/main/remote' ]
             ]
     ]
 ]
@@ -487,12 +486,12 @@ configs.each { side, child ->
             if (child.sourceSets) {
                 child.sourceSets.each {
                     def directory = new File(project_dir,  it.outputDir as String)
-                    logger.lifecycle("Creating sourceset directory {}", directory)
+                    logger.info("Creating sourceset directory {}", directory)
                     mkdir directory
                 }
             } else {
                 def directory = new File(project_dir, 'src/main/java')
-                logger.lifecycle("Creating standard directory {}", directory)
+                logger.info("Creating standard directory {}", directory)
                 mkdir directory
             }
         }
@@ -521,8 +520,8 @@ configs.each { side, child ->
             def sourceTask = it.task as Task
             def outputDirectory = new File(project_dir, it.outputDir as String)
 
-            def taskName = 'project' + child.Name + "Reset" + taskSuffix
-            def resetTask = task "${taskName}" (type: ResetSourcesTaskNew) {
+            def taskName = 'project' + child.Name + "Reset" + taskSuffix.capitalize()
+            def resetTask = task "${taskName}" (type: ResetSourcesTask) {
                 group = 'mcplus project ' + side
                 dependsOn child.projectCreateTask
                 dependsOn sourceTask
@@ -560,29 +559,77 @@ configs.each { side, child ->
         group = 'mcplus project ' + side
         doLast {
             mkdir patches_dir
+            child.sourceSets.each {
+                def directory = new File(patches_dir,  it.suffix as String)
+                logger.info("Creating {} patches directory {}", side, directory)
+                mkdir directory
+            }
         }
     }
 
-    child.makePatchesTask = task "project${child.Name}MakePatches"(type: MakePatchesTask) {
-        group = 'mcplus project ' + side
-        dependsOn child.decompileTask
-        dependsOn child.makePatchesDirTask
+    // Make and apply tasks
+    if (child.sourceSets == null) {
+        child.makePatchesTask = task "project${child.Name}MakePatches"(type: MakePatchesTask) {
+            group = 'mcplus project ' + side
+            dependsOn child.decompileTask
+            dependsOn child.makePatchesDirTask
 
-        rootZip child.decompileTask.dest
-        target new File(project_dir, 'src/main/java')
-        patches patches_dir
+            rootZip child.decompileTask.dest
+            target new File(project_dir, 'src/main/java')
+            patches patches_dir
+        }
+
+        child.applyPatchesTask = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
+            group = 'mcplus project ' + side
+            dependsOn child.projectResetTask
+            dependsOn child.makePatchesDirTask
+            dependsOn child.makePatchesTask
+
+            target child.makePatchesTask.target
+            patches child.makePatchesTask.patches
+        }
+    } else {
+        child.makePatchesTask = task "project${child.Name}MakePatches" {
+            group = 'mcplus project ' + side
+            description = 'Makes patches of all sourcesets in project'
+        }
+
+        child.applyPatchesTask = task "project${child.Name}ApplyPatches" {
+            group = 'mcplus project ' + side
+            description = 'Applies patches in all projects'
+        }
+
+        child.sourceSets.each {
+            def taskSuffix = it.suffix as String
+            def sourceTask = it.task as Task
+            def outputDirectory = new File(project_dir, it.outputDir as String)
+            def patchesDirectory = new File(patches_dir, taskSuffix as String)
+
+            def makeTaskName = 'project' + child.Name + "MakePatches" + taskSuffix.capitalize()
+            def makeTask = task "${makeTaskName}" (type: MakePatchesTask) {
+                group = 'mcplus project ' + side
+                dependsOn sourceTask
+                dependsOn child.makePatchesDirTask
+
+                rootZip sourceTask.dest
+                target outputDirectory
+                patches patchesDirectory
+            }
+            child.makePatchesTask.dependsOn(makeTask)
+
+            def applyTaskName = 'project' + child.Name + "ApplyPatches" + taskSuffix.capitalize()
+            def applyTask = task "${applyTaskName}" (type: MakePatchesTask) {
+                group = 'mcplus project ' + side
+                dependsOn child.projectResetTask
+                dependsOn child.makePatchesDirTask
+
+                target makeTask.target
+                patches makeTask.patches
+            }
+            child.applyPatchesTask.dependsOn(applyTask)
+        }
     }
     tasks.projectMakePatchesAll.dependsOn(child.makePatchesTask)
-
-    child.applyPatchesTask = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
-        group = 'mcplus project ' + side
-        dependsOn child.projectResetTask
-        dependsOn child.makePatchesDirTask
-        dependsOn child.makePatchesTask
-
-        target child.makePatchesTask.target
-        patches child.makePatchesTask.patches
-    }
     tasks.projectApplyPatchesAll.dependsOn(child.applyPatchesTask)
 }
 
