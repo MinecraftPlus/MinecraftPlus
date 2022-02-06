@@ -25,6 +25,8 @@ class Utils {
 
         File.metaClass.getJson = { return delegate.exists() ? new JsonSlurper().parse(delegate) : [:] }
         File.metaClass.setJson = { json -> delegate.text = new JsonBuilder(json).toPrettyString() }
+
+        Map.metaClass.merge << { Map rhs -> merge(delegate, rhs) }
     }
 
     static def fillVariables(List<String> args, Map<String, Object> props) {
@@ -77,5 +79,18 @@ class Utils {
                 path: version?.toMavenPath(),
                 repo: ent?.repo ?: defaults.repo ?: 'https://maven.minecraftplus.org/'
         ]
+    }
+
+    static def merge(Map lhs, Map rhs) {
+        return rhs.inject(lhs.clone()) { map, entry ->
+            if (map[entry.key] instanceof Map && entry.value instanceof Map) {
+                map[entry.key] = merge(map[entry.key], entry.value)
+            } else if (map[entry.key] instanceof Collection && entry.value instanceof Collection) {
+                map[entry.key] += entry.value
+            } else {
+                map[entry.key] = entry.value
+            }
+            return map
+        }
     }
 }
