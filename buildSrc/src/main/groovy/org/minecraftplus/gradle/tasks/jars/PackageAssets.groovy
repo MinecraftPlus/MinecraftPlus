@@ -1,7 +1,7 @@
 package org.minecraftplus.gradle.tasks.jars
 
 import net.minecraftforge.mcpconfig.tasks.SingleFileOutput
-import net.minecraftforge.mcpconfig.tasks.Utils
+import org.minecraftplus.gradle.tasks.Utils
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile

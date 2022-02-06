@@ -1,13 +1,10 @@
-package net.minecraftforge.mcpconfig.tasks;
-
-import java.util.*
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-
-import java.security.MessageDigest
+package org.minecraftplus.gradle.tasks
 
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+
+import java.security.MessageDigest
+import java.util.regex.Pattern
 
 class Utils {
     public static init() {
@@ -25,14 +22,14 @@ class Utils {
             return pts[0].replace('.', '/') + '/' + pts[1] + '/' + pts[2] + '/' + pts[1] + '-' + pts[2] + (pts.length > 3 ? '-' + pts[3] : '') + '.' + ext
         }
         File.metaClass.getSha1 = { !delegate.exists() ? null : MessageDigest.getInstance('SHA-1').digest(delegate.bytes).encodeHex().toString() }
-        
+
         File.metaClass.getJson = { return delegate.exists() ? new JsonSlurper().parse(delegate) : [:] }
         File.metaClass.setJson = { json -> delegate.text = new JsonBuilder(json).toPrettyString() }
     }
-    
+
     static def fillVariables(List<String> args, Map<String, Object> props) {
         def ret = []
-        args.each{ arg -> 
+        args.each{ arg ->
             if (!arg.startsWith('{') || !arg.endsWith('}') || !props.containsKey(arg.substring(1, arg.length() -1))) {
                 ret.add(arg)
             } else {
@@ -42,7 +39,7 @@ class Utils {
         }
         return ret
     }
-    
+
     static def testJsonRules(rules) {
         if (rules == null) return true
         def allow = false
@@ -60,7 +57,7 @@ class Utils {
         }
         return allow
     }
-    
+
     static def getOsName() {
         def name = System.getProperty('os.name').toLowerCase(java.util.Locale.ENGLISH)
         if (name.contains('windows') || name.contains('win')) return 'windows'
@@ -68,17 +65,17 @@ class Utils {
         if (name.contains('osx') || name.contains('mac')) return 'osx'
         return 'unknown'
     }
-    
+
     static def readConfig(def cfg, def name, def defaults) {
         def ent = cfg.get(name)
         def version = ent?.version ?: defaults.version ?: null
 
         return [
-            version: version,
-            args: ent?.args ?: defaults.args ?: [],
-            jvmargs: ent?.jvmargs ?: defaults.jvmargs ?: [],
-            path: version?.toMavenPath(),
-            repo: ent?.repo ?: defaults.repo ?: 'https://maven.minecraftforge.net/'
+                version: version,
+                args: ent?.args ?: defaults.args ?: [],
+                jvmargs: ent?.jvmargs ?: defaults.jvmargs ?: [],
+                path: version?.toMavenPath(),
+                repo: ent?.repo ?: defaults.repo ?: 'https://maven.minecraftplus.org/'
         ]
     }
 }

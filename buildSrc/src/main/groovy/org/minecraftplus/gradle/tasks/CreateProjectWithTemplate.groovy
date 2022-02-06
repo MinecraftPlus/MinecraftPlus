@@ -1,7 +1,7 @@
 package org.minecraftplus.gradle.tasks
 
 import groovy.json.JsonSlurper
-import net.minecraftforge.mcpconfig.tasks.Utils
+import org.minecraftplus.gradle.tasks.Utils
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*
 

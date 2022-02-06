@@ -37,7 +37,7 @@ import org.minecraftplus.gradle.tasks.repo.*
 import net.minecraftforge.mcpconfig.tasks.*
 import uk.jamierocks.propatcher.task.*
 
-net.minecraftforge.mcpconfig.tasks.Utils.init()
+org.minecraftplus.gradle.tasks.Utils.init()
 
 project.ext {
     PATH_BUILD = file('build').absolutePath + '/'

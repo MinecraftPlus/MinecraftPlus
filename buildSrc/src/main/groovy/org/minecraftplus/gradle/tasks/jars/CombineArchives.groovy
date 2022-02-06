@@ -1,19 +1,13 @@
 package org.minecraftplus.gradle.tasks.jars
 
 import net.minecraftforge.mcpconfig.tasks.SingleFileOutput
-import net.minecraftforge.mcpconfig.tasks.Utils
-import net.minecraftforge.srgutils.IMappingFile
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
-
 /**
  * Combines two JARs into one.
  */

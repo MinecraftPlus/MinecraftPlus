@@ -1,11 +1,10 @@
 package org.minecraftplus.gradle.tasks.jars
 
-import net.minecraftforge.mcpconfig.tasks.Utils
+import org.minecraftplus.gradle.tasks.Utils
 import net.minecraftforge.srgutils.IMappingFile
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
@@ -14,8 +13,8 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 /**
- * Filters input JAR to two jars. One containing code sources and one
- * containing resources (non .class files)
+ * Splits input JAR to three jars. One containing code sources and one
+ * containing resources (non .class but accepted files) and thirth contains libraries
  */
 public class SplitJar extends DefaultTask {
     @InputFile input
@@ -44,6 +43,9 @@ public class SplitJar extends DefaultTask {
                                 out = lo // library
 
                             def oentry = new ZipEntry(entry.name)
+                            if (oentry.isDirectory())
+                                continue // don't transfer directory as it may be empty
+
                             oentry.lastModifiedTime = entry.lastModifiedTime
                             out.putNextEntry(oentry)
                             out << jin
