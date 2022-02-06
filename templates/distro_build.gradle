@@ -8,8 +8,6 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
-import groovy.xml.*
-
 repositories {
     mavenCentral()
     maven {
@@ -30,118 +28,26 @@ configurations.all {
     transitive = false
 }
 
-//configurations {
-//    ecj
-//}
-//dependencies {
-//    ecj 'org.eclipse.jdt:ecj:3.28.0'
-//}
-
-//compileJava {
-//    options.fork = true
-//    options.forkOptions.with {
-//        executable = 'java'
-//        jvmArgs = ['-classpath', project.configurations.ecj.asPath, 'org.eclipse.jdt.internal.compiler.batch.Main', '-nowarn']
-//    }
-//}
-
 dependencies {
     {libraries}
 }
 
 ext {
     DISTRO = '{distro}'
-    ASSETS = {assets}
+    JAVA = {java_target}
+    RESOURCES = '{resources}'
+    ASSETS = project(":resources").PATH_BUILD_ASSETS
     NATIVES = {natives}
 }
 
 sourceSets {
     main {
         resources {
-            def resourceSet = project(":resources").sourceSets[ASSETS].resources
+            def resourceSet = project(":resources").sourceSets[RESOURCES as String].resources
             srcDir resourceSet.srcDirs
             setIncludes resourceSet.getIncludes()
         }
     }
 }
 
-//if (file(INJECT).exists()) {
-//    if (new File(INJECT, 'package-info-template.java').exists()) {
-//        sourceSets.create('pkginfo')
-//    }
-//    sourceSets.create('inject') {
-//        java {
-//            srcDir INJECT
-//            exclude 'package-info-template.java'
-//            if (DISTRO == 'server')
-//                exclude '**/client/**/*'
-//            else
-//                exclude '**/server/**/*'
-//        }
-//        compileClasspath += sourceSets.main.output
-//        runtimeClasspath += sourceSets.main.output
-//    }
-//}
-
-//if (MERGED != null)
-//    sourceSets.main.java.srcDirs MERGED
-
-java.toolchain.languageVersion = JavaLanguageVersion.of({java_target})
-
-eclipseClasspath.doLast { t ->
-    def xml = new XmlParser().parse(t.outputFile)
-    println t.outputFile
-    xml.classpathentry.findAll{ it.attributes().kind == 'src' }.each { e ->
-        if (e.get('attributes').isEmpty()) e.appendNode('attributes')
-        if (e.'attributes'[0].attribute.findAll{it.attributes().name == 'org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY'}.isEmpty())
-            e.'attributes'[0]?.appendNode('attribute', [name: 'org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY', value: NATIVES])
-    }
-    def order = ['src', 'output', 'con', 'lib']
-    xml.children().sort { order.contains(it.@kind) ? order.indexOf(it.@kind) : order.size() + 1 }
-    t.outputFile.text = XmlUtil.serialize(xml)
-    
-    def workdir = file('../run')
-    if (!workdir.exists())
-        workdir.mkdirs()
-    
-    (DISTRO == 'server' ? ['server'] : DISTRO == 'client' ? ['client'] : ['server', 'client']).each { side -> 
-        def writer = new StringWriter()
-        xml = new MarkupBuilder(writer)
-        xml.launchConfiguration(type: 'org.eclipse.jdt.launching.localJavaApplication') {
-            stringAttribute(key: 'org.eclipse.jdt.launching.MAIN_TYPE', value: side == 'server' ? 'net.minecraft.server.MinecraftServer' : 'mcp.client.Start')
-            stringAttribute(key: 'org.eclipse.jdt.launching.PROJECT_ATTR', value: project.name)
-            stringAttribute(key: 'org.eclipse.jdt.launching.WORKING_DIRECTORY', value: workdir.absolutePath)
-            if (side != 'server') {
-                mapAttribute(key: 'org.eclipse.debug.core.environmentVariables') {
-                    mapEntry(key: 'assetDirectory', value: ASSETS)
-                }
-            }
-        }
-        file("Run${DISTRO.capitalize()}${side.capitalize()}.launch").text = writer.toString()
-    }
-}
-
-eclipse.classpath.file {
-    beforeMerged { it.entries.removeAll { entry -> entry.kind == 'src' } }
-}
-
-//import org.minecraftplus.gradle.*
-//def taskName = 'run' + DISTRO.capitalize() + 'App'
-//def runTask = tasks.register("${taskName}", RunApplication) {
-//    group = "run"
-//    description = "Run ${DISTRO} side application"
-//    dependsOn build
-//    dependsOn rootProject.downloadVersionJson
-//    dependsOn rootProject.downloadVersionAssets
-//    dependsOn rootProject.extractNatives
-//
-//    classpath = sourceSets.main.runtimeClasspath
-//    mainClass = rootProject.downloadVersionJson.dest.json.mainClass
-//
-//    if (DISTRO != 'server')
-//        systemProperty "java.library.path", rootProject.extractNatives.dest
-//
-//    configuration rootProject.downloadVersionJson.dest
-//    assets rootProject.downloadVersionAssets.dest
-//    gameDir file('build/run/')
-//}
+java.toolchain.languageVersion = JavaLanguageVersion.of(JAVA)
