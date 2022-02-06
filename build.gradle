@@ -48,8 +48,6 @@ project.ext {
     PATH_SOURCE_PATCHES = PATH_SOURCE + 'patches/'
 
     PATH_PROJECTS = file('projects').absolutePath + '/'
-    PATH_PROJECTS_ASSETS = PATH_PROJECTS + 'assets'
-    PATH_PROJECTS_NATIVES = PATH_PROJECTS + 'natives'
 
     CONFIG = file(PATH_PROJECT + 'config.json').json
 
@@ -162,7 +160,7 @@ task downloadVersionAssets(type: DownloadAssets) {
     dependsOn tasks.downloadVersionJson
 
     json = tasks.downloadVersionJson.dest
-    dest = file(PATH_BUILD + '/assets/')
+    dest = file(PATH_BUILD + 'assets/')
 }
 
 /**
@@ -189,7 +187,7 @@ task extractNatives(type: ExtractNatives) {
 
     meta tasks.downloadVersionJson.dest
     cache file(PATH_LIBRARIES)
-    dest file(PATH_PROJECTS_NATIVES)
+    dest file(PATH_BUILD + 'natives/')
 }
 
 /**
