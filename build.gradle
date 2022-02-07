@@ -40,16 +40,18 @@ import uk.jamierocks.propatcher.task.*
 org.minecraftplus.gradle.tasks.Utils.init()
 
 project.ext {
-    PATH_BUILD = file('build').absolutePath + '/'
-    PATH_PROJECT = file('version').absolutePath + '/'
-    PATH_LIBRARIES = PATH_BUILD + 'libraries/'
-
     PATH_SOURCE = file('src').absolutePath + '/'
     PATH_SOURCE_PATCHES = PATH_SOURCE + 'patches/'
+    
+    PATH_BUILD = file('build').absolutePath + '/'
+    PATH_BUILD_LIBRARIES = PATH_BUILD + 'libraries/'
 
     PATH_PROJECTS = file('projects').absolutePath + '/'
 
-    CONFIG = file(PATH_PROJECT + 'config.json').json
+    PATH_CONFIG = file('config').absolutePath + '/'
+    PATH_CONFIG_CHECKSTYLE = PATH_CONFIG + 'checkstyle/'
+
+    CONFIG = file(PATH_CONFIG + 'config.json').json
 
     MINECRAFT_VERSION = CONFIG.get('minecraft_version', '1.15.2')
     JAVA_TARGET = CONFIG.get('java_target', 8)
@@ -78,17 +80,17 @@ java.toolchain {
 task downloadMergeTool(group: 'mcplus download', type: DownloadTool) {
     description = 'Downloads merge tool'
 
-    config MERGETOOL, PATH_LIBRARIES
+    config MERGETOOL, PATH_BUILD_LIBRARIES
 }
 task downloadRenameTool(group: 'mcplus download', type: DownloadTool) {
     description = 'Downloads rename tool'
 
-    config RENAMETOOL, PATH_LIBRARIES
+    config RENAMETOOL, PATH_BUILD_LIBRARIES
 }
 task downloadFernflower(group: 'mcplus download', type: DownloadTool) {
     description = 'Downloads decompiler'
 
-    config FERNFLOWER, PATH_LIBRARIES
+    config FERNFLOWER, PATH_BUILD_LIBRARIES
 }
 
 task downloadManifest(type: Download) {
@@ -148,7 +150,7 @@ task downloadVersionLibraries(type: DownloadLibraries) {
 
     json = tasks.downloadVersionJson.dest
     config = CONFIG // TODO check what we need
-    dest = file(PATH_LIBRARIES)
+    dest = file(PATH_BUILD_LIBRARIES)
 }
 
 /**
@@ -186,7 +188,7 @@ task extractNatives(type: ExtractNatives) {
     dependsOn tasks.downloadVersionLibraries
 
     meta tasks.downloadVersionJson.dest
-    cache file(PATH_LIBRARIES)
+    cache file(PATH_BUILD_LIBRARIES)
     dest file(PATH_BUILD + 'natives/')
 }
 
@@ -351,7 +353,7 @@ sides.each { s, child ->
         meta = tasks.downloadVersionJson.dest
         config = CONFIG
         side = s
-        root = file(PATH_LIBRARIES)
+        root = file(PATH_BUILD_LIBRARIES)
         dest file(PATH_BUILD + 'mapped/' + s + '.fernflower.libs.txt')
     }
     tasks.generateProcessLibraries.dependsOn(child.librariesTask)
@@ -377,7 +379,7 @@ sides.each { side, child ->
         input = 'joined'.equals(side) ? child.splitTask.dest : child.splitTask.sources // Use dest if input is from MergeJars
         mappings = child.mappingsTask.dest
         libraries = child.librariesTask.dest
-        dictionary = file(PATH_PROJECT + 'dictionary.dict')
+        dictionary = file(PATH_CONFIG + 'dictionary.dict')
         dest = file(PATH_BUILD + 'mapped/' + side + '.mapped.jar')
         log = file(PATH_BUILD + 'mapped/' + side + '.mapped.log')
     }
