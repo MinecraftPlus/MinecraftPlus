@@ -13,9 +13,6 @@ ext {
 }
 
 sourceSets {
-    main {
-        resources.srcDirs = ['src/main/internal', 'src/main/remote']
-    }
     remote {
         resources.srcDirs = ['src/main/remote']
     }
