@@ -1,4 +1,5 @@
 {
+	"project_version": "0.0.0-SNAPSHOT",
 	"minecraft_version": "1.15.2",
 	"java_target": 8,
 

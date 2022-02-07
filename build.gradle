@@ -26,15 +26,21 @@ repositories {
 dependencies {
 }
 
-group = "org.minecraftplus"
-version = "0.0.1-SNAPSHOT"
-
-
-
+// Project special customized gradle tasks
+import org.minecraftplus.gradle.tasks.Utils
 import org.minecraftplus.gradle.tasks.*
+import org.minecraftplus.gradle.tasks.assets.*
 import org.minecraftplus.gradle.tasks.jars.*
+import org.minecraftplus.gradle.tasks.mapping.*
 import org.minecraftplus.gradle.tasks.repo.*
-import net.minecraftforge.mcpconfig.tasks.*
+// Inherit some tasks from MinecraftForge
+import net.minecraftforge.mcpconfig.tasks.DownloadTool
+import net.minecraftforge.mcpconfig.tasks.DownloadLibraries
+import net.minecraftforge.mcpconfig.tasks.DownloadAssets
+import net.minecraftforge.mcpconfig.tasks.CreateFernflowerLibraries
+import net.minecraftforge.mcpconfig.tasks.ExtractNatives
+import net.minecraftforge.mcpconfig.tasks.FernflowerTask
+// ProPatcher to generate diffs
 import uk.jamierocks.propatcher.task.*
 
 org.minecraftplus.gradle.tasks.Utils.init()
@@ -53,6 +59,7 @@ project.ext {
 
     CONFIG = file(PATH_CONFIG + 'config.json').json
 
+    PROJECT_VERSION = CONFIG.get('project_version', '0.0.0-SNAPSHOT')
     MINECRAFT_VERSION = CONFIG.get('minecraft_version', '1.15.2')
     JAVA_TARGET = CONFIG.get('java_target', 8)
 
@@ -70,6 +77,10 @@ project.ext {
             args: ["--jar-in", "{input}", "--jar-out", "{output}", "--mapping-format", "tsrg2", "--mappings", "{mappings}", "--cfg", "{libraries}", "--deduce-param-names", "--dictionary", "{dictionary}", "--create-inits", "--fernflower-meta"]
     ])
 }
+
+group = "org.minecraftplus"
+version = PROJECT_VERSION
+
 
 java.toolchain {
     languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
@@ -650,7 +661,7 @@ task repositorySyncAll (group: 'mcplus repository') {
 sides.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
 
-    child.repoInitTask = task "repository${child.Name}Init"(type: org.minecraftplus.gradle.tasks.repo.InitRepository) {
+    child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
         group = 'mcplus repository ' + side
         dependsOn child.projectCreateTask
 
@@ -662,7 +673,7 @@ sides.each { side, child ->
      * Tasks for distro (client, server) only repositories
      */
     if (!side.equals('joined')) {
-        child.repoSyncTask = task "repository${child.Name}Sync"(type: org.minecraftplus.gradle.tasks.repo.SyncChanges) {
+        child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
             group = 'mcplus repository ' + side
             dependsOn child.repoInitTask
             dependsOn sides.joined.repoInitTask // depend both on JOINED
