@@ -1,5 +1,8 @@
-package net.minecraftforge.mcpconfig.tasks;
+package org.minecraftplus.gradle.tasks.jars
 
+import net.minecraftforge.mcpconfig.tasks.JarExec
+import net.minecraftforge.mcpconfig.tasks.ToolJarExec
+import net.minecraftforge.mcpconfig.tasks.Utils;
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 
