@@ -1,4 +1,4 @@
-package org.minecraftplus.gradle.tasks.jars
+package org.minecraftplus.gradle.tasks.assets
 
 import net.minecraftforge.mcpconfig.tasks.SingleFileOutput
 import org.minecraftplus.gradle.tasks.Utils
