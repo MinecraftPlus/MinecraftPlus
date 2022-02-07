@@ -359,7 +359,6 @@ sides.each { s, child ->
         group = 'mcplus process ' + s
         dependsOn tasks.downloadVersionLibraries
         dependsOn tasks.downloadVersionJson
-        dependsOn child.splitTask
 
         meta = tasks.downloadVersionJson.dest
         config = CONFIG
@@ -593,7 +592,6 @@ configs.each { side, child ->
             group = 'mcplus project ' + side
             dependsOn child.projectResetTask
             dependsOn child.makePatchesDirTask
-            dependsOn child.makePatchesTask
 
             target child.makePatchesTask.target
             patches child.makePatchesTask.patches
@@ -628,7 +626,7 @@ configs.each { side, child ->
             child.makePatchesTask.dependsOn(makeTask)
 
             def applyTaskName = 'project' + child.Name + "ApplyPatches" + taskSuffix.capitalize()
-            def applyTask = task "${applyTaskName}" (type: MakePatchesTask) {
+            def applyTask = task "${applyTaskName}" (type: ApplyPatchesTask) {
                 group = 'mcplus project ' + side
                 dependsOn child.projectResetTask
                 dependsOn child.makePatchesDirTask
@@ -658,12 +656,13 @@ task repositorySyncAll (group: 'mcplus repository') {
     description = 'Synchronizes distro repositories with JOINED'
 }
 
-sides.each { side, child ->
+configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
 
     child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
         group = 'mcplus repository ' + side
         dependsOn child.projectCreateTask
+        dependsOn child.applyPatchesTask
 
         target = project_dir
     }
@@ -672,7 +671,7 @@ sides.each { side, child ->
     /**
      * Tasks for distro (client, server) only repositories
      */
-    if (!side.equals('joined')) {
+    if (['client', 'server'].contains(side)) {
         child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
             group = 'mcplus repository ' + side
             dependsOn child.repoInitTask
