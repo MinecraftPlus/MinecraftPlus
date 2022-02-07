@@ -7,11 +7,7 @@ import java.util.zip.*
 
 import net.minecraftforge.srgutils.IMappingFile
 
-/*
- asdasd a
- */
 public class SplitJar extends DefaultTask {
-    /** Mapping file */
     @InputFile mappings
     @InputFile source
     @OutputFile slim
