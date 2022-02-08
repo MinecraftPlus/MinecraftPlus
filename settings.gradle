@@ -12,4 +12,4 @@ def addDirectory(path) {
 }
 
 addDirectory(new File(rootDir, 'projects/'))
-println('Projects: ' + projects)
+logger.lifecycle('Available projects: ' + projects)

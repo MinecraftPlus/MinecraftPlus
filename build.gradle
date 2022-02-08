@@ -429,14 +429,15 @@ sides.each { side, child ->
 /**
  * Create projects directory
  */
-task projectsRootCreate(type: Copy) {
+task projectsRootCreate {
     group = 'mcplus project'
-    description = 'Creates projects root directory with settings.gradle file'
+    description = 'Creates projects root directory'
 
-    from rootProject.file('templates/root_settings.gradle')
-    into file(PATH_PROJECTS)
-    rename { 'settings.gradle' }
-    expand([version: project.name])
+    doLast {
+        def directory = file(PATH_PROJECTS)
+        logger.info("Creating projects root directory {}", directory)
+        mkdir directory
+    }
 }
 
 /**
@@ -490,6 +491,7 @@ configs.each { side, child ->
         replace '{java_target}', JAVA_TARGET as String
         replace '{resources}', child.resources?: side
         replaceFile '{natives}', child.natives?: null
+        replace '{shade}', (!child.jsonlibs || side.equals('joined')) as String
 
         doFirst {
             if (child.sourceSets) {

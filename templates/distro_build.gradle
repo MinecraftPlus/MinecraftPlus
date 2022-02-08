@@ -4,9 +4,13 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'checkstyle'
+    id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
+}
 
 repositories {
     mavenCentral()
@@ -24,8 +28,13 @@ repositories {
     }
 }
 
-configurations.all {
-    transitive = false
+configurations {
+    all {
+        transitive = false
+    }
+    checkstyle {
+        transitive = true
+    }
 }
 
 dependencies {
@@ -38,7 +47,18 @@ ext {
     RESOURCES = '{resources}'
     ASSETS = project(":resources").PATH_BUILD_ASSETS
     NATIVES = {natives}
+    SHADE = {shade}
+    MAIN_CLASS = [
+            server: 'net.minecraft.server.MinecraftServer',
+            client: 'net.minecraft.client.main.Main',
+            joined: 'net.minecraft.client.main.Main'
+    ]
 }
+
+group = rootProject.group
+version = rootProject.version
+
+archivesBaseName = String.join('-', rootProject.name, project.name)
 
 sourceSets {
     main {
@@ -51,3 +71,70 @@ sourceSets {
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(JAVA)
+
+checkstyle {
+    toolVersion = '8.2'
+    configFile file(rootProject.PATH_CONFIG_CHECKSTYLE + DISTRO + "/checkstyle.xml")
+}
+
+jar {
+    manifest {
+        attributes 'version': project.version
+        attributes 'javaCompliance': project.targetCompatibility
+        attributes 'group': project.group
+        attributes 'Main-Class': MAIN_CLASS.get(DISTRO)
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    group = 'build'
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    group = 'build'
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+if (SHADE) {
+    apply plugin: 'com.github.johnrengelman.shadow'
+    shadowJar {
+        classifier = 'bundle'
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+        // Filter META-INF stuff from dependencies
+        exclude 'META-INF/versions/**'
+        exclude 'META-INF/maven/**'
+        exclude 'META-INF/org/**'
+        exclude 'META-INF/services/**'
+        exclude 'META-INF/eclipse.inf'
+        exclude 'META-INF/ECLIPSE_.*'
+        exclude 'META-INF/DEPENDENCIES**'
+        exclude 'META-INF/LICENSE**'
+        exclude 'META-INF/NOTICE**'
+    }
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+    if (SHADE) {
+        archives shadowJar
+    }
+}
+
+/*
+Miscellaneous, not much important
+ */
+
+// Group some task in more meaningful groups
+tasks.withType(Checkstyle) {
+    group = 'checkstyle'
+}
+tasks.findAll {it.name.containsIgnoreCase('eclipse') }.each { task ->
+    task.group = 'eclipse'
+}
+
