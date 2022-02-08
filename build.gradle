@@ -476,7 +476,7 @@ configs.each { side, child ->
     child.projectCreateTask = task "project${child.Name}Create"(type: CreateProjectWithTemplate) {
         group = 'mcplus project ' + side
         dependsOn tasks.projectsRootCreate
-        dependsOn(child.jsonlibs ? [tasks.downloadVersionJson, tasks.extractNatives] : [])
+        dependsOn(child.jsonlibs ? [tasks.downloadVersionJson] : [])
         mustRunAfter child.projectDeleteTask
 
         dest project_dir
@@ -513,8 +513,8 @@ configs.each { side, child ->
     if (child.sourceSets == null) {
         child.projectResetTask = task "project${child.Name}Reset" (type: ResetSourcesTask) {
             group = 'mcplus project ' + side
-            dependsOn child.projectCreateTask
             dependsOn child.decompileTask
+            dependsOn child.projectCreateTask
             mustRunAfter child.projectCreateTask
 
             rootZip child.decompileTask.dest
@@ -534,8 +534,8 @@ configs.each { side, child ->
             def taskName = 'project' + child.Name + "Reset" + taskSuffix.capitalize()
             def resetTask = task "${taskName}" (type: ResetSourcesTask) {
                 group = 'mcplus project ' + side
-                dependsOn child.projectCreateTask
                 dependsOn sourceTask
+                dependsOn child.projectCreateTask
                 mustRunAfter child.projectCreateTask
 
                 rootZip sourceTask.dest
@@ -593,7 +593,6 @@ configs.each { side, child ->
         child.applyPatchesTask = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
             group = 'mcplus project ' + side
             dependsOn child.projectResetTask
-            dependsOn child.makePatchesDirTask
 
             target child.makePatchesTask.target
             patches child.makePatchesTask.patches
