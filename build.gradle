@@ -686,3 +686,20 @@ configs.each { side, child ->
         tasks.repositorySyncAll.dependsOn(child.repoSyncTask)
     }
 }
+
+/**
+ * Overbuild everything
+ *
+ * Run this task to build everything needed to result in ready to go
+ * project with output binaries built
+ */
+task buildAll {
+    group = 'mcplus build'
+    description = 'Builds everything'
+    dependsOn tasks.build
+    dependsOn tasks.repositoryInitAll
+    dependsOn tasks.repositorySyncAll
+    project.subprojects.each {sub ->
+        dependsOn sub.getTasksByName('build', false)
+    }
+}
