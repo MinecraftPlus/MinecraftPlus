@@ -1,9 +1,9 @@
 package org.minecraftplus.gradle.tasks
 
 import groovy.json.JsonSlurper
-import org.minecraftplus.gradle.tasks.Utils
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*
+import org.minecraftplus.gradle.tasks.Utils
 
 import java.util.zip.ZipFile
 
@@ -50,41 +50,48 @@ class CreateProjectWithTemplate extends DefaultTask {
                 dir.mkdirs()
         }
 
-        new File(dest, 'settings.gradle').withWriter('UTF-8') { 
+        new File(dest, 'settings.gradle').withWriter('UTF-8') {
             it.write("rootProject.name = '${project.name}-${distro}'")
         }
-        
-        def data = template.text
+
+        // Create project build.gradle
+        new File(dest, 'build.gradle').withWriter('UTF-8') {
+            it.write(processTemplate(template.text))
+        }
+
+        // Create VCS .gitignore
+        if (gitignore != null) {
+            new File(dest, '.gitignore').withWriter('UTF-8') {
+                it.write(processTemplate(gitignore.text))
+            }
+        }
+    }
+
+    def processTemplate(data) {
+        data = data.replace('{distro}', distro)
+        data = data.replace('{projectname}', "${project.name}-${distro}")
+
+        for (def k : replace.keySet()) {
+            def v = replace.get(k)
+            data = data.replace(k, v ?: 'null')
+        }
+
         def libs = []
-        
         if (bundle != null) {
             def zf = new ZipFile(bundle)
             zf.entries().findAll{ it.name.equals('META-INF/libraries.list') }.each {
-                zf.getInputStream(it).text.split('\r?\n').each { line -> 
+                zf.getInputStream(it).text.split('\r?\n').each { line ->
                     libs.add("'" + line.split('\t')[1] + "'")
                 }
             }
         }
-        
         if (meta != null) {
             def json = new JsonSlurper().parse(meta)
             libs += json.libraries.findAll { Utils.testJsonRules(it.rules) }.collect { lib -> "'${lib.name}' " }.unique { a, b -> a <=> b }
         }
         libs += libraries
-
         data = data.replace('{libraries}', 'implementation ' + libs.join('\n    implementation '))
-        data = data.replace('{distro}', distro)
-        for (def k : replace.keySet()) {
-            def v = replace.get(k)
-            data = data.replace(k, v ?: 'null')
-        }
-        
-        new File(dest, 'build.gradle').withWriter('UTF-8') { it.write(data) }
 
-        // Create gitignore
-        if (gitignore != null) {
-            // TODO Maybe allow replacing here too?
-            new File(dest, '.gitignore').withWriter('UTF-8') { it.write(gitignore.text) }
-        }
+        return data
     }
 }
