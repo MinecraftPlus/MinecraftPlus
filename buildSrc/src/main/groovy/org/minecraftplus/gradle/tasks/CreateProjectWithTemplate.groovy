@@ -50,10 +50,6 @@ class CreateProjectWithTemplate extends DefaultTask {
                 dir.mkdirs()
         }
 
-        new File(dest, 'settings.gradle').withWriter('UTF-8') {
-            it.write("rootProject.name = '${project.name}-${distro}'")
-        }
-
         // Create project build.gradle
         new File(dest, 'build.gradle').withWriter('UTF-8') {
             it.write(processTemplate(template.text))
