@@ -12,7 +12,7 @@ rootProject.name = "minecraftplus"
 ext.projects = [] as Set
 
 def addDirectory(path) {
-    path.eachDir() {
+    path.eachDirMatch({!it.startsWith(".") }) {
         def relative = rootDir.toPath().relativize(it.toPath()).toFile()
         include relative.path
         project(':' + relative.path).name = it.name
