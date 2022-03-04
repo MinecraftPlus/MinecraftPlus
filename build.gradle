@@ -43,6 +43,7 @@ project.ext {
 
     PATH_CONFIG = file('config').absolutePath + '/'
     PATH_CONFIG_CHECKSTYLE = PATH_CONFIG + 'checkstyle/'
+    PATH_CONFIG_TEMPLATES = PATH_CONFIG + 'templates/'
 
     CONFIG = file(PATH_CONFIG + 'config.json').json
 
@@ -468,8 +469,8 @@ configs.each { side, child ->
 
         dest project_dir
         distro side
-        template rootProject.file('templates/' + child.projectTemplate)
-        gitignore rootProject.file('templates/' + 'distro_gitignore')
+        template project.file(PATH_CONFIG_TEMPLATES + child.projectTemplate)
+        gitignore project.file(PATH_CONFIG_TEMPLATES + 'distro_gitignore')
 
         if (child.jsonlibs)
             meta tasks.downloadVersionJson.dest
