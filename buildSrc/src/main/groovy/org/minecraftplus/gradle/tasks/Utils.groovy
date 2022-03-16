@@ -2,6 +2,9 @@ package org.minecraftplus.gradle.tasks
 
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import org.gradle.internal.impldep.org.testng.internal.YamlParser
+import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.Yaml
 
 import java.security.MessageDigest
 import java.util.regex.Pattern
@@ -25,6 +28,12 @@ class Utils {
 
         File.metaClass.getJson = { return delegate.exists() ? new JsonSlurper().parse(delegate) : [:] }
         File.metaClass.setJson = { json -> delegate.text = new JsonBuilder(json).toPrettyString() }
+
+        File.metaClass.getYaml = { return delegate.exists() ? new Yaml().load((delegate as File).newInputStream()) : [:] }
+        def options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.AUTO);
+        options.setPrettyFlow(true);
+        File.metaClass.setYaml = { yaml -> delegate.text = new Yaml(options).dump(yaml) }
 
         Map.metaClass.merge << { Map rhs -> merge(delegate, rhs) }
     }
@@ -68,7 +77,7 @@ class Utils {
         return 'unknown'
     }
 
-    static def readConfig(def cfg, def name, def defaults) {
+    static def toolConfig(def cfg, def name, def defaults) {
         def ent = cfg.get(name)
         def version = ent?.version ?: defaults.version ?: null
 

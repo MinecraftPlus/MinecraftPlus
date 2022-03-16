@@ -18,4 +18,5 @@ dependencies {
     implementation 'org.minecraftplus:srgprocessor:1.1.+'
 
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.0.0.202111291000-r'
+    implementation 'org.yaml:snakeyaml:1.30'
 }

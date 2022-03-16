@@ -1,0 +1,97 @@
+##
+# MinecraftPlus build main configuration
+#
+---
+project_version: 0.0.0-SNAPSHOT
+minecraft_version: 1.15.2
+java_target: 8
+
+##
+# TOOLS CONFIGURATION
+#
+# This section specifies tool versions and parameter mappings
+##
+tools:
+  merge:
+    version: net.minecraftforge:mergetool:1.1.3:fatjar
+    args: [
+      --client, "{client}",
+      --server, "{server}",
+      --ann,    "{annotations}",
+      --output, "{output}",
+      --inject, 'false'
+    ]
+    jvmargs: []
+  rename:
+    version: org.minecraftplus:vignette:0.3.0.2
+    args: [
+      "--jar-in", "{input}",
+      "--jar-out", "{output}",
+      "--mapping-format", "tsrg2",
+      "--mappings", "{mappings}",
+      "--cfg", "{libraries}",
+      "--deduce-param-names",
+      "--dictionary", "{dictionary}",
+      "--create-inits",
+      "--fernflower-meta"
+    ]
+  fernflower:
+    version: net.minecraftforge:forgeflower:1.5.498.22
+    args: [
+      "-din=1", # decompile inner classes
+      "-rbr=1", # hide bridge methods
+      "-dgs=1", # decompile generic signatures
+      "-asc=1", # encode non-ASCII characters in string and character literals as Unicode escapes
+      "-rsy=1", # hide synthetic class members
+      "-iec=1", # include entire classpath
+      "-isl=0", # inline simple lambdas
+      "-log=TRACE", "-cfg", "{libraries}",
+      "{input}", "{output}"
+    ]
+    jvmargs: ["-Xmx4G"]
+##
+# DISTRIBUTIONS CONFIGURATION
+#
+# This section specifies projects of each distribution
+##
+distributions:
+  joined:
+    libraries:
+      - net.minecraftforge:mergetool:1.1.3:api
+      - com.google.code.findbugs:jsr305:3.0.1
+    runnables:
+      client:
+        mainclass: 'net.minecraft.client.main.Main'
+        natives: true
+      server:
+        mainclass: 'net.minecraft.server.MinecraftServer'
+  resources:
+    dummy:
+      - dummy
+  client:
+    libraries:
+      - com.google.code.findbugs:jsr305:3.0.1
+    runnables:
+      client:
+       mainclass: 'net.minecraft.client.main.Main'
+       natives: true
+  server:
+    libraries:
+      - com.mojang:javabridge:1.0.22
+      - net.sf.jopt-simple:jopt-simple:5.0.3
+      - io.netty:netty-all:4.1.25.Final
+      - com.google.guava:guava:21.0
+      - org.apache.commons:commons-lang3:3.5
+      - commons-io:commons-io:2.5
+      - commons-codec:commons-codec:1.10
+      - com.mojang:brigadier:1.0.17
+      - com.mojang:datafixerupper:2.0.24
+      - com.google.code.gson:gson:2.8.0
+      - com.mojang:authlib:1.5.25
+      - it.unimi.dsi:fastutil:8.2.1
+      - org.apache.logging.log4j:log4j-api:2.8.1
+      - org.apache.logging.log4j:log4j-core:2.8.1
+      - com.google.code.findbugs:jsr305:3.0.1
+    runnables:
+      server:
+        mainclass: 'net.minecraft.server.MinecraftServer'

@@ -30,8 +30,8 @@ class CreateFernflowerLibraries extends SingleFileOutput {
                 }
             }
         }
-        
-        config.libraries.get(side)?.collect{ it.toMavenPath() }?.each { libs.add(new File(root, it)) }
+
+        config.distributions.get(side).libraries?.collect{ it.toMavenPath() }?.each { libs.add(new File(root, it)) }
         dest.text = libs.collect{ '-e=' + it.absolutePath }.join('\n')
     }
 }
