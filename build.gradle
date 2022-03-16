@@ -19,10 +19,10 @@ import org.minecraftplus.gradle.tasks.*
 import org.minecraftplus.gradle.tasks.assets.*
 import org.minecraftplus.gradle.tasks.jars.*
 import org.minecraftplus.gradle.tasks.mapping.*
+import org.minecraftplus.gradle.tasks.maven.*
 import org.minecraftplus.gradle.tasks.repo.*
 // Inherit some tasks from MinecraftForge
 import net.minecraftforge.mcpconfig.tasks.DownloadTool
-import net.minecraftforge.mcpconfig.tasks.DownloadLibraries
 import net.minecraftforge.mcpconfig.tasks.DownloadAssets
 import net.minecraftforge.mcpconfig.tasks.CreateFernflowerLibraries
 import net.minecraftforge.mcpconfig.tasks.ExtractNatives
@@ -140,16 +140,16 @@ task downloadVersionJars(group: 'mcplus download') {
 }
 
 /**
- * Download version libraries
+ * Download version libraries with extra added by project configuration
  */
 task downloadVersionLibraries(type: DownloadLibraries) {
     group = 'mcplus download'
     description = 'Downloads libraries needed by game version.'
     dependsOn tasks.downloadVersionJson
 
-    json = tasks.downloadVersionJson.dest
-    config = CONFIG // TODO check what we need
-    dest = file(PATH_BUILD_LIBRARIES)
+    json = tasks.downloadVersionJson.dest // TODO Need way to override library version with config? Can client libraries be "hardcoded" in config?
+    config = CONFIG
+    destination = file(PATH_BUILD_LIBRARIES)
 }
 
 /**
