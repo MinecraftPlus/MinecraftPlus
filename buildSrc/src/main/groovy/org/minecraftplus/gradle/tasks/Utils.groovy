@@ -36,6 +36,11 @@ class Utils {
         File.metaClass.setYaml = { yaml -> delegate.text = new Yaml(options).dump(yaml) }
 
         Map.metaClass.merge << { Map rhs -> merge(delegate, rhs) }
+        Map.metaClass.nested = { String key ->
+            def entry = delegate
+            key.split('\\.').each { entry = entry?.get(it) }
+            return entry
+        }
     }
 
     static def fillVariables(List<String> args, Map<String, Object> props) {
@@ -78,7 +83,7 @@ class Utils {
     }
 
     static def toolConfig(def cfg, def name, def defaults) {
-        def ent = cfg.get(name)
+        def ent = (cfg as Map).nested(name)
         def version = ent?.version ?: defaults.version ?: null
 
         return [
