@@ -20,6 +20,7 @@ import org.minecraftplus.gradle.tasks.assets.*
 import org.minecraftplus.gradle.tasks.jars.*
 import org.minecraftplus.gradle.tasks.mapping.*
 import org.minecraftplus.gradle.tasks.maven.*
+import org.minecraftplus.gradle.tasks.meta.*
 import org.minecraftplus.gradle.tasks.repo.*
 // Inherit some tasks from MinecraftForge
 import net.minecraftforge.mcpconfig.tasks.DownloadTool
@@ -38,6 +39,7 @@ project.ext {
     
     PATH_BUILD = file('build').absolutePath + '/'
     PATH_BUILD_LIBRARIES = PATH_BUILD + 'libraries/'
+    PATH_BUILD_META = PATH_BUILD + 'meta/'
 
     PATH_PROJECTS = file('projects').absolutePath + '/'
 
@@ -690,4 +692,25 @@ task buildAll {
     project.subprojects.each {sub ->
         dependsOn sub.getTasksByName('build', false)
     }
+}
+
+/**
+ * Generate JSON version manifest to pass it to game launcher
+ */
+task generateMetaVersionManifest(type: GenerateVersionManifest) {
+    group = 'mcplus meta'
+    description = "Generates version's launcher meta"
+
+    id "${project.name}-${project.version}"
+    inherit MINECRAFT_VERSION
+    type project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
+
+    ["client", "server"].each {name ->
+        def proj = project(":${name}")
+        def task = proj.ext.SHADE ? proj.tasks.shadowJar : proj.tasks.jar
+        dependsOn task // Depend on that task
+        download name, task.archiveFile.get().asFile
+    }
+
+    output file(PATH_BUILD_META)
 }
