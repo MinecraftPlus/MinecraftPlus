@@ -701,8 +701,8 @@ task generateMetaVersionManifest(type: GenerateVersionManifest) {
     group = 'mcplus meta'
     description = "Generates version's launcher meta"
 
+    parent tasks.downloadVersionJson.dest
     id "${project.name}-${project.version}"
-    inherit MINECRAFT_VERSION
     type project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
 
     ["client", "server"].each {name ->
