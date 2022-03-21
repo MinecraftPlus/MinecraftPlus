@@ -82,19 +82,6 @@ class Utils {
         return 'unknown'
     }
 
-    static def toolConfig(def cfg, def name, def defaults) {
-        def ent = (cfg as Map).nested(name)
-        def version = ent?.version ?: defaults.version ?: null
-
-        return [
-                version: version,
-                args: ent?.args ?: defaults.args ?: [],
-                jvmargs: ent?.jvmargs ?: defaults.jvmargs ?: [],
-                path: version?.toMavenPath(),
-                repo: ent?.repo ?: defaults.repo ?: 'https://maven.minecraftplus.org/'
-        ]
-    }
-
     static def merge(Map lhs, Map rhs) {
         return rhs.inject(lhs.clone()) { map, entry ->
             if (map[entry.key] instanceof Map && entry.value instanceof Map) {
@@ -106,5 +93,22 @@ class Utils {
             }
             return map
         }
+    }
+
+    static def toolConfig(def cfg, def name, def defaults) {
+        def ent = cfg.tools.get(name)
+        def version = ent?.version ?: defaults.version ?: null
+
+        return [
+                version: version,
+                args: ent?.args ?: defaults.args ?: [],
+                jvmargs: ent?.jvmargs ?: defaults.jvmargs ?: [],
+                path: version?.toMavenPath(),
+                repo: ent?.repo ?: defaults.repo ?: 'https://maven.minecraftplus.org/'
+        ]
+    }
+
+    static def distributionConfig(def cfg, def name) {
+        return cfg.distributions.get(name)
     }
 }
