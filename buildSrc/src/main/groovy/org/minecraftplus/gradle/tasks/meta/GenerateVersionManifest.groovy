@@ -7,7 +7,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.minecraftplus.gradle.tasks.Utils
 
@@ -29,7 +29,8 @@ class GenerateVersionManifest extends DefaultTask {
         downloadFiles.put(name, file)
     }
 
-    @OutputDirectory File output
+    @OutputFile File manifest
+    @OutputFile File manifestFull
 
     @TaskAction
     def exec() {
@@ -61,9 +62,9 @@ class GenerateVersionManifest extends DefaultTask {
         )
 
         // Short manifest, with inheritance
-        new File(output, id + '.json').text = JsonOutput.prettyPrint(json.toString())
+        manifest.text = JsonOutput.prettyPrint(json.toString())
         // Full manifest, with overrided values
-        new File(output, id + '_full.json').text = new JsonBuilder(parentManifest + json.getContent()).toPrettyString()
+        manifestFull.text = new JsonBuilder(parentManifest + json.getContent()).toPrettyString()
     }
 
     // See https://stackoverflow.com/a/43082685

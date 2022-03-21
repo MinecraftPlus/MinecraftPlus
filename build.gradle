@@ -119,6 +119,21 @@ task downloadVersionJson(type: Download) {
 }
 
 /**
+ * Generate JSON version manifest to pass it to game launcher
+ */
+task generateVersionJsonMeta(type: GenerateVersionManifest) {
+    group = 'mcplus meta'
+    description = "Generates version's launcher meta"
+
+    parent tasks.downloadVersionJson.dest
+    id "${project.name}-${project.version}"
+    type project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
+
+    manifest file(PATH_BUILD_META + id + '.json')
+    manifestFull file(PATH_BUILD_META + id + '_full.json')
+}
+
+/**
  * Download client and server JARs
  */
 task downloadVersionJars(group: 'mcplus download') {
@@ -694,23 +709,3 @@ task buildAll {
     }
 }
 
-/**
- * Generate JSON version manifest to pass it to game launcher
- */
-task generateMetaVersionManifest(type: GenerateVersionManifest) {
-    group = 'mcplus meta'
-    description = "Generates version's launcher meta"
-
-    parent tasks.downloadVersionJson.dest
-    id "${project.name}-${project.version}"
-    type project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
-
-    ["client", "server"].each {name ->
-        def proj = project(":${name}")
-        def task = proj.ext.SHADE ? proj.tasks.shadowJar : proj.tasks.jar
-        dependsOn task // Depend on that task
-        download name, task.archiveFile.get().asFile
-    }
-
-    output file(PATH_BUILD_META)
-}
