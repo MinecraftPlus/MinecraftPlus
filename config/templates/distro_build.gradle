@@ -1,6 +1,8 @@
 buildscript {
     dependencies {
-        classpath rootProject.project(':resources')
+        if (findProject(':resources') != null) {
+            classpath rootProject.project(':resources')
+        }
     }
 }
 
@@ -62,10 +64,12 @@ archivesBaseName = String.join('-', rootProject.name, project.name)
 
 sourceSets {
     main {
-        resources {
-            def resourceSet = project(":resources").sourceSets[RESOURCES as String].resources
-            srcDir resourceSet.srcDirs
-            setIncludes resourceSet.getIncludes()
+        if (findProject(':resources') != null) {
+            resources {
+                def resourceSet = project(":resources").sourceSets[RESOURCES as String].resources
+                srcDir resourceSet.srcDirs
+                setIncludes resourceSet.getIncludes()
+            }
         }
     }
 }
