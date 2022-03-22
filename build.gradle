@@ -709,3 +709,21 @@ task buildAll {
     }
 }
 
+
+subprojects { Project subproject ->
+
+    def distConfig = Utils.distributionConfig(CONFIG, subproject.name)
+
+    /**
+     * Configure downloadable artifact in JSON version manifest
+     */
+    if (distConfig.artifact?.downloadable) {
+        def artifactTask = distConfig.artifact.shaded ? subproject.tasks.shadowJar : subproject.tasks.jar
+        if (artifactTask) {
+            rootProject.tasks.generateVersionJsonMeta.configure {
+                download subproject.name, artifactTask.archiveFile.get().asFile
+                dependsOn artifactTask // Depend on that task
+            }
+        }
+    }
+}
