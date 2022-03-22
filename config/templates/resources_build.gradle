@@ -5,12 +5,18 @@ plugins {
     id 'org.minecraftplus.gradle.assetator' version '0.1.0'
 }
 
+import org.minecraftplus.gradle.tasks.Utils
+
+Utils.init() // Initialize special gradle utils
+
 ext {
+    CONFIG = rootProject.ext.CONFIG // Load and use config from root project
+    DIST_CONFIG = Utils.distributionConfig(CONFIG, project.name)
+
+    INDEX_ID = DIST_CONFIG.index
+
     PATH_BUILD = file('build').absolutePath + '/'
-
     PATH_BUILD_ASSETS = PATH_BUILD + 'assets/'
-
-    INDEX_ID = 'test'
 }
 
 sourceSets {

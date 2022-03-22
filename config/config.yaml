@@ -69,8 +69,7 @@ distributions:
       server:
         mainclass: 'net.minecraft.server.MinecraftServer'
   resources:
-    dummy:
-      - dummy
+    index: mcplus-0.0.0
   client:
     libraries:
       - com.google.code.findbugs:jsr305:3.0.1
