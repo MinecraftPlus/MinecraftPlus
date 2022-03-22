@@ -43,18 +43,19 @@ dependencies {
     {libraries}
 }
 
+import org.minecraftplus.gradle.tasks.Utils
+
+Utils.init() // Initialize special gradle utils
+
 ext {
-    DISTRO = '{distro}'
-    JAVA = {java_target}
-    RESOURCES = '{resources}'
-    ASSETS = project(":resources").PATH_BUILD_ASSETS
-    NATIVES = {natives}
-    SHADE = {shade}
-    MAIN_CLASS = [
-            server: 'net.minecraft.server.MinecraftServer',
-            client: 'net.minecraft.client.main.Main',
-            joined: 'net.minecraft.client.main.Main'
-    ]
+    CONFIG = rootProject.ext.CONFIG // Load and use config from root project
+    DIST_CONFIG = Utils.distributionConfig(CONFIG, project.name)
+
+    DISTRO = project.name
+    JAVA = CONFIG.java_target ?: 8
+    RESOURCES = DIST_CONFIG.resources ?: 'internal'
+    SHADE = DIST_CONFIG.artifact.shaded ?: false
+    MAIN_CLASS = DIST_CONFIG.artifact.mainclass ?: null
 }
 
 group = rootProject.group
@@ -86,7 +87,9 @@ jar {
         attributes 'version': project.version
         attributes 'javaCompliance': project.targetCompatibility
         attributes 'group': project.group
-        attributes 'Main-Class': MAIN_CLASS.get(DISTRO)
+        if (MAIN_CLASS) {
+            attributes 'Main-Class': MAIN_CLASS
+        }
     }
 }
 

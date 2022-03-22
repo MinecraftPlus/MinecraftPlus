@@ -62,12 +62,12 @@ distributions:
     artifact:
       shaded: true
       downloadable: false # If true, this artifact will be attached to version JSON manifest
-    runnables:
+    runnables: # This section specifies runnable parts (each main's) which is used only for testing purposes, not used in generating output artifact jar
       client:
-        mainclass: 'net.minecraft.client.main.Main'
+        mainclass: &client_mainclass 'net.minecraft.client.main.Main'
         natives: true
       server:
-        mainclass: 'net.minecraft.server.MinecraftServer'
+        mainclass: &server_mainclass 'net.minecraft.server.MinecraftServer'
   resources:
     index: mcplus-0.0.0
   client:
@@ -76,9 +76,10 @@ distributions:
     artifact:
       shaded: false
       downloadable: true # If true, this artifact will be attached to version JSON manifest
+      mainclass: *client_mainclass
     runnables:
       client:
-       mainclass: 'net.minecraft.client.main.Main'
+       mainclass: *client_mainclass
        natives: true
   server:
     libraries:
@@ -100,6 +101,7 @@ distributions:
     artifact:
       shaded: true
       downloadable: true # If true, this artifact will be attached to version JSON manifest
+      mainclass: *server_mainclass
     runnables:
       server:
-        mainclass: 'net.minecraft.server.MinecraftServer'
+        mainclass: *server_mainclass
