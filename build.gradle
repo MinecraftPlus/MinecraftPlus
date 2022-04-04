@@ -22,6 +22,7 @@ import org.minecraftplus.gradle.tasks.mapping.*
 import org.minecraftplus.gradle.tasks.maven.*
 import org.minecraftplus.gradle.tasks.meta.*
 import org.minecraftplus.gradle.tasks.repo.*
+import org.minecraftplus.gradle.tasks.RunApplication
 // Inherit some tasks from MinecraftForge
 import net.minecraftforge.mcpconfig.tasks.DownloadTool
 import net.minecraftforge.mcpconfig.tasks.DownloadAssets
@@ -723,6 +724,51 @@ subprojects { Project subproject ->
             rootProject.tasks.generateVersionJsonMeta.configure {
                 download subproject.name, artifactTask.archiveFile.get().asFile
                 dependsOn artifactTask // Depend on that task
+            }
+        }
+    }
+
+    /**
+     * Configure runnables for testing purposes
+     */
+    def prefix =  distConfig.runnables?.size() > 1 ? subproject.name : ''
+    distConfig.runnables?.each { name, config ->
+
+        def workingDir = subproject.file("build/run/${name}/")
+
+        def taskName = 'run' + prefix.capitalize() + name.capitalize()
+        def runTask = task "${taskName}" (type: RunApplication) {
+            group = "mcplus run"
+            description = "Run ${subproject.name} ${name} application"
+            dependsOn subproject.tasks.classes
+//            dependsOn rootProject.tasks.generateVersionJsonMeta
+//            dependsOn config.assets ? [project(":resources").tasks.generateAssets] : []
+
+            doFirst {
+                mkdir workingDir
+            }
+
+            type = config.type
+            classpath = subproject.sourceSets.main.runtimeClasspath
+            mainClass = config.mainclass
+            args = config.args?.application ?: []
+            jvmArgs = config.args?.jvm ?: []
+            workDir workingDir
+
+            if (config?.type == "CLIENT" ?: false) {
+                dependsOn rootProject.tasks.generateVersionJsonMeta
+                manifest rootProject.tasks.generateVersionJsonMeta.manifestFull
+            }
+
+            if (config?.assets ?: false) {
+                dependsOn project(":resources").tasks.generateAssets
+                assets new File(project(":resources").PATH_BUILD_ASSETS).absolutePath
+                index project(":resources").INDEX_ID
+            }
+
+            if (config?.natives ?: false) {
+                dependsOn rootProject.tasks.extractNatives
+                systemProperty "java.library.path", rootProject.tasks.extractNatives.dest.absolutePath
             }
         }
     }

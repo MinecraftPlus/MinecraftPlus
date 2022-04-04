@@ -63,11 +63,22 @@ distributions:
       shaded: true
       downloadable: false # If true, this artifact will be attached to version JSON manifest
     runnables: # This section specifies runnable parts (each main's) which is used only for testing purposes, not used in generating output artifact jar
-      client:
+      client: &client_runnable
+        type: CLIENT
         mainclass: &client_mainclass 'net.minecraft.client.main.Main'
+        args:
+          manifest: true # If true then application arguments were loaded from version manifest
+          jvm: [-Xms512m, -Xmx1G]
         natives: true
-      server:
+        assets: true
+      server: &server_runnable
+        type: SERVER
         mainclass: &server_mainclass 'net.minecraft.server.MinecraftServer'
+        args:
+          application: [
+            -universe, "worlds"
+          ]
+          jvm: [-Xms512m, -Xmx1G]
   resources:
     index: mcplus-0.0.0
   client:
@@ -78,9 +89,7 @@ distributions:
       downloadable: true # If true, this artifact will be attached to version JSON manifest
       mainclass: *client_mainclass
     runnables:
-      client:
-       mainclass: *client_mainclass
-       natives: true
+      client: *client_runnable
   server:
     libraries:
       - com.mojang:javabridge:1.0.22
@@ -103,5 +112,4 @@ distributions:
       downloadable: true # If true, this artifact will be attached to version JSON manifest
       mainclass: *server_mainclass
     runnables:
-      server:
-        mainclass: *server_mainclass
+      server: *server_runnable
