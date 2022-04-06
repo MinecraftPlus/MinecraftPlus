@@ -21,7 +21,9 @@ In the designs of these distributions, you MAY NOT introduce any extra code! Tha
 
 After successfully synchronizing with the JOINED distro, run the 'projectClientMakePatches' or 'projectServerMakePatches' task.
 
-This will generate a set of new patches that reflect the changes made to the game code. Then put them in the repository.
+### Resources
+
+Resources project store all resource files used in game, simultaneously keeping them in division into `internal` (stored in game JAR file) and `remote` (indexed, downloadable assets).
 
 
 ## Running
