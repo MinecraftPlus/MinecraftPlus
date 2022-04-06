@@ -19,20 +19,21 @@ This task will download all necessary files (tools, game, etc.) and decompile ga
 
 ## Distributions
 
-
-The project consists of three sub-projects in which the game code is stored. Each of the sub-projects corresponds to one distribution and allows you to build the appropriate part of the game, e.g. client or server.
+The project consists of four sub-projects in which the game code is stored. Each of the sub-projects corresponds to one distribution and allows you to build the appropriate part of the game, e.g. client or server.
 
 ### Joined
 
-The most important part (because the changes introduced as part of the project are made in it) is the JOINED distro. The other two distributions are based on it.
+The most important part (because the changes introduced as part of the project are made in it) is the `JOINED` distro. The other two distributions are based on it.
 
-The changes made to the code after pushing to the repository can be synchronized to the appropriate distribution using the 'repositoryClientSync' and 'repositoryServerSync' tasks.
+The changes made to the code after pushing to the repository can be synchronized to the appropriate distribution using the `repositoryClientSync` and `repositoryServerSync` tasks.
 
 ### Client and Server
 
-In the designs of these distributions, you MAY NOT introduce any extra code! That's what the JOINED distro is for.
+In the designs of these distributions, you MAY NOT introduce any extra code! That's what the `JOINED` distro is for.
 
-After successfully synchronizing with the JOINED distro, run the 'projectClientMakePatches' or 'projectServerMakePatches' task.
+After successfully synchronizing with the `JOINED` distro, run the `projectClientMakePatches` or `projectServerMakePatches` task.
+
+This will generate a set of new patches that reflect the changes made to the game code. Then generated patches can be put into the repository.
 
 ### Resources
 
