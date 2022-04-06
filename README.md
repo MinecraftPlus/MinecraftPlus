@@ -22,3 +22,25 @@ In the designs of these distributions, you MAY NOT introduce any extra code! Tha
 After successfully synchronizing with the JOINED distro, run the 'projectClientMakePatches' or 'projectServerMakePatches' task.
 
 This will generate a set of new patches that reflect the changes made to the game code. Then put them in the repository.
+
+
+## Running
+
+Running game client or server implementation from source code in project is automated by gradle tasks in group `mcplus run`.  These can be listed by command:
+
+```
+./gradlew tasks --group="mcplus run"
+
+------------------------------------------------------------
+Tasks runnable from root project 'minecraftplus'
+------------------------------------------------------------
+
+Mcplus run tasks
+----------------
+runClient - Run client client application
+runJoinedClient - Run joined client application
+runJoinedServer - Run joined server application
+runServer - Run server server application
+```
+
+Using these tasks is useful especially in running client side - which needs to pass needed arguments from version manifest (normally prepared by game launcher).
