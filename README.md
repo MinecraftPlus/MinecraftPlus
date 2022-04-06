@@ -1,8 +1,21 @@
 MinecraftPlus
 ===
 
-How to do:
-- The game code (client, server) **must be compatible with Eclipse JDT** because its core is used in Srg2Source
+This repository contains a specially crafted toolkit to modify the original version of Minecraft in a way that allows multiple contributors to collaborate.
+
+You can learn more about the project and its assumptions on [minecraftplus.org](https://minecraftplus.org).
+
+
+## How to start
+
+Clone this repository and run:
+
+```
+./gradlew buildAll
+```
+
+This task will download all necessary files (tools, game, etc.) and decompile game client and server. Decompiled source code will be stored in appropriate folder in `/projects` directory.
+
 
 ## Distributions
 
