@@ -7,7 +7,7 @@ repositories {
 
 dependencies {
     implementation 'org.yaml:snakeyaml:1.30' // Parse YML project config
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.0.0.202111291000-r' // Process git repositories
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.+' // Process git repositories
     implementation 'org.minecraftplus:srgutils:0.4.29' // Process SRG mappings
     implementation 'de.undercouch:gradle-download-task:4.1.1' // Bulk DownloadLibraries task
     implementation 'com.google.code.gson:gson:2.8.5'
