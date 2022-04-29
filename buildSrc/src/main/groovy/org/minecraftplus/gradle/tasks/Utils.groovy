@@ -111,4 +111,8 @@ class Utils {
     static def distributionConfig(def cfg, def name) {
         return cfg.distributions.get(name)
     }
+
+    static def versionInfo(def cfg) {
+        return cfg.get("version_info")
+    }
 }
