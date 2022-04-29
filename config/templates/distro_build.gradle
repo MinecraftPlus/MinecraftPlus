@@ -44,6 +44,9 @@ dependencies {
 }
 
 import org.minecraftplus.gradle.tasks.Utils
+import org.minecraftplus.gradle.tasks.meta.GenerateVersionInfo
+// Generating timestamp
+import java.time.ZonedDateTime
 
 Utils.init() // Initialize special gradle utils
 
@@ -69,6 +72,7 @@ sourceSets {
             resources {
                 def resourceSet = project(":resources").sourceSets[RESOURCES as String].resources
                 srcDir resourceSet.srcDirs
+                srcDir 'build/resources/generated'
                 setIncludes resourceSet.getIncludes()
             }
         }
@@ -133,8 +137,30 @@ artifacts {
     }
 }
 
+/**
+ * Generate version.json information file with project variables
+ */
+def genTask = task generateVersionJson (type: GenerateVersionInfo) {
+    def versionInfo = Utils.versionInfo(CONFIG)
+
+    id = versionInfo.id
+    release_name = versionInfo.name
+    release_target = versionInfo.release_target
+    world_version = versionInfo.world_version
+    protocol_version = versionInfo.protocol_version
+    pack_version = versionInfo.pack_version
+    // Update build timestamp only if in production mode - skip unnecessary resource processing
+    if (rootProject.ext.PRODUCTION_MODE)
+        build_time = ZonedDateTime.now()
+    stable = versionInfo.id.endsWith("SNAPSHOT") ? false : true
+
+    output = file('build/resources/generated/version.json')
+}
+tasks.processResources.dependsOn(genTask)
+
+
 /*
-Miscellaneous, not much important
+ * Miscellaneous, not much important
  */
 
 // Group some task in more meaningful groups
