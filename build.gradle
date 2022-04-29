@@ -765,7 +765,7 @@ subprojects { Project subproject ->
                 manifest rootProject.tasks.generateVersionJsonMeta.manifestFull
             }
 
-            if (config?.assets ?: false) {
+            if ((config?.assets ?: false) && findProject(':resources') != null) {
                 dependsOn project(":resources").tasks.generateAssets
                 assets new File(project(":resources").PATH_BUILD_ASSETS).absolutePath
                 index project(":resources").INDEX_ID
