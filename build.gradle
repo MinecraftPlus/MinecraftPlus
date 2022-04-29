@@ -67,6 +67,8 @@ project.ext {
             version: 'org.minecraftplus:vignette:0.3.0.0',
             args: ["--jar-in", "{input}", "--jar-out", "{output}", "--mapping-format", "tsrg2", "--mappings", "{mappings}", "--cfg", "{libraries}", "--deduce-param-names", "--dictionary", "{dictionary}", "--create-inits", "--fernflower-meta"]
     ])
+
+    PRODUCTION_MODE = project.hasProperty('ENV_MODE') && project.property('ENV_MODE') == 'PRODUCTION'
 }
 
 group = "org.minecraftplus"
@@ -78,6 +80,9 @@ java.toolchain {
 }
 
 
+if (PRODUCTION_MODE) {
+    logger.lifecycle('Project is in PRODUCTION environment mode!')
+}
 
 task downloadMergeTool(group: 'mcplus download', type: DownloadTool) {
     description = 'Downloads merge tool'
