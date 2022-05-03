@@ -670,6 +670,17 @@ configs.each { side, child ->
         // Do not overwrite previously generated configuration
         onlyIf { !output.exists()}
     }
+
+    child.smartExtractTask = task "project${child.Name}SmartExtractCommits" (type: SmartExtractCommits) {
+        group = 'mcplus project ' + side
+        dependsOn child.smartConfigTask
+
+        smartconfig = child.smartConfigTask.output
+        gitrepo = project_dir
+
+        output = new File(smartpatches_dir, '.smartlist')
+    }
+
 }
 
 
