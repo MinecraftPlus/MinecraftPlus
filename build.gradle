@@ -21,6 +21,7 @@ import org.minecraftplus.gradle.tasks.jars.*
 import org.minecraftplus.gradle.tasks.mapping.*
 import org.minecraftplus.gradle.tasks.maven.*
 import org.minecraftplus.gradle.tasks.meta.*
+import org.minecraftplus.gradle.tasks.smart.*
 import org.minecraftplus.gradle.tasks.repo.*
 import org.minecraftplus.gradle.tasks.RunApplication
 // Inherit some tasks from MinecraftForge
@@ -41,6 +42,7 @@ project.ext {
     PATH_BUILD = file('build').absolutePath + '/'
     PATH_BUILD_LIBRARIES = PATH_BUILD + 'libraries/'
     PATH_BUILD_META = PATH_BUILD + 'meta/'
+    PATH_BUILD_SMARTPATCHES = PATH_BUILD + 'smart/'
 
     PATH_PROJECTS = file('projects').absolutePath + '/'
 
@@ -576,6 +578,7 @@ task projectMakePatchesAll (group: 'mcplus project') {
 configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
+    def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES + side)
 
     child.makePatchesDirTask = task "project${child.Name}MakePatchesDir"() {
         group = 'mcplus project ' + side
@@ -651,6 +654,22 @@ configs.each { side, child ->
     }
     tasks.projectMakePatchesAll.dependsOn(child.makePatchesTask)
     tasks.projectApplyPatchesAll.dependsOn(child.applyPatchesTask)
+
+
+    /**
+     * SMART PATCHES
+     *
+     * It's used to generate one commit witch generated patches, from each commit in distribution branch.
+     */
+    child.smartConfigTask = task "project${child.Name}SmartPatchesConfig" (type: CreateSmartConfig) {
+        group = 'mcplus project ' + side
+
+        branch = 'development'
+        output = new File(project_dir, ".smartconfig")
+
+        // Do not overwrite previously generated configuration
+        onlyIf { !output.exists()}
+    }
 }
 
 
