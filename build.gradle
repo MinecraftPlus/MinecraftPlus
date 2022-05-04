@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'de.undercouch.download'
-    id 'uk.jamierocks.propatcher' version '2.0.1' apply false
+    id 'uk.jamierocks.propatcher' apply false
     id 'org.barfuin.gradle.taskinfo' version '1.0.5'
 }
 
@@ -681,6 +681,55 @@ configs.each { side, child ->
         output = new File(smartpatches_dir, '.smartlist')
     }
 
+    /**
+     * Smart patch make task.
+     * It depends on all generated tasks based on smartlist
+     */
+    child.smartMakeTask = task "project${child.Name}SmartMakePatches" () {
+        group = 'mcplus project ' + side
+        dependsOn child.decompileTask
+        dependsOn child.makePatchesDirTask
+        dependsOn child.smartExtractTask
+    }
+
+    /**
+     * Smartpatch generation tasks.
+     * For each of commit in smartlist one task is generated.
+     */
+    def smartlist = child.smartExtractTask.output
+    if (smartlist.exists()) {
+        def commits = []
+
+        // Load  generated list if exist
+        def json = smartlist.json
+        logger.trace("Smartlist found: {}/{}", json.info.branch, json.info.latest, json.toString())
+
+        // Load commits
+        commits = json.commits
+        if (!commits.isEmpty()) {
+            logger.trace("Loaded {} commits:", commits.size())
+
+            def prev = null
+            commits.each { commit ->
+                logger.trace(" # {} {}", commit.id, commit.message)
+
+                prev = task "smartpatch_${commit.id}" (type: SmartMakePatches) {
+                    group 'mcplus smartpatch ' + side
+                    dependsOn child.smartExtractTask
+                    if (prev) dependsOn prev
+
+                    branch = json.info.branch
+                    commitId = commit.id
+                    gitrepo = project_dir
+
+                    rootZip child.decompileTask.dest
+                    target new File(project_dir, 'src/main/java')
+                    patches new File(smartpatches_dir, commitId)
+                }
+                child.smartMakeTask.dependsOn(prev)
+            }
+        }
+    }
 }
 
 

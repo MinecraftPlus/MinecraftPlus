@@ -14,3 +14,5 @@ build/
 # Other
 bin/
 
+# Build process
+.smartconfig
