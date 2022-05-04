@@ -690,6 +690,14 @@ configs.each { side, child ->
     }
 
     /**
+     * Smart patch commit task.
+     * Applies all smart commits for given project side
+     */
+    child.smartCommitTask = task "smartpatch${child.Name}CommitPatches" () {
+        group = 'mcplus smartpatch ' + side
+    }
+
+    /**
      * Smartpatch generation tasks.
      * For each of commit in smartlist one task is generated.
      */
@@ -706,11 +714,25 @@ configs.each { side, child ->
         if (!commits.isEmpty()) {
             logger.trace("Loaded {} commits:", commits.size())
 
+            def smartCommitTask = null
             def smartPatchTask = null
             commits.each { commit ->
                 logger.trace(" # {} {}", commit.id, commit.message)
 
-                // Make and apply tasks
+                // Commit task
+                smartCommitTask = task "smartcommit_${commit.id}" (type: SmartCommitPatches) {
+                    group 'mcplus smartcommit ' + side
+                    if (smartCommitTask) dependsOn smartCommitTask
+
+                    branchName = json.info.branch
+                    commitId = commit.id
+                    commitMessage = commit.message
+                    projects = [ side ]
+                    gitRepo = projectDir
+                }
+                child.smartCommitTask.dependsOn(commitTask)
+
+                // Make tasks
                 if (child.sourceSets == null) {
                     smartPatchTask = task "smartpatch_${commit.id}" (type: SmartMakePatches) {
                         group 'mcplus smartpatch ' + side
@@ -726,6 +748,7 @@ configs.each { side, child ->
                         patches new File(smartpatches_dir, commitId)
                     }
                     child.smartMakeTask.dependsOn(smartPatchTask)
+                    smartCommitTask.patchSet(smartPatchTask.patches, smartPatchTask.target)
                 } else {
                     smartPatchTask = task "smartpatch_${commit.id}" {
                         group = 'mcplus smartpatch ' + side
@@ -754,9 +777,11 @@ configs.each { side, child ->
                             patches new File(patchesDirectory, taskSuffix)
                         }
                         smartPatchTask.dependsOn(subSmartPatchTask)
+                        smartCommitTask.patchSet(subSmartPatchTask.patches, subSmartPatchTask.target)
                     }
                 }
                 child.smartMakeTask.dependsOn(smartPatchTask)
+                smartCommitTask.dependsOn(smartPatchTask)
             }
         }
     }
