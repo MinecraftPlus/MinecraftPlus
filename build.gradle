@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'de.undercouch.download'
-    id 'uk.jamierocks.propatcher' version '2.0.1' apply false
+    id 'uk.jamierocks.propatcher' apply false
     id 'org.barfuin.gradle.taskinfo' version '1.0.5'
 }
 
@@ -21,6 +21,7 @@ import org.minecraftplus.gradle.tasks.jars.*
 import org.minecraftplus.gradle.tasks.mapping.*
 import org.minecraftplus.gradle.tasks.maven.*
 import org.minecraftplus.gradle.tasks.meta.*
+import org.minecraftplus.gradle.tasks.smart.*
 import org.minecraftplus.gradle.tasks.repo.*
 import org.minecraftplus.gradle.tasks.RunApplication
 // Inherit some tasks from MinecraftForge
@@ -37,10 +38,11 @@ org.minecraftplus.gradle.tasks.Utils.init()
 project.ext {
     PATH_SOURCE = file('src').absolutePath + '/'
     PATH_SOURCE_PATCHES = PATH_SOURCE + 'patches/'
-    
+
     PATH_BUILD = file('build').absolutePath + '/'
     PATH_BUILD_LIBRARIES = PATH_BUILD + 'libraries/'
     PATH_BUILD_META = PATH_BUILD + 'meta/'
+    PATH_BUILD_SMARTPATCHES = PATH_BUILD + 'smart/'
 
     PATH_PROJECTS = file('projects').absolutePath + '/'
 
@@ -576,6 +578,7 @@ task projectMakePatchesAll (group: 'mcplus project') {
 configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
+    def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES + side)
 
     child.makePatchesDirTask = task "project${child.Name}MakePatchesDir"() {
         group = 'mcplus project ' + side
@@ -651,6 +654,164 @@ configs.each { side, child ->
     }
     tasks.projectMakePatchesAll.dependsOn(child.makePatchesTask)
     tasks.projectApplyPatchesAll.dependsOn(child.applyPatchesTask)
+
+
+    /**
+     * SMART PATCHES
+     *
+     * It's used to generate one commit witch generated patches, from each commit in distribution branch.
+     */
+    child.smartConfigTask = task "smartpatch${child.Name}CreateConfig" (type: CreateSmartConfig) {
+        group = 'mcplus smartpatch ' + side
+        description = 'Create configuration for SmartPatch scripts'
+
+        branch = 'development'
+        output = new File(project_dir, ".smartconfig")
+
+        // Do not overwrite previously generated configuration
+        onlyIf { !output.exists()}
+    }
+
+    child.smartExtractTask = task "smartpatch${child.Name}ExtractCommits" (type: SmartExtractCommits) {
+        group = 'mcplus smartpatch ' + side
+        description = 'Extract commits list from the distribution repository'
+        dependsOn child.smartConfigTask
+
+        smartconfig = child.smartConfigTask.output
+        gitrepo = project_dir
+
+        output = new File(smartpatches_dir, '.smartlist')
+    }
+
+    /**
+     * Smart patch make task.
+     * It depends on all generated tasks based on smartlist
+     */
+    child.smartMakeTask = task "smartpatch${child.Name}MakePatches" () {
+        group = 'mcplus smartpatch ' + side
+        description = 'Make sets of patches of all sourcesets in project, one for each commit'
+        dependsOn child.smartExtractTask
+    }
+
+    /**
+     * Smart patch commit task.
+     * Applies all smart commits for given project side
+     */
+    child.smartCommitTask = task "smartpatch${child.Name}CommitPatches" () {
+        group = 'mcplus smartpatch ' + side
+        description = 'Commit all generated patch sets to the main project, with one commit per set'
+        dependsOn child.smartMakeTask
+    }
+
+    /**
+     * Smartpatch generation tasks.
+     * For each of commit in smartlist one task is generated.
+     */
+    def smartlist = child.smartExtractTask.output
+    if (smartlist.exists()) {
+        def commits = []
+
+        // Load  generated list if exist
+        def json = smartlist.json
+        logger.trace("Smartlist found: {}/{}", json.info.branch, json.info.latest, json.toString())
+
+        // Load commits
+        commits = json.commits
+        if (!commits.isEmpty()) {
+            logger.trace("Loaded {} commits:", commits.size())
+
+            def commitTask = null
+            commits.each { commit ->
+                logger.trace(" # {} {}", commit.id, commit.message)
+
+                // Commit task
+                commitTask = task "smartpatch${child.Name}Commit@${commit.id}" (type: SmartCommitPatches) {
+                    group 'mcplus smartpatch ' + side
+                    description = "Commit generated patch set of extracted commit ${commit.id}"
+                    if (commitTask) { dependsOn commitTask } // depend on previous commit
+
+                    // Do not duplicate commits
+                    onlyIf { !commit.applied ?: true == false }
+
+                    branchName = json.info.branch
+                    commitId = commit.id
+                    commitMessage = commit.message
+                    projects = [ side ]
+                    gitRepo = projectDir
+
+                    doLast {
+                        // Find staged commit in smartlist and mark as 'applied'
+                        def list = smartlist.json
+                        list.commits.find { it.id == commitId }.applied = true
+                        smartlist.json = list
+                    }
+                }
+                child.smartCommitTask.dependsOn(commitTask)
+
+                // Make tasks
+                def makeTask = null
+                if (child.sourceSets == null) {
+                    makeTask = task "smartpatch${child.Name}Make@${commit.id}" (type: SmartMakePatches) {
+                        group 'mcplus smartpatch ' + side
+                        description = "Make patch set of extracted commit ${commit.id}"
+                        dependsOn child.smartExtractTask
+                        dependsOn child.decompileTask
+
+                        branch = json.info.branch
+                        commitId = commit.id
+                        gitrepo = project_dir
+
+                        rootZip child.decompileTask.dest
+                        target new File(project_dir, 'src/main/java')
+                        patches new File(smartpatches_dir, commitId)
+                    }
+                    commitTask.patchSet(makeTask.patches, patches_dir)
+                } else {
+                    // Collective task for all source sets
+                    makeTask = task "smartpatch${child.Name}Make@${commit.id}" {
+                        group = 'mcplus smartpatch ' + side
+                        description = "Make patch set of extracted commit ${commit.id}"
+
+                        doLast {
+                            // Find commit in smartlist and mark as 'maked'
+                            def list = smartlist.json
+                            list.commits.find { it.id == commit.id }.maked = true
+                            smartlist.json = list
+                        }
+                    }
+
+                    def sourceSetMakeTask = null
+                    child.sourceSets.each {
+                        def taskSuffix = it.suffix as String
+                        def sourceTask = it.task as Task
+                        def outputDirectory = new File(project_dir, it.outputDir as String)
+                        def patchesDirectory = new File(smartpatches_dir, commit.id)
+
+                        def sourceSetTaskName = "smartpatch${child.Name}Make@" + commit.id + (taskSuffix ? "_" + taskSuffix : "")
+                        sourceSetMakeTask = task "${sourceSetTaskName}" (type: SmartMakePatches) {
+                            group 'mcplus smartpatch ' + side
+                            description = "Make patch set of extracted commit ${commit.id} for sourceset ${taskSuffix}"
+                            dependsOn child.smartExtractTask
+                            dependsOn sourceTask
+
+                            branch = json.info.branch
+                            commitId = commit.id
+                            gitrepo = project_dir
+
+                            rootZip sourceTask.dest
+                            target outputDirectory
+                            patches new File(patchesDirectory, taskSuffix)
+                        }
+                        makeTask.dependsOn(sourceSetMakeTask)
+                        commitTask.dependsOn(sourceSetMakeTask)
+                        commitTask.patchSet(sourceSetMakeTask.patches, new File(patches_dir, taskSuffix as String))
+                    }
+                }
+                child.smartMakeTask.dependsOn(makeTask)
+                commitTask.dependsOn(makeTask)
+            }
+        }
+    }
 }
 
 
