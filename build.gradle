@@ -724,11 +724,21 @@ configs.each { side, child ->
                     group 'mcplus smartcommit ' + side
                     if (smartCommitTask) dependsOn smartCommitTask
 
+                    // Do not duplicate commits
+                    onlyIf { !commit.applied ?: true == false }
+
                     branchName = json.info.branch
                     commitId = commit.id
                     commitMessage = commit.message
                     projects = [ side ]
                     gitRepo = projectDir
+
+                    doLast {
+                        // Find staged commit in smartlist and mark as 'applied'
+                        def list = smartlist.json
+                        list.commits.find { it.id == commitId }.applied = true
+                        smartlist.json = list
+                    }
                 }
                 child.smartCommitTask.dependsOn(commitTask)
 
