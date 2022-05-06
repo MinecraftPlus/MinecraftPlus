@@ -1,7 +1,9 @@
 package org.minecraftplus.gradle.tasks.smart
 
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.lib.RepositoryState
+import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -48,6 +50,8 @@ class SmartMakePatches extends MakePatchesTask {
             } finally {
                 git.checkout().setName(actualBranch).call();
             }
+        } catch (TransportException e) {
+            throw new GradleException("Cannot open git repository in '${gitrepo}'")
         } catch (Exception e) {
             throw e
         }

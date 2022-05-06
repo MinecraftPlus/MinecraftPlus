@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.IncorrectObjectTypeException
 import org.eclipse.jgit.errors.MissingObjectException
 import org.eclipse.jgit.errors.StopWalkException
+import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.RepositoryState
 import org.eclipse.jgit.revwalk.RevCommit
@@ -124,6 +125,8 @@ class SmartExtractCommits extends DefaultTask {
                     message: newcommit.shortMessage
                 ])
             }
+        } catch (TransportException e) {
+            throw new GradleException("Cannot open git repository in '${gitrepo}'")
         } catch (Exception e) {
             throw e
         }

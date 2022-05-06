@@ -3,8 +3,10 @@ package org.minecraftplus.gradle.tasks.smart
 import groovy.json.JsonBuilder
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.lib.RepositoryState
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Task
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -100,6 +102,8 @@ class SmartCommitPatches extends DefaultTask {
                     .setMessage(message)
                     .call()
             logger.lifecycle("Successfully committed changes to repository: '{} {}'", commit.name(), commit.getShortMessage())
+        } catch (TransportException e) {
+            throw new GradleException("Cannot open git repository in '${gitrepo}'")
         } catch (Exception e) {
             throw e
         }
