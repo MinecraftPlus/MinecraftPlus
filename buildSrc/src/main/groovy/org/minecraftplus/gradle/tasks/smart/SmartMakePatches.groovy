@@ -14,7 +14,7 @@ class SmartMakePatches extends MakePatchesTask {
 
     @Input String branch
     @Input String commitId
-    @InputDirectory File gitrepo
+    @Input gitrepo //TODO Annotating this as @InputDirectory causes wrong task dependency resolution with commitTask
 
     @TaskAction
     void doTask() {

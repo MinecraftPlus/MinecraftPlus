@@ -22,7 +22,7 @@ class SmartCommitPatches extends DefaultTask {
     @Input String commitId
     @Input String commitMessage
 
-    @InputDirectory File gitRepo
+    @Input gitRepo //TODO Annotating this as @InputDirectory causes wrong task dependency resolution with makeTask
     @Optional @Input String[] projects = null
 
     @Input
@@ -32,6 +32,7 @@ class SmartCommitPatches extends DefaultTask {
         patchSets.put(patches, dest)
 
         // Configure output to proper up-to-date checking
+        inputs.dir(patches)
         outputs.dir(dest)
     }
 

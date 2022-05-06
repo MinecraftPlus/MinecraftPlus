@@ -687,6 +687,7 @@ configs.each { side, child ->
      */
     child.smartMakeTask = task "smartpatch${child.Name}MakePatches" () {
         group = 'mcplus smartpatch ' + side
+        dependsOn child.smartExtractTask
     }
 
     /**
@@ -695,6 +696,7 @@ configs.each { side, child ->
      */
     child.smartCommitTask = task "smartpatch${child.Name}CommitPatches" () {
         group = 'mcplus smartpatch ' + side
+        dependsOn child.smartMakeTask
     }
 
     /**
