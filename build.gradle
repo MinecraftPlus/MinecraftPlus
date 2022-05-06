@@ -661,8 +661,8 @@ configs.each { side, child ->
      *
      * It's used to generate one commit witch generated patches, from each commit in distribution branch.
      */
-    child.smartConfigTask = task "project${child.Name}SmartPatchesConfig" (type: CreateSmartConfig) {
-        group = 'mcplus project ' + side
+    child.smartConfigTask = task "smartpatch${child.Name}CreateConfig" (type: CreateSmartConfig) {
+        group = 'mcplus smartpatch ' + side
 
         branch = 'development'
         output = new File(project_dir, ".smartconfig")
@@ -671,8 +671,8 @@ configs.each { side, child ->
         onlyIf { !output.exists()}
     }
 
-    child.smartExtractTask = task "project${child.Name}SmartExtractCommits" (type: SmartExtractCommits) {
-        group = 'mcplus project ' + side
+    child.smartExtractTask = task "smartpatch${child.Name}ExtractCommits" (type: SmartExtractCommits) {
+        group = 'mcplus smartpatch ' + side
         dependsOn child.smartConfigTask
 
         smartconfig = child.smartConfigTask.output
@@ -685,8 +685,8 @@ configs.each { side, child ->
      * Smart patch make task.
      * It depends on all generated tasks based on smartlist
      */
-    child.smartMakeTask = task "project${child.Name}SmartMakePatches" () {
-        group = 'mcplus project ' + side
+    child.smartMakeTask = task "smartpatch${child.Name}MakePatches" () {
+        group = 'mcplus smartpatch ' + side
     }
 
     /**
@@ -714,15 +714,14 @@ configs.each { side, child ->
         if (!commits.isEmpty()) {
             logger.trace("Loaded {} commits:", commits.size())
 
-            def smartCommitTask = null
-            def smartPatchTask = null
+            def commitTask = null
             commits.each { commit ->
                 logger.trace(" # {} {}", commit.id, commit.message)
 
                 // Commit task
-                smartCommitTask = task "smartcommit_${commit.id}" (type: SmartCommitPatches) {
-                    group 'mcplus smartcommit ' + side
-                    if (smartCommitTask) dependsOn smartCommitTask
+                commitTask = task "smartpatch${child.Name}Commit@${commit.id}" (type: SmartCommitPatches) {
+                    group 'mcplus smartpatch ' + side
+                    if (commitTask) { dependsOn commitTask } // depend on previous commit
 
                     // Do not duplicate commits
                     onlyIf { !commit.applied ?: true == false }
@@ -743,11 +742,12 @@ configs.each { side, child ->
                 child.smartCommitTask.dependsOn(commitTask)
 
                 // Make tasks
+                def makeTask = null
                 if (child.sourceSets == null) {
-                    smartPatchTask = task "smartpatch_${commit.id}" (type: SmartMakePatches) {
+                    makeTask = task "smartpatch${child.Name}Make@${commit.id}" (type: SmartMakePatches) {
                         group 'mcplus smartpatch ' + side
                         dependsOn child.smartExtractTask
-                        if (smartPatchTask) dependsOn smartPatchTask
+                        dependsOn child.decompileTask
 
                         branch = json.info.branch
                         commitId = commit.id
@@ -757,23 +757,29 @@ configs.each { side, child ->
                         target new File(project_dir, 'src/main/java')
                         patches new File(smartpatches_dir, commitId)
                     }
-                    child.smartMakeTask.dependsOn(smartPatchTask)
-                    smartCommitTask.patchSet(smartPatchTask.patches, smartPatchTask.target)
+                    commitTask.patchSet(makeTask.patches, patches_dir)
                 } else {
-                    smartPatchTask = task "smartpatch_${commit.id}" {
+                    // Collective task for all source sets
+                    makeTask = task "smartpatch${child.Name}Make@${commit.id}" {
                         group = 'mcplus smartpatch ' + side
-                        if (smartPatchTask) dependsOn smartPatchTask
+
+                        doLast {
+                            // Find commit in smartlist and mark as 'maked'
+                            def list = smartlist.json
+                            list.commits.find { it.id == commit.id }.maked = true
+                            smartlist.json = list
+                        }
                     }
 
-                    def subSmartPatchTask = null
+                    def sourceSetMakeTask = null
                     child.sourceSets.each {
                         def taskSuffix = it.suffix as String
                         def sourceTask = it.task as Task
                         def outputDirectory = new File(project_dir, it.outputDir as String)
                         def patchesDirectory = new File(smartpatches_dir, commit.id)
 
-                        def smartTaskName = 'smartpatch_' + commit.id + (taskSuffix ? "_" + taskSuffix : "")
-                        subSmartPatchTask = task "${smartTaskName}" (type: SmartMakePatches) {
+                        def sourceSetTaskName = "smartpatch${child.Name}Make@" + commit.id + (taskSuffix ? "_" + taskSuffix : "")
+                        sourceSetMakeTask = task "${sourceSetTaskName}" (type: SmartMakePatches) {
                             group 'mcplus smartpatch ' + side
                             dependsOn child.smartExtractTask
                             dependsOn sourceTask
@@ -786,12 +792,13 @@ configs.each { side, child ->
                             target outputDirectory
                             patches new File(patchesDirectory, taskSuffix)
                         }
-                        smartPatchTask.dependsOn(subSmartPatchTask)
-                        smartCommitTask.patchSet(subSmartPatchTask.patches, subSmartPatchTask.target)
+                        makeTask.dependsOn(sourceSetMakeTask)
+                        commitTask.dependsOn(sourceSetMakeTask)
+                        commitTask.patchSet(sourceSetMakeTask.patches, new File(patches_dir, taskSuffix as String))
                     }
                 }
-                child.smartMakeTask.dependsOn(smartPatchTask)
-                smartCommitTask.dependsOn(smartPatchTask)
+                child.smartMakeTask.dependsOn(makeTask)
+                commitTask.dependsOn(makeTask)
             }
         }
     }
