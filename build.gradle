@@ -919,7 +919,9 @@ subprojects { Project subproject ->
             mainClass = config.mainclass
             args = config.args?.application ?: []
             jvmArgs = config.args?.jvm ?: []
+
             workDir workingDir
+            versionType project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
 
             if (config?.type == "CLIENT" ?: false) {
                 dependsOn rootProject.tasks.generateVersionJsonMeta

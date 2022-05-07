@@ -14,6 +14,7 @@ class RunApplication extends JavaExec {
 
     @Input AppType type
     @Internal File workDir
+    @Internal String versionType
 
     @Internal manifest
     @Internal assets
@@ -42,7 +43,7 @@ class RunApplication extends JavaExec {
         setArgs(fillVariables(args, [
             'auth_player_name': 'minecraftplus',
             'version_name': 'minecraftplus',
-            'version_type': 'minecraftplus',
+            'version_type': versionType,
             'game_directory': workDir,
             'assets_root': assets,
             'assets_index_name': index,
