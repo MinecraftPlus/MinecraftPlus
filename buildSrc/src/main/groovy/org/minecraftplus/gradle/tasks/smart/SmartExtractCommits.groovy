@@ -80,17 +80,48 @@ class SmartExtractCommits extends DefaultTask {
             }
 
             // Prepare git log command to get commit list
-            def commitList = git.log()
+            def branchId = repository.resolve(actualBranch);
+            def logCommand = git.log()
+                .add(branchId)
                 .setRevFilter(new RevFilter() { // Find any commit that have parent
                     @Override
                     boolean include(RevWalk w, RevCommit c) throws StopWalkException, MissingObjectException, IncorrectObjectTypeException, IOException {
-                        return c.getParentCount() > 0
+                        logger.trace("Commit to include: {} {} ", c.name, c.shortMessage)
+
+                        if (c.getParentCount() == 0) {
+                            logger.trace(" - initial commit")
+                            return false // no initial commits
+                        }
+
+                        def revisions = []
+                        if (c.getParentCount() == 1) {
+                            logger.trace(" - normal parentness")
+                            revisions = new RevCommit[] { c }
+                        } else {
+                            revisions = c.getParents()
+                            logger.trace(" - parents: {}", revisions.collect { it.name })
+                        }
+
+                        def ignored = false
+                        def why = ""
+
+                        revisions.each { parent ->
+                            def branches = git.branchList().setContains(parent.name).call()
+                            ignored = branches.any { branch ->
+                                return config.ignored.any { String ign ->
+                                    why = ign
+                                    return branch.getName().endsWith(ign)
+                                }
+                            }
+                            if (ignored) return // dont continue if found ignored
+                        }
+                        logger.trace(" - is ignored: {} cause: [{}]",  ignored, why)
+
+                        return !ignored
                     }
 
                     @Override
-                    RevFilter clone() {
-                        return this
-                    }
+                    RevFilter clone() { return this }
                 })
 
             logger.lifecycle("Finding commit list:")
@@ -98,13 +129,13 @@ class SmartExtractCommits extends DefaultTask {
             if (config.lastcommit != null) {
                 def startRef = repository.resolve(config.lastcommit as String)
                 logger.lifecycle(" {} to {}[HEAD]", startRef.name, headRef.name)
-                commitList = commitList.addRange(startRef, headRef)
+                logCommand = logCommand.addRange(startRef, headRef)
             } else {
                 logger.lifecycle(" start to {}[HEAD]", headRef.name)
             }
 
             // Fetch list of new commits from repository
-            def revisions = commitList.call().asCollection().toList().reverse()
+            def revisions = logCommand.call().asCollection().toList().reverse()
             if (!revisions.isEmpty()) {
                 logger.lifecycle("Found {} new commits:", revisions.size())
                 revisions.each {

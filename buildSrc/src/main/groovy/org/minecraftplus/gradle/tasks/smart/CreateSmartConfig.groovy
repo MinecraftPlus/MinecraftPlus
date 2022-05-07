@@ -25,6 +25,7 @@ class CreateSmartConfig extends DefaultTask {
         json(
             branch: branch,
             lastcommit: lastcommit,
+            ignored: [ "master" ]
         )
 
         output.text = JsonOutput.prettyPrint(json.toString())
