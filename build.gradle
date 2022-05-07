@@ -860,8 +860,11 @@ configs.each { side, child ->
      * Tasks for distro (client, server) only repositories
      */
     if (['client', 'server'].contains(side)) {
+        def joinedConfig = Utils.distributionConfig(CONFIG, "joined")
+
         child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
             group = 'mcplus repository ' + side
+            description = "Synchronize repository with changes made in JOINED distribution"
             dependsOn child.repoInitTask
             dependsOn sides.joined.repoInitTask // depend both on JOINED
             mustRunAfter sides.joined.repoInitTask
@@ -869,6 +872,9 @@ configs.each { side, child ->
             target = child.repoInitTask.target
             remoteName = "joined"
             remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
+            remoteBranch = joinedConfig.repository.branches.master
+            localBranch = distConfig.repository.branches.synchronization
+            commitMessage = "Synchronisation commit of ${side.toUpperCase()}"
         }
         tasks.repositorySyncAll.dependsOn(child.repoSyncTask)
     }

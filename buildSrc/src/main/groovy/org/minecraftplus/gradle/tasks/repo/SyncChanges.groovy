@@ -2,6 +2,7 @@ package org.minecraftplus.gradle.tasks.repo
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeResult
+import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.lib.RepositoryState
 import org.eclipse.jgit.merge.ContentMergeStrategy
 import org.eclipse.jgit.merge.MergeStrategy
@@ -13,6 +14,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+
 /**
  * Fetches changes from upstream and merges it
  */
@@ -21,9 +23,9 @@ class SyncChanges extends DefaultTask {
     @InputDirectory File target
     @Input String remoteName
     @Input String remoteUrl
-    @Input String localBranch = "master"
+    @Input String localBranch = "synchronisation"
     @Input String remoteBranch = "master"
-    @Input String message = "Synchronisation"
+    @Input String commitMessage = "Synchronisation commit"
 
     @Internal
     File lockfile
@@ -35,11 +37,11 @@ class SyncChanges extends DefaultTask {
         try (Git git = Git.open(target)) {
             def repository = git.getRepository()
 
-            // Checkout local master branch
+            // Checkout local branch
             def checkout = git.checkout()
                     .setName(localBranch)
                     .call()
-            logger.lifecycle("Checked out local branch '{}'", localBranch)
+            logger.lifecycle("Checked out local branch '{}'", checkout.name)
 
             def remotes = git.remoteList().call()
             if (remotes.stream().map(RemoteConfig::getName).noneMatch(r -> r == remoteName)) {
@@ -98,7 +100,7 @@ class SyncChanges extends DefaultTask {
 
                     def merge = git.merge()
                             .include(remoteRef)
-                            .setMessage(message)
+                            .setMessage(commitMessage)
                             .setStrategy(mergeStrategy)
                             .setContentMergeStrategy(contentStrategy)
                             .setCommit(false) // need no commit to add lock file
@@ -155,6 +157,8 @@ class SyncChanges extends DefaultTask {
                 default:
                     throw new IllegalStateException("Cannot be here, ups!")
             }
+        } catch (TransportException e) {
+            throw new GradleException("Cannot open git repository in '${gitrepo}'")
         } catch (Exception e) {
             throw e
         }
