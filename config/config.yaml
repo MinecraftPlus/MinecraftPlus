@@ -88,8 +88,16 @@ distributions:
             -universe, "worlds"
           ]
           jvm: [-Xms512m, -Xmx1G]
+    repository:
+      branches: &repository_joined_branches
+        master: "master"                  # This branch is used to store working 'snapshots' of code
+        development: "development"        # This branch is used to work with code, from there are patches generated
+        buildscript: "buildscript"        # This branch is used to synchronize repository when buildscript changes (eg. distro templates)
   resources:
     index: mcplus-0.0.0
+    repository:
+      branches:
+        <<: *repository_joined_branches # These can be override below
   client:
     libraries:
       - com.google.code.findbugs:jsr305:3.0.1
@@ -99,6 +107,10 @@ distributions:
       mainclass: *client_mainclass
     runnables:
       client: *client_runnable
+    repository:
+      branches:
+        << : *repository_joined_branches # These can be override below
+        synchronization: "synchronization"
   server:
     libraries:
       - com.mojang:javabridge:1.0.22
@@ -122,3 +134,7 @@ distributions:
       mainclass: *server_mainclass
     runnables:
       server: *server_runnable
+    repository:
+      branches:
+        <<: *repository_joined_branches # These can be override below
+        synchronization: "synchronization"

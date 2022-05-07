@@ -842,6 +842,7 @@ task repositoryCaptureAll (group: 'mcplus repository') {
 
 configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
+    def distConfig = Utils.distributionConfig(CONFIG, side)
 
     child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
         group = 'mcplus repository ' + side
@@ -849,6 +850,9 @@ configs.each { side, child ->
         dependsOn child.applyPatchesTask
 
         target = project_dir
+        branchName = distConfig.repository.branches.master
+        commitMessage = "Initial commit of ${side.toUpperCase()}"
+        additionalBranches = branches.collect { type, name -> name }
     }
     tasks.repositoryInitAll.dependsOn(child.repoInitTask)
 
