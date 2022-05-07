@@ -833,6 +833,13 @@ task repositorySyncAll (group: 'mcplus repository') {
     description = 'Synchronizes distro repositories with JOINED'
 }
 
+/**
+ * Capture changes in distributions repositories
+ */
+task repositoryCaptureAll (group: 'mcplus repository') {
+    description = 'Captures changes in distributions repositories'
+}
+
 configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
 
@@ -861,6 +868,23 @@ configs.each { side, child ->
         }
         tasks.repositorySyncAll.dependsOn(child.repoSyncTask)
     }
+
+    /**
+     * Capture tasks for auto-merging changes made on development branch into master
+     */
+    child.repoCaptureTask = task "repository${child.Name}CaptureChanges" (type: CaptureChanges) {
+        group = 'mcplus repository ' + side
+        description = "Capture changes from '${sourceBranch}' into '${targetBranch}'"
+        dependsOn child.repoInitTask
+
+        target = child.repoInitTask.target
+
+        sourceBranch = "development"
+        targetBranch = "master"
+
+        message = "Capture commit of ${side.toUpperCase()}"
+    }
+    tasks.repositoryCaptureAll.dependsOn(child.repoCaptureTask)
 }
 
 /**
