@@ -670,11 +670,15 @@ configs.each { side, child ->
         group = 'mcplus smartpatch ' + side
         description = 'Create configuration for SmartPatch scripts'
 
-        branch = distConfig.repository.branches.release
-        output = new File(project_dir, ".smartconfig")
-
         // Do not overwrite previously generated configuration
         onlyIf { !output.exists()}
+
+        def branches = distConfig.repository.branches
+        branch = branches.release
+        output = new File(project_dir, ".smartconfig")
+
+        include = branches.find { it.key == 'release'}.collect { it.value }
+        ignore = branches.findAll { it.key != 'release'}.collect { it.value }
     }
 
     child.smartExtractTask = task "smartpatch${child.Name}ExtractCommits" (type: SmartExtractCommits) {

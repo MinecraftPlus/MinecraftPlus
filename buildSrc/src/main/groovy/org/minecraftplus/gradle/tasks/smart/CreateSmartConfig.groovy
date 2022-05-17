@@ -14,6 +14,9 @@ class CreateSmartConfig extends DefaultTask {
     @Input String branch
     @Optional @Input String lastcommit = null
 
+    @Optional @Input String include = ["master"]
+    @Optional @Input String ignore = []
+
     @Internal File output
 
     @TaskAction
@@ -25,7 +28,8 @@ class CreateSmartConfig extends DefaultTask {
         json(
             branch: branch,
             lastcommit: lastcommit,
-            ignored: [ "master" ]
+            include: include,
+            ignore: ignore
         )
 
         output.text = JsonOutput.prettyPrint(json.toString())
