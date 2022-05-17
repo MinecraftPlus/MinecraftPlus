@@ -90,7 +90,7 @@ distributions:
           jvm: [-Xms512m, -Xmx1G]
     repository:
       branches: &repository_joined_branches
-        master: "master"                  # This branch is used to store working 'snapshots' of code
+        release: "master"                 # This branch is used to store working 'snapshots' of code
         development: "development"        # This branch is used to work with code, from there are patches generated
         buildscript: "buildscript"        # This branch is used to synchronize repository when buildscript changes (eg. distro templates)
   resources:

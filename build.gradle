@@ -576,6 +576,7 @@ task projectMakePatchesAll (group: 'mcplus project') {
 }
 
 configs.each { side, child ->
+    def distConfig = Utils.distributionConfig(CONFIG, side)
     def project_dir = project.file(PATH_PROJECTS + side)
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
     def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES + side)
@@ -669,7 +670,7 @@ configs.each { side, child ->
         group = 'mcplus smartpatch ' + side
         description = 'Create configuration for SmartPatch scripts'
 
-        branch = 'development'
+        branch = distConfig.repository.branches.release
         output = new File(project_dir, ".smartconfig")
 
         // Do not overwrite previously generated configuration
