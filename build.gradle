@@ -853,8 +853,8 @@ task repositorySyncAll (group: 'mcplus repository') {
 /**
  * Capture changes in distributions repositories
  */
-task repositoryCaptureAll (group: 'mcplus repository') {
-    description = 'Captures changes in distributions repositories'
+task repositoryReleaseAll (group: 'mcplus repository') {
+    description = 'Releases changes in repositories from development into release branch'
 }
 
 configs.each { side, child ->
@@ -897,21 +897,22 @@ configs.each { side, child ->
     }
 
     /**
-     * Capture tasks for auto-merging changes made on development branch into master
+     * Release tasks for auto-merging changes made on development branch into release branch
      */
-    child.repoCaptureTask = task "repository${child.Name}CaptureChanges" (type: CaptureChanges) {
+    child.repoReleaseTask = task "repository${child.Name}Release" (type: ReleaseChanges) {
         group = 'mcplus repository ' + side
-        description = "Capture changes from '${sourceBranch}' into '${targetBranch}'"
+        description = "Releases changes from development into release branch"
         dependsOn child.repoInitTask
+        // TODO: Depends this on CHECKSTYLE if client or server side!
 
         target = child.repoInitTask.target
 
-        sourceBranch = "development"
-        targetBranch = "master"
+        sourceBranch = distConfig.repository.branches.development
+        targetBranch = distConfig.repository.branches.release
 
-        message = "Capture commit of ${side.toUpperCase()}"
+        message = "Release commit of ${side.toUpperCase()}"
     }
-    tasks.repositoryCaptureAll.dependsOn(child.repoCaptureTask)
+    tasks.repositoryReleaseAll.dependsOn(child.repoReleaseTask) // TODO Joined need to be released first and other need to be synced
 }
 
 /**

@@ -19,7 +19,7 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Captures changes from one branch and merges it on another within one repository
  */
-class CaptureChanges extends DefaultTask {
+class ReleaseChanges extends DefaultTask {
 
     @InputDirectory File target
 
