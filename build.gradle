@@ -861,15 +861,27 @@ configs.each { side, child ->
     def project_dir = project.file(PATH_PROJECTS + side)
     def distConfig = Utils.distributionConfig(CONFIG, side)
 
+    child.repoCreateTask = task "repository${child.Name}Create"(type: CreateRepository) {
+        group = 'mcplus repository ' + side
+        description = "Creates empty git repository in projects directory"
+        dependsOn child.projectRootTask
+
+        // Skip git repository creating when .git folder exists
+        onlyIf { !new File(target, '.git').exists() }
+
+        target = project_dir
+    }
+
     child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
         group = 'mcplus repository ' + side
-        dependsOn child.projectCreateTask
+        description = "Initiates repository with initial commit and starting branches"
+        dependsOn child.repoCreateTask
         dependsOn child.applyPatchesTask
 
         target = project_dir
-        branchName = distConfig.repository.branches.master
+        branchName = distConfig.repository.branches.release
         commitMessage = "Initial commit of ${side.toUpperCase()}"
-        additionalBranches = branches.collect { type, name -> name }
+        additionalBranches = distConfig.repository.branches.collect { type, name -> name }
     }
     tasks.repositoryInitAll.dependsOn(child.repoInitTask)
 
