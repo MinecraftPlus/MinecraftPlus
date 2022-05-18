@@ -446,8 +446,10 @@ task projectsRootCreate {
     group = 'mcplus project'
     description = 'Creates projects root directory'
 
+    def directory = file(PATH_PROJECTS)
+    onlyIf { !directory.exists()}
+
     doLast {
-        def directory = file(PATH_PROJECTS)
         logger.info("Creating projects root directory {}", directory)
         mkdir directory
     }
@@ -479,6 +481,18 @@ configs.each { side, child ->
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
 
 
+    child.projectRootTask = task "project${child.Name}RootCreate"(type: Delete) {
+        group = 'mcplus project ' + side
+        dependsOn tasks.projectsRootCreate
+
+        onlyIf { !project_dir.exists()}
+
+        doLast {
+            logger.info("Creating project ${side.toUpperCase()} directory {}", project_dir)
+            mkdir project_dir
+        }
+    }
+
     child.projectDeleteTask = task "project${child.Name}Delete"(type: Delete) {
         group = 'mcplus project ' + side
 
@@ -488,7 +502,7 @@ configs.each { side, child ->
 
     child.projectCreateTask = task "project${child.Name}Create"(type: CreateProjectWithTemplate) {
         group = 'mcplus project ' + side
-        dependsOn tasks.projectsRootCreate
+        dependsOn child.projectRootTask
         dependsOn(child.jsonlibs ? [tasks.downloadVersionJson] : [])
         mustRunAfter child.projectDeleteTask
 
@@ -527,8 +541,7 @@ configs.each { side, child ->
         child.projectResetTask = task "project${child.Name}Reset" (type: ResetSourcesTask) {
             group = 'mcplus project ' + side
             dependsOn child.decompileTask
-            dependsOn child.projectCreateTask
-            mustRunAfter child.projectCreateTask
+            dependsOn child.projectRootTask
 
             rootZip child.decompileTask.dest
             target new File(project_dir, 'src/main/java')
@@ -548,8 +561,7 @@ configs.each { side, child ->
             def resetTask = task "${taskName}" (type: ResetSourcesTask) {
                 group = 'mcplus project ' + side
                 dependsOn sourceTask
-                dependsOn child.projectCreateTask
-                mustRunAfter child.projectCreateTask
+                dependsOn child.projectRootTask
 
                 rootZip sourceTask.dest
                 target outputDirectory
