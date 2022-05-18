@@ -874,6 +874,19 @@ configs.each { side, child ->
     tasks.repositoryInitAll.dependsOn(child.repoInitTask)
 
     /**
+     * Checks if repository is in clean state and checked out on development branch
+     */
+    child.repoCheckStateTask = task "repository${child.Name}CheckState"(type: CheckRepositoryState) {
+        group = 'mcplus repository ' + side
+        dependsOn child.repoCreateTask
+
+        target = child.repoCreateTask.target
+        isClean = true
+        containsBranch = [distConfig.repository.branches.development, distConfig.repository.branches.buildscript]
+        checkedOn = distConfig.repository.branches.development
+    }
+
+    /**
      * Tasks for distro (client, server) only repositories
      */
     if (['client', 'server'].contains(side)) {
@@ -894,6 +907,39 @@ configs.each { side, child ->
             commitMessage = "Synchronisation commit of ${side.toUpperCase()}"
         }
         tasks.repositorySyncAll.dependsOn(child.repoSyncTask)
+    }
+
+    if (['joined'].contains(side)) {
+
+        /**
+         * Supporting task for buildscript changes commiting
+         */
+        def checkoutTask = task "repository${child.Name}CheckoutBuildscript"(type: CheckoutBranch) {
+            group = 'mcplus repository ' + side
+            dependsOn child.repoInitTask
+            dependsOn child.repoCheckStateTask
+
+            target = child.repoInitTask.target
+            branchName = distConfig.repository.branches.buildscript
+        }
+
+        /**
+         * Task used to update buildscript after changes in template or project create task.
+         * It commits buildscript update on 'buildscript' project type branch then merges it to 'development' type branch
+         */
+        child.repoBuildUpdateTask = task "repository${child.Name}BuildscriptUpdate"(type: UpdateBuildscript) {
+            group = 'mcplus repository ' + side
+            description = "Updates distro buildscript and commits changes into repository"
+            dependsOn child.repoCreateTask
+            dependsOn checkoutTask
+            dependsOn child.projectCreateTask
+            child.projectCreateTask.mustRunAfter(checkoutTask)
+
+            target = child.repoCreateTask.target
+            developmentBranch = distConfig.repository.branches.development
+            buildscriptBranch = distConfig.repository.branches.buildscript
+            updateMessage = "Apply buildscript changes"
+        }
     }
 
     /**
