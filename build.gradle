@@ -906,17 +906,18 @@ configs.each { side, child ->
 
         child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
             group = 'mcplus repository ' + side
-            description = "Synchronize repository with changes made in JOINED distribution"
+            description = "Fetches changes made in JOINED distribution and merges into development branch"
             dependsOn child.repoInitTask
-            dependsOn sides.joined.repoInitTask // depend both on JOINED
-            mustRunAfter sides.joined.repoInitTask
+            dependsOn sides.joined.repoInitTask // sync with these
+            dependsOn child.repoCheckStateTask
 
             target = child.repoInitTask.target
             remoteName = "joined"
             remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
-            remoteBranch = joinedConfig.repository.branches.master
-            localBranch = distConfig.repository.branches.synchronization
-            commitMessage = "Synchronisation commit of ${side.toUpperCase()}"
+            remoteBranch = joinedConfig.repository.branches.release
+            synchronizationBranch = distConfig.repository.branches.synchronization
+            developmentBranch = distConfig.repository.branches.development
+            updateMessage = "Apply synchronization changes"
         }
         tasks.repositorySyncAll.dependsOn(child.repoSyncTask)
     }
