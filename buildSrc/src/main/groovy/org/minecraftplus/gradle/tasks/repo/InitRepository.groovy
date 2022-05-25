@@ -12,7 +12,7 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Initializes project repository
  */
-class InitRepository extends DefaultTask {
+class InitRepository extends AbstractGitRepositoryTask {
 
     @InputDirectory File target
     @Input String branchName = "master"
@@ -26,6 +26,7 @@ class InitRepository extends DefaultTask {
 
         // Check if repository is already created
         try (Git git = Git.open(target)) {
+            def repository = git.getRepository()
             logger.lifecycle(" - repository exist", target)
 
             //Check if repository already contains all needed branches
@@ -43,46 +44,41 @@ class InitRepository extends DefaultTask {
                     return true
                 } else {
                     missing.add(bname)
-                    return false
                 }
             }
 
-            // If any branch is missing throw an exception because it can be fixed only manually yet
-            if (!allPresent) {
+            // If there is any branch in repository and any needed branch is missing throw an exception
+            //  because it can be fixed only manually yet
+            if (!branches.isEmpty() && !allPresent) {
                 throw new RefNotFoundException("A branch is missing in repository: ${missing}")
             }
 
-            return // Nothing to do
-        } catch (RepositoryNotFoundException e) {}
+            // Try to stage all files and create initial commit
+            try {
+                git.add()
+                        .addFilepattern(".")
+                        .call()
+                logger.lifecycle("Staged all files into repository")
 
-        logger.lifecycle(" - repository not exist, creating fresh one", target)
-        try (Git git = Git.init()
-                .setDirectory(target)
-                .setInitialBranch(branchName)
-                .call()
-        ) {
-            def repository = git.getRepository()
+                git.commit()
+                        .setAll(true)
+                        .setMessage(commitMessage)
+                        .call()
+                logger.lifecycle("Committed changes to repository")
 
-            logger.lifecycle("Created repository")
-
-            git.add()
-                    .addFilepattern(".")
-                    .call()
-            logger.lifecycle("Staged all files into repository")
-
-            git.commit()
-                    .setAll(true)
-                    .setMessage(commitMessage)
-                    .call()
-            logger.lifecycle("Committed changes to repository")
-
-            // Create additional branch for other purposes
-            additionalBranches.each { bName ->
-                try {
-                    def bRef = git.branchCreate().setName(bName).call()
-                    logger.lifecycle("Created additional branch: {}", bRef.name)
-                } catch (RefAlreadyExistsException e) {}
+                // Create additional branches for other purposes
+                additionalBranches.each { bName ->
+                    try {
+                        def bRef = git.branchCreate().setName(bName).call()
+                        logger.lifecycle("Created branch: {}", bRef.name)
+                    } catch (RefAlreadyExistsException e) {}
+                }
+            } finally {
+                checkoutBranch(git, branchName, true)
             }
+
+        } catch (RepositoryNotFoundException e) {
+            throw new RepositoryNotFoundException("Cannot open repository in: ${target}")
         }
     }
 }

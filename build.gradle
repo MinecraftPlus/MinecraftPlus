@@ -879,7 +879,7 @@ configs.each { side, child ->
         dependsOn child.applyPatchesTask
 
         target = project_dir
-        branchName = distConfig.repository.branches.release
+        branchName = distConfig.repository.branches.development
         commitMessage = "Initial commit of ${side.toUpperCase()}"
         additionalBranches = distConfig.repository.branches.collect { type, name -> name }
     }

@@ -1,7 +1,9 @@
 package org.minecraftplus.gradle.tasks.repo
 
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.errors.RefNotFoundException
 import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.eclipse.jgit.lib.Constants
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.TaskAction
@@ -27,10 +29,11 @@ class CreateRepository extends DefaultTask {
             }
             logger.lifecycle(" - contains branches {}", branches)
 
+            return
         } catch (RepositoryNotFoundException e) {}
 
         logger.lifecycle(" - repository not exist, creating fresh one", target)
-        try (Git git = Git.init().setDirectory(target).call()
+        try (Git git = Git.init().setDirectory(target).setInitialBranch("root").call()
         ) {
             logger.lifecycle("Created repository")
         }
