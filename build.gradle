@@ -597,6 +597,7 @@ configs.each { side, child ->
         child.makePatchesTask = task "project${child.Name}MakePatches"(type: MakePatchesTask) {
             group = 'mcplus project ' + side
             dependsOn child.decompileTask
+            dependsOn child.projectCreateTask
             dependsOn child.makePatchesDirTask
 
             rootZip child.decompileTask.dest
@@ -606,6 +607,7 @@ configs.each { side, child ->
 
         child.applyPatchesTask = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
             group = 'mcplus project ' + side
+            dependsOn child.projectCreateTask
             dependsOn child.projectResetTask
 
             target child.makePatchesTask.target
@@ -632,6 +634,7 @@ configs.each { side, child ->
             def makeTask = task "${makeTaskName}" (type: MakePatchesTask) {
                 group = 'mcplus project ' + side
                 dependsOn sourceTask
+                dependsOn child.projectCreateTask
                 dependsOn child.makePatchesDirTask
 
                 rootZip sourceTask.dest
@@ -643,6 +646,7 @@ configs.each { side, child ->
             def applyTaskName = 'project' + child.Name + "ApplyPatches" + taskSuffix.capitalize()
             def applyTask = task "${applyTaskName}" (type: ApplyPatchesTask) {
                 group = 'mcplus project ' + side
+                dependsOn child.projectCreateTask
                 dependsOn child.projectResetTask
                 dependsOn child.makePatchesDirTask
 
