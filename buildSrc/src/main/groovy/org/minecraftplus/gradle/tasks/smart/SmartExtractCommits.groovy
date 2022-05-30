@@ -85,39 +85,77 @@ class SmartExtractCommits extends DefaultTask {
                 .add(branchId)
                 .setRevFilter(new RevFilter() { // Find any commit that have parent
                     @Override
-                    boolean include(RevWalk w, RevCommit c) throws StopWalkException, MissingObjectException, IncorrectObjectTypeException, IOException {
-                        logger.trace("Commit to include: {} {} ", c.name, c.shortMessage)
+                    boolean include(RevWalk walker, RevCommit commit) throws StopWalkException, MissingObjectException, IncorrectObjectTypeException, IOException {
+                        logger.trace("Commit to include: {} {} ", commit.name, commit.shortMessage)
 
-                        if (c.getParentCount() == 0) {
+                        if (commit.getParentCount() == 0) {
                             logger.trace(" - initial commit")
                             return false // no initial commits
                         }
-
-                        def revisions = []
-                        if (c.getParentCount() == 1) {
+                        else if (commit.getParentCount() == 1) {
                             logger.trace(" - normal parentness")
-                            revisions = new RevCommit[] { c }
-                        } else {
-                            revisions = c.getParents()
-                            logger.trace(" - parents: {}", revisions.collect { it.name })
-                        }
+                            logger.trace(" - testing commit: {}", commit.name)
 
-                        def ignored = false
-                        def why = ""
-
-                        revisions.each { parent ->
-                            def branches = git.branchList().setContains(parent.name).call()
-                            ignored = branches.any { branch ->
-                                return config.ignored.any { String ign ->
-                                    why = ign
-                                    return branch.getName().endsWith(ign)
-                                }
+                            def branches = git.branchList().setContains(commit.name).call().collect { ref ->
+                                ref.name.split('/')[2..-1].join('/') // skip /ref/heads
                             }
-                            if (ignored) return // dont continue if found ignored
-                        }
-                        logger.trace(" - is ignored: {} cause: [{}]",  ignored, why)
+                            logger.trace("  - branches containing commit: {}", branches)
 
-                        return !ignored
+                            def drop = branches.any { bName ->
+                                logger.trace("   - testing branch name: {}", bName)
+                                def ignore = config.ignore.any { String ign ->
+                                    return bName.endsWith(ign)
+                                }
+                                if (ignore) {
+                                    logger.trace("    - in ignored branch!")
+                                }
+                                return ignore
+                            }
+
+                            logger.trace(" - include commit: {}", !drop)
+                            return !drop
+                        } else {
+                            def parents = commit.getParents()
+                            logger.trace(" - parents: {}", parents.collect { it.name })
+
+                            def drop = parents.any { parent ->
+                                logger.trace("  - testing parent: {}", parent.name)
+
+                                def branches = git.branchList().setContains(parent.name).call().collect { ref ->
+                                    ref.name.split('/')[2..-1].join('/') // skip /ref/heads
+                                }
+                                logger.trace("    - branches containing commit: {}", branches)
+
+                                def include = branches.any { bName ->
+                                    logger.trace("     - testing branch name: {}", bName)
+                                    def include = config.include.any { String incl ->
+                                        return bName.endsWith(incl)
+                                    }
+                                    if (include) {
+                                        logger.trace("      - in included branch!")
+                                    }
+                                    return include
+                                }
+
+                                def drop = branches.any { bName ->
+                                    logger.trace("     - testing branch name: {}", bName)
+                                    def ignore = config.ignore.any { String ign ->
+                                        return bName.endsWith(ign)
+                                    }
+                                    if (ignore) {
+                                        logger.trace("      - in ignored branch!")
+                                    }
+                                    return ignore
+                                }
+
+                                logger.trace("     - include: {}", include)
+                                logger.trace("     -    drop: {}", drop)
+                                return drop || !include
+                            }
+
+                            logger.trace(" - include commit: {}", !drop)
+                            return !drop
+                        }
                     }
 
                     @Override
