@@ -33,7 +33,7 @@ class InitRepository extends AbstractGitRepositoryTask {
             def branches = git.branchList().call().collect { ref ->
                 ref.name.split('/').last()
             }
-            logger.lifecycle(" - contains branches {}", branches)
+            logger.lifecycle(" - contains {} branches {}", branches.size, branches)
 
             def needed = additionalBranches.plus(branchName).toUnique().toList()
             def missing = []
@@ -53,28 +53,35 @@ class InitRepository extends AbstractGitRepositoryTask {
                 throw new RefNotFoundException("A branch is missing in repository: ${missing}")
             }
 
-            // Try to stage all files and create initial commit
-            try {
-                git.add()
-                        .addFilepattern(".")
-                        .call()
-                logger.lifecycle("Staged all files into repository")
+            if (branches.isEmpty()) {
+                logger.lifecycle("Repository need initialization cause no branches found", branches, branches.size())
 
-                git.commit()
-                        .setAll(true)
-                        .setMessage(commitMessage)
-                        .call()
-                logger.lifecycle("Committed changes to repository")
+                // Try to stage all files and create initial commit
+                try {
+                    git.add()
+                            .addFilepattern(".")
+                            .call()
+                    logger.lifecycle("Staged all files into repository")
 
-                // Create additional branches for other purposes
-                additionalBranches.each { bName ->
-                    try {
-                        def bRef = git.branchCreate().setName(bName).call()
-                        logger.lifecycle("Created branch: {}", bRef.name)
-                    } catch (RefAlreadyExistsException e) {}
+                    git.commit()
+                            .setAll(true)
+                            .setMessage(commitMessage)
+                            .call()
+                    logger.lifecycle("Committed changes to repository")
+
+                    // Create additional branches for other purposes
+                    additionalBranches.each { bName ->
+                        try {
+                            def bRef = git.branchCreate().setName(bName).call()
+                            logger.lifecycle("Created branch: {}", bRef.name)
+                        } catch (RefAlreadyExistsException e) {
+                        }
+                    }
+                } finally {
+                    checkoutBranch(git, branchName, true)
                 }
-            } finally {
-                checkoutBranch(git, branchName, true)
+            } else {
+                logger.lifecycle("Repository already initialized")
             }
 
         } catch (RepositoryNotFoundException e) {

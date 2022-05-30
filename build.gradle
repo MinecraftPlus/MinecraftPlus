@@ -837,10 +837,24 @@ configs.each { side, child ->
 
 
 /**
+ * Create repositories
+ */
+task repositoryCreateAll (group: 'mcplus repository') {
+    description = 'Creates repositories for all projects'
+}
+
+/**
  * Init repositories
  */
 task repositoryInitAll (group: 'mcplus repository') {
     description = 'Inits repositories in all projects'
+}
+
+/**
+ * Check repositories
+ */
+task repositoryCheckAll (group: 'mcplus repository') {
+    description = 'Checks state of all projects repositories'
 }
 
 /**
@@ -871,6 +885,7 @@ configs.each { side, child ->
 
         target = project_dir
     }
+    tasks.repositoryCreateAll.dependsOn(child.repoCreateTask)
 
     child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
         group = 'mcplus repository ' + side
@@ -878,7 +893,7 @@ configs.each { side, child ->
         dependsOn child.repoCreateTask
         dependsOn child.applyPatchesTask
 
-        target = project_dir
+        target = child.repoCreateTask.target
         branchName = distConfig.repository.branches.development
         commitMessage = "Initial commit of ${side.toUpperCase()}"
         additionalBranches = distConfig.repository.branches.collect { type, name -> name }
@@ -891,12 +906,14 @@ configs.each { side, child ->
     child.repoCheckStateTask = task "repository${child.Name}CheckState"(type: CheckRepositoryState) {
         group = 'mcplus repository ' + side
         dependsOn child.repoCreateTask
+        mustRunAfter child.repoInitTask
 
         target = child.repoCreateTask.target
         isClean = true
         containsBranch = [distConfig.repository.branches.development, distConfig.repository.branches.buildscript]
         checkedOn = distConfig.repository.branches.development
     }
+    tasks.repositoryCheckAll.dependsOn(child.repoCheckStateTask)
 
     /**
      * Tasks for distro (client, server) only repositories
@@ -962,6 +979,7 @@ configs.each { side, child ->
         group = 'mcplus repository ' + side
         description = "Releases changes from development into release branch"
         dependsOn child.repoInitTask
+        dependsOn child.repoCheckStateTask
         // TODO: Depends this on CHECKSTYLE if client or server side!
 
         target = child.repoInitTask.target
