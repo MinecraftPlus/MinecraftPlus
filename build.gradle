@@ -914,6 +914,7 @@ configs.each { side, child ->
         checkedOn = distConfig.repository.branches.development
     }
     tasks.repositoryCheckAll.dependsOn(child.repoCheckStateTask)
+    child.smartExtractTask.dependsOn(child.repoCheckStateTask) // TODO Reorder tasks to keep them chronologically?
 
     /**
      * Tasks for distro (client, server) only repositories
