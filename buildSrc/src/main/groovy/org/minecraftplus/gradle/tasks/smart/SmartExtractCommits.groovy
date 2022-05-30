@@ -7,8 +7,6 @@ import org.eclipse.jgit.errors.IncorrectObjectTypeException
 import org.eclipse.jgit.errors.MissingObjectException
 import org.eclipse.jgit.errors.StopWalkException
 import org.eclipse.jgit.errors.TransportException
-import org.eclipse.jgit.lib.Constants
-import org.eclipse.jgit.lib.RepositoryState
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.revwalk.filter.RevFilter
@@ -61,28 +59,15 @@ class SmartExtractCommits extends DefaultTask {
         try (Git git = Git.open(gitrepo)) {
             def repository = git.getRepository()
 
-            // Check repository state - we need to be in safe checked-out state
-            def state = repository.getRepositoryState();
-            logger.lifecycle("Repository in state: {}", state.toString())
-            switch (state) {
-                case RepositoryState.SAFE: {
-                    break
-                }
-                default:
-                    throw new IllegalStateException("Cannot be here, ups!")
-            }
-
-            // Check actal branch - we need be in branch from smart config
-            def actualBranch = repository.getBranch()
-            logger.lifecycle("Actual branch: {}", actualBranch)
-            if (actualBranch != config.branch) {
-                throw new GradleException("Target repository need be checked-out on branch " + config.branch)
-            }
-
             // Prepare git log command to get commit list
-            def branchId = repository.resolve(actualBranch);
+            def scannedRef = repository.findRef(config.branch as String);
+            if (scannedRef == null) {
+                throw new GradleException("Target repository does not contain branch '${config.branch}'")
+            }
+
+            def endRev = scannedRef.objectId
             def logCommand = git.log()
-                .add(branchId)
+                .add(endRev)
                 .setRevFilter(new RevFilter() { // Find any commit that have parent
                     @Override
                     boolean include(RevWalk walker, RevCommit commit) throws StopWalkException, MissingObjectException, IncorrectObjectTypeException, IOException {
@@ -103,9 +88,7 @@ class SmartExtractCommits extends DefaultTask {
 
                             def drop = branches.any { bName ->
                                 logger.trace("   - testing branch name: {}", bName)
-                                def ignore = config.ignore.any { String ign ->
-                                    return bName.endsWith(ign)
-                                }
+                                def ignore = config.ignore.contains(bName)
                                 if (ignore) {
                                     logger.trace("    - in ignored branch!")
                                 }
@@ -127,21 +110,17 @@ class SmartExtractCommits extends DefaultTask {
                                 logger.trace("    - branches containing commit: {}", branches)
 
                                 def include = branches.any { bName ->
-                                    logger.trace("     - testing branch name: {}", bName)
-                                    def include = config.include.any { String incl ->
-                                        return bName.endsWith(incl)
-                                    }
+                                    logger.trace("     - testing branch include: {}", bName)
+                                    def include = config.include.contains(bName)
                                     if (include) {
-                                        logger.trace("      - in included branch!")
+                                        logger.trace("      - '{}' in included branch", bName)
                                     }
                                     return include
                                 }
 
                                 def drop = branches.any { bName ->
-                                    logger.trace("     - testing branch name: {}", bName)
-                                    def ignore = config.ignore.any { String ign ->
-                                        return bName.endsWith(ign)
-                                    }
+                                    logger.trace("     -  testing branch ignore: {}", bName)
+                                    def ignore = config.ignore.contains(bName)
                                     if (ignore) {
                                         logger.trace("      - in ignored branch!")
                                     }
@@ -163,13 +142,16 @@ class SmartExtractCommits extends DefaultTask {
                 })
 
             logger.lifecycle("Finding commit list:")
-            def headRef = repository.resolve(Constants.HEAD);
             if (config.lastcommit != null) {
-                def startRef = repository.resolve(config.lastcommit as String)
-                logger.lifecycle(" {} to {}[HEAD]", startRef.name, headRef.name)
-                logCommand = logCommand.addRange(startRef, headRef)
+                def startRev = repository.resolve(config.lastcommit as String)
+                if (startRev == null) {
+                    throw new GradleException("Target repository does not contain commit '${config.lastcommit}'")
+                }
+
+                logger.lifecycle(" {} to {}", startRev.name, endRev.name)
+                logCommand = logCommand.addRange(startRev, endRev)
             } else {
-                logger.lifecycle(" start to {}[HEAD]", headRef.name)
+                logger.lifecycle(" start to {}", endRev.name)
             }
 
             // Fetch list of new commits from repository
