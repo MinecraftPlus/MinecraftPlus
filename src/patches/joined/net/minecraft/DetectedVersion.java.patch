@@ -1,0 +1,41 @@
+--- a/net/minecraft/DetectedVersion.java
++++ b/net/minecraft/DetectedVersion.java
+@@ -24,17 +24,6 @@
+    private final Date buildTime;
+    private final String releaseTarget;
+ 
+-   public DetectedVersion() {
+-      this.id = UUID.randomUUID().toString().replaceAll("-", "");
+-      this.name = "1.15.2";
+-      this.stable = true;
+-      this.worldVersion = 2230;
+-      this.protocolVersion = 578;
+-      this.packVersion = 5;
+-      this.buildTime = new Date();
+-      this.releaseTarget = "1.15.2";
+-   }
+-
+    protected DetectedVersion(JsonObject jsonobject) {
+       this.id = GsonHelper.getAsString(jsonobject, "id");
+       this.name = GsonHelper.getAsString(jsonobject, "name");
+@@ -49,17 +38,13 @@
+    public static GameVersion tryDetectVersion() {
+       try (InputStream stream = DetectedVersion.class.getResourceAsStream("/version.json")) {
+          if (stream == null) {
+-            LOGGER.warn("Missing version information!");
+-            return new DetectedVersion();
++            throw new IllegalStateException("Missing version.json information file!");
+          } else {
+-            DetectedVersion var4;
+             try (InputStreamReader inputstreamreader = new InputStreamReader(stream)) {
+-               var4 = new DetectedVersion(GsonHelper.parse(inputstreamreader));
++               return new DetectedVersion(GsonHelper.parse(inputstreamreader));
+             }
+-
+-            return var4;
+          }
+-      } catch (JsonParseException | IOException var34) {
++      } catch (JsonParseException | IOException | IllegalStateException var34) {
+          throw new IllegalStateException("Game version information is corrupt", var34);
+       }
+    }
