@@ -779,7 +779,6 @@ configs.each { side, child ->
                         dependsOn child.smartExtractTask
                         dependsOn child.decompileTask
 
-                        branch = json.info.branch
                         commitId = commit.id
                         gitrepo = project_dir
 
@@ -816,7 +815,6 @@ configs.each { side, child ->
                             dependsOn child.smartExtractTask
                             dependsOn sourceTask
 
-                            branch = json.info.branch
                             commitId = commit.id
                             gitrepo = project_dir
 
