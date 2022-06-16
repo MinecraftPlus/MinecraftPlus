@@ -7,26 +7,22 @@ import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.lib.RepositoryState
 import org.eclipse.jgit.merge.ContentMergeStrategy
 import org.eclipse.jgit.merge.MergeStrategy
-import org.eclipse.jgit.transport.RemoteConfig
-import org.eclipse.jgit.transport.URIish
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Captures changes from one branch and merges it on another within one repository
+ * Captures changes from development branch and merges it on release branch
  */
-class ReleaseChanges extends DefaultTask {
+class ReleaseChanges extends AbstractGitRepositoryTask {
 
     @InputDirectory File target
 
-    @Input String sourceBranch = "development"
-    @Input String targetBranch = "master"
+    @Input String developmentBranch = "development"
+    @Input String releaseBranch = "master"
 
-    @Input String message = "Capture commit"
+    @Input String message = "Release development changes"
 
     @TaskAction
     def exec() {
@@ -36,80 +32,85 @@ class ReleaseChanges extends DefaultTask {
 
             // Check if repository contains both branches
             def branches = git.branchList().call()
-            def sourceRef = branches.find { branch -> branch.getName().endsWith(sourceBranch) }
-            def targetRef = branches.find { branch -> branch.getName().endsWith(targetBranch) }
-            if (!sourceRef) {
-                throw new IllegalStateException("Repository does not contain source branch '${sourceBranch}'")
+            def developmentRef = branches.find { branch -> branch.getName().endsWith(developmentBranch) }
+            def releaseRef = branches.find { branch -> branch.getName().endsWith(releaseBranch) }
+            if (!developmentRef) {
+                throw new IllegalStateException("Repository does not contain source branch '${developmentBranch}'")
             }
-            if (!targetRef) {
-                throw new IllegalStateException("Repository does not contain target branch '${targetBranch}'")
+            if (!releaseRef) {
+                throw new IllegalStateException("Repository does not contain target branch '${releaseBranch}'")
             }
 
             // Get repository state
             def state = repository.getRepositoryState();
             logger.lifecycle("Repository in state: {}", state.toString())
-            switch(state) {
-                case RepositoryState.SAFE: {
-                    // Checkout local target branch
-                    def checkout = git.checkout()
-                            .setName(targetBranch)
-                            .call()
-                    logger.lifecycle("Checked out local branch '{}'", checkout.name)
 
-                    // On first repository sync we need 'ours' strategy when syncing
-                    def ours = false
-                    def mergeStrategy = ours
-                            ? MergeStrategy.OURS : MergeStrategy.RECURSIVE
-                    def contentStrategy = ours
-                            ? ContentMergeStrategy.OURS : ContentMergeStrategy.CONFLICT
+            try {
+                switch (state) {
+                    case RepositoryState.SAFE: {
+                        // Checkout local target branch
+                        def checkout = git.checkout()
+                                .setName(releaseBranch)
+                                .call()
+                        logger.lifecycle("Checked out local branch '{}'", checkout.name)
 
-                    logger.lifecycle("Merging changes from branch '{}' to branch '{}'",
-                            sourceRef.name, targetRef.name)
-                    logger.lifecycle(" - using merge/content strategy: {}/{}",
-                            mergeStrategy.getName(), contentStrategy.toString())
+                        // On first repository sync we need 'ours' strategy when syncing
+                        def ours = false
+                        def mergeStrategy = ours
+                                ? MergeStrategy.OURS : MergeStrategy.RECURSIVE
+                        def contentStrategy = ours
+                                ? ContentMergeStrategy.OURS : ContentMergeStrategy.CONFLICT
 
-                    def merge = git.merge()
-                            .include(sourceRef)
-                            .setMessage(message)
-                            .setStrategy(mergeStrategy)
-                            .setContentMergeStrategy(contentStrategy)
-                            .setFastForward(MergeCommand.FastForwardMode.NO_FF)
-                            .setCommit(false) // need no commit to add lock fil
-                            .call()
-                    def status = merge.getMergeStatus()
-                    logger.lifecycle("Merge status: {}", status)
+                        logger.lifecycle("Merging changes from branch '{}' to branch '{}'",
+                                developmentRef.name, releaseRef.name)
+                        logger.lifecycle(" - using merge/content strategy: {}/{}",
+                                mergeStrategy.getName(), contentStrategy.toString())
 
-                    if (!status.isSuccessful()) {
-                        switch (status) {
-                            case MergeResult.MergeStatus.CONFLICTING:
-                                throw new GradleException("Merge results in content conflicts [" +  merge.getConflicts().size() + "]")
-                            default:
-                                throw new GradleException("Merge fails! [" + status + "]")
+                        def merge = git.merge()
+                                .include(developmentRef)
+                                .setMessage(message)
+                                .setStrategy(mergeStrategy)
+                                .setContentMergeStrategy(contentStrategy)
+                                .setFastForward(MergeCommand.FastForwardMode.NO_FF)
+                                .setCommit(false) // need no commit to add lock fil
+                                .call()
+                        def status = merge.getMergeStatus()
+                        logger.lifecycle("Merge status: {}", status)
+
+                        if (!status.isSuccessful()) {
+                            switch (status) {
+                                case MergeResult.MergeStatus.CONFLICTING:
+                                    throw new GradleException("Merge results in content conflicts [" + merge.getConflicts().size() + "]")
+                                default:
+                                    throw new GradleException("Merge fails! [" + status + "]")
+                            }
+                        } else {
+                            switch (status) {
+                                case MergeResult.MergeStatus.ALREADY_UP_TO_DATE:
+                                    logger.lifecycle("Branch '{}' has already merged into branch '{}'", developmentRef.name, releaseRef.name)
+                                    return
+                                default:
+                                    break
+                            }
                         }
-                    } else {
-                        switch (status) {
-                            case MergeResult.MergeStatus.ALREADY_UP_TO_DATE:
-                                logger.lifecycle("Branch '{}' has already merged into branch '{}'", sourceRef.name, targetRef.name)
-                                return
-                            default:
-                                break
-                        }
+
+                        // no break! If successfully then fallthrough to next case step
                     }
-
-                    // no break! If successfully then fallthrough to next case step
+                    case RepositoryState.MERGING_RESOLVED: {
+                        // Commit results
+                        def result = git.commit()
+                                .call()
+                        logger.lifecycle("Committed changes as '{}'", result.getFullMessage())
+                        break;
+                    }
+                    case RepositoryState.MERGING: {
+                        throw new GradleException("Resolve merge conflicts in repository before resume capturing!")
+                    }
+                    default:
+                        throw new IllegalStateException("Cannot be here, ups!")
                 }
-                case RepositoryState.MERGING_RESOLVED: {
-                    // Commit results
-                    def result = git.commit()
-                            .call()
-                    logger.lifecycle("Committed changes as '{}'", result.getFullMessage())
-                    break;
-                }
-                case RepositoryState.MERGING: {
-                    throw new GradleException("Resolve merge conflicts in repository before resume capturing!")
-                }
-                default:
-                    throw new IllegalStateException("Cannot be here, ups!")
+            } finally {
+                developmentRef = checkoutBranch(git, developmentBranch, true)
             }
         } catch (TransportException e) {
             throw new GradleException("Cannot open git repository in '${gitrepo}'")

@@ -689,8 +689,9 @@ configs.each { side, child ->
         branch = branches.release
         output = new File(project_dir, ".smartconfig")
 
-        include = branches.find { it.key == 'release'}.collect { it.value }
-        ignore = branches.findAll { it.key != 'release'}.collect { it.value }
+        include = [ branches.development ]
+        ignore = branches.collect { it.value }
+                .minus([branches.release, branches.development])
     }
 
     child.smartExtractTask = task "smartpatch${child.Name}ExtractCommits" (type: SmartExtractCommits) {
@@ -979,14 +980,14 @@ configs.each { side, child ->
     child.repoReleaseTask = task "repository${child.Name}Release" (type: ReleaseChanges) {
         group = 'mcplus repository ' + side
         description = "Releases changes from development into release branch"
-        dependsOn child.repoInitTask
+        dependsOn child.repoCreateTask
         dependsOn child.repoCheckStateTask
         // TODO: Depends this on CHECKSTYLE if client or server side!
 
-        target = child.repoInitTask.target
+        target = child.repoCreateTask.target
 
-        sourceBranch = distConfig.repository.branches.development
-        targetBranch = distConfig.repository.branches.release
+        developmentBranch = distConfig.repository.branches.development
+        releaseBranch = distConfig.repository.branches.release
 
         message = "Release commit of ${side.toUpperCase()}"
     }
