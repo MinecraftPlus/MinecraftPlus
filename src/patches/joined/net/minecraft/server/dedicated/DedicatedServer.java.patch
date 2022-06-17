@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -149,7 +149,7 @@
+ 
+       LOGGER.info("Generating keypair");
+       this.setKeyPair(Crypt.generateKeyPair());
+-      LOGGER.info("Starting Minecraft server on {}:{}", this.getLocalIp().isEmpty() ? "*" : this.getLocalIp(), this.getPort());
++      LOGGER.info("Starting MinecraftPlus server on {}:{}", this.getLocalIp().isEmpty() ? "*" : this.getLocalIp(), this.getPort());
+ 
+       try {
+          this.getConnection().startTcpServerListener(inetaddress, this.getPort());
