@@ -52,7 +52,7 @@ Utils.init() // Initialize special gradle utils
 
 ext {
     CONFIG = rootProject.ext.CONFIG // Load and use config from root project
-    DIST_CONFIG = Utils.distributionConfig(CONFIG, project.name)
+    DIST_CONFIG = Utils.projectConfig(CONFIG)
 
     DISTRO = project.name
     JAVA = CONFIG.java_target ?: 8

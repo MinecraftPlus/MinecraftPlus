@@ -351,7 +351,6 @@ configuration.librariesTask = task generateProcessLibraries(type: CreateFernflow
 
     meta = tasks.downloadVersionJson.dest
     config = CONFIG
-    side = 'joined'
     root = file(PATH_BUILD_LIBRARIES)
     dest file(PATH_BUILD + 'mapped/fernflower.libs.txt')
 }
@@ -469,7 +468,7 @@ def side = 'joined'
 
         if (child.jsonlibs)
             meta tasks.downloadVersionJson.dest
-        CONFIG.distributions.get(side).libraries?.each { library "'${it}'" }
+        Utils.projectConfig(CONFIG).libraries?.each { library "'${it}'" }
 
         replace '{java_target}', JAVA_TARGET as String
         replace '{resources}', child.resources?: side
@@ -544,7 +543,7 @@ task projectMakePatchesAll (group: 'mcplus project') {
 }
 
 [configuration].each { child ->
-    def distConfig = Utils.distributionConfig(CONFIG, side)
+    def distConfig = Utils.projectConfig(CONFIG)
     def project_dir = project.file(PATH_PROJECT)
     def patches_dir = project.file(PATH_SOURCE_PATCHES)
     def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES)
@@ -806,7 +805,7 @@ task repositoryReleaseAll (group: 'mcplus repository') {
 
 [configuration].each { child ->
     def project_dir = project.file(PATH_PROJECT + side)
-    def distConfig = Utils.distributionConfig(CONFIG, side)
+    def distConfig = Utils.projectConfig(CONFIG)
 
     child.repoCreateTask = task "repository${child.Name}Create"(type: CreateRepository) {
         group = 'mcplus repository ' + side
@@ -853,7 +852,7 @@ task repositoryReleaseAll (group: 'mcplus repository') {
      * Tasks for distro (client, server) only repositories
      */
     if (['client', 'server'].contains(side)) {
-        def joinedConfig = Utils.distributionConfig(CONFIG, "joined")
+        def joinedConfig = Utils.projectConfig(CONFIG)
 
         child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
             group = 'mcplus repository ' + side
@@ -946,7 +945,7 @@ task buildAll {
 
 subprojects { Project subproject ->
 
-    def distConfig = Utils.distributionConfig(CONFIG, subproject.name)
+    def distConfig = Utils.projectConfig(CONFIG)
 
     /**
      * Configure downloadable artifact in JSON version manifest

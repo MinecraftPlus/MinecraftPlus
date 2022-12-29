@@ -59,82 +59,34 @@ tools:
     ]
     jvmargs: ["-Xmx4G"]
 ##
-# DISTRIBUTIONS CONFIGURATION
-#
-# This section specifies projects of each distribution
+# PROJECT CONFIGURATION
 ##
-distributions:
-  joined:
-    libraries:
-      - net.minecraftforge:mergetool:1.1.3:api
-      - com.google.code.findbugs:jsr305:3.0.1
-    artifact:
-      shaded: true
-      downloadable: false # If true, this artifact will be attached to version JSON manifest
-    runnables: # This section specifies runnable parts (each main's) which is used only for testing purposes, not used in generating output artifact jar
-      client: &client_runnable
-        type: CLIENT
-        mainclass: &client_mainclass 'net.minecraft.client.main.Main'
-        args:
-          manifest: true # If true then application arguments were loaded from version manifest
-          jvm: [-Xms512m, -Xmx1G]
-        natives: true
-        assets: true
-      server: &server_runnable
-        type: SERVER
-        mainclass: &server_mainclass 'net.minecraft.server.MinecraftServer'
-        args:
-          application: [
-            -universe, "worlds"
-          ]
-          jvm: [-Xms512m, -Xmx1G]
-    repository:
-      branches: &repository_joined_branches
-        release: "master"                 # This branch is used to store working 'snapshots' of code
-        development: "development"        # This branch is used to work with code, from there are patches generated
-        buildscript: "buildscript"        # This branch is used to synchronize repository when buildscript changes (eg. distro templates)
-  resources:
-    index: mcplus-0.0.0
-    repository:
-      branches:
-        <<: *repository_joined_branches # These can be override below
-  client:
-    libraries:
-      - com.google.code.findbugs:jsr305:3.0.1
-    artifact:
-      shaded: false
-      downloadable: true # If true, this artifact will be attached to version JSON manifest
-      mainclass: *client_mainclass
-    runnables:
-      client: *client_runnable
-    repository:
-      branches:
-        << : *repository_joined_branches # These can be override below
-        synchronization: "synchronization"
-  server:
-    libraries:
-      - com.mojang:javabridge:1.0.22
-      - net.sf.jopt-simple:jopt-simple:5.0.3
-      - io.netty:netty-all:4.1.25.Final
-      - com.google.guava:guava:21.0
-      - org.apache.commons:commons-lang3:3.5
-      - commons-io:commons-io:2.5
-      - commons-codec:commons-codec:1.10
-      - com.mojang:brigadier:1.0.17
-      - com.mojang:datafixerupper:2.0.24
-      - com.google.code.gson:gson:2.8.0
-      - com.mojang:authlib:1.5.25
-      - it.unimi.dsi:fastutil:8.2.1
-      - org.apache.logging.log4j:log4j-api:2.8.1
-      - org.apache.logging.log4j:log4j-core:2.8.1
-      - com.google.code.findbugs:jsr305:3.0.1
-    artifact:
-      shaded: true
-      downloadable: true # If true, this artifact will be attached to version JSON manifest
-      mainclass: *server_mainclass
-    runnables:
-      server: *server_runnable
-    repository:
-      branches:
-        <<: *repository_joined_branches # These can be override below
-        synchronization: "synchronization"
+project:
+  libraries:
+    - net.minecraftforge:mergetool:1.1.3:api
+    - com.google.code.findbugs:jsr305:3.0.1
+  artifact:
+    shaded: true
+    downloadable: false # If true, this artifact will be attached to version JSON manifest
+  runnables: # This section specifies runnable parts (each main's) which is used only for testing purposes, not used in generating output artifact jar
+    client: &client_runnable
+      type: CLIENT
+      mainclass: &client_mainclass 'net.minecraft.client.main.Main'
+      args:
+        manifest: true # If true then application arguments were loaded from version manifest
+        jvm: [-Xms512m, -Xmx1G]
+      natives: true
+      assets: true
+    server: &server_runnable
+      type: SERVER
+      mainclass: &server_mainclass 'net.minecraft.server.MinecraftServer'
+      args:
+        application: [
+          -universe, "worlds"
+        ]
+        jvm: [-Xms512m, -Xmx1G]
+  repository:
+    branches: &repository_joined_branches
+      release: "master"                 # This branch is used to store working 'snapshots' of code
+      development: "development"        # This branch is used to work with code, from there are patches generated
+      buildscript: "buildscript"        # This branch is used to synchronize repository when buildscript changes (eg. distro templates)
