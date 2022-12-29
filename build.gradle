@@ -44,7 +44,7 @@ project.ext {
     PATH_BUILD_META = PATH_BUILD + 'meta/'
     PATH_BUILD_SMARTPATCHES = PATH_BUILD + 'smart/'
 
-    PATH_PROJECTS = file('projects').absolutePath + '/'
+    PATH_PROJECT = file('project').absolutePath + '/'
 
     PATH_CONFIG = file('config').absolutePath + '/'
     PATH_CONFIG_CHECKSTYLE = PATH_CONFIG + 'checkstyle/'
@@ -327,15 +327,16 @@ tasks.filterVersionJars.dependsOn(tasks.mergeJoinedResources)
 def configuration = [
     Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,
     projectTemplate: 'distro_build.gradle',
-    decompileTask: tasks.packageVersionAssets, // TODO Make this not needed, as it is in remote sourceset
+//    decompileTask: tasks.packageVersionAssets, // TODO Make this not needed, as it is in remote sourceset
     mappingsTask: tasks.convertClientMappings,
     splitTask: tasks.mergeVersionJoinedJar,
     resources: 'internal',
     natives: tasks.extractNatives.dest,
-    sourceSets: [
-         [ suffix: 'internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/internal' ],
-         [ suffix: 'remote', task: tasks.packageVersionAssets, outputDir: 'src/main/remote' ]
-    ]
+//    sourceSets: [
+//         [ suffix: 'java', task: tasks.decompileVersionJars, outputDir: 'src/main/java' ],
+//         [ suffix: 'resources/internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/resources/internal' ],
+//         [ suffix: 'resources/remote', task: tasks.packageVersionAssets, outputDir: 'src/main/resources/remote' ]
+//    ]
 ]
 
 /**
@@ -376,7 +377,6 @@ configuration.renameTask = task renameVersionJars(type: RemapJar) {
     log = file(PATH_BUILD + 'mapped/mapped.log')
 }
 
-
 /**
  * Fernflower decompilation
  */
@@ -399,21 +399,25 @@ configuration.decompileTask = task decompileVersionJars (type: FernflowerTask) {
     dest = file(PATH_BUILD + '/decompile/decompile.jar')
 }
 
-
+configuration.sourceSets = [
+        [ suffix: 'java', task: tasks.decompileVersionJars, outputDir: 'src/main/java' ],
+        [ suffix: 'resources/internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/resources/internal' ],
+        [ suffix: 'resources/remote', task: tasks.packageVersionAssets, outputDir: 'src/main/resources/remote' ]
+]
 
 
 /**
- * Create projects directory
+ * Create project root directory
  */
-task projectsRootCreate {
+configuration.projectRootTask = task projectRootCreate (type: Delete) {
     group = 'mcplus project'
-    description = 'Creates projects root directory'
+    description = 'Creates project root directory'
 
-    def directory = file(PATH_PROJECTS)
+    def directory = file(PATH_PROJECT)
     onlyIf { !directory.exists()}
 
     doLast {
-        logger.info("Creating projects root directory {}", directory)
+        logger.info("Creating project root directory {}", directory)
         mkdir directory
     }
 }
@@ -441,21 +445,9 @@ task projectResetAll (group: 'mcplus project') {
 
 def side = 'joined'
 [configuration].each { child ->
-    def project_dir = project.file(PATH_PROJECTS + side)
-    def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
+    def project_dir = project.file(PATH_PROJECT)
 
 
-    child.projectRootTask = task "project${child.Name}RootCreate"(type: Delete) {
-        group = 'mcplus project ' + side
-        dependsOn tasks.projectsRootCreate
-
-        onlyIf { !project_dir.exists()}
-
-        doLast {
-            logger.info("Creating project ${side.toUpperCase()} directory {}", project_dir)
-            mkdir project_dir
-        }
-    }
 
     child.projectDeleteTask = task "project${child.Name}Delete"(type: Delete) {
         group = 'mcplus project ' + side
@@ -521,7 +513,7 @@ def side = 'joined'
             def sourceTask = it.task as Task
             def outputDirectory = new File(project_dir, it.outputDir as String)
 
-            def taskName = 'project' + child.Name + "Reset" + taskSuffix.capitalize()
+            def taskName = 'project' + child.Name + "Reset" + taskSuffix.replaceAll("/", "").capitalize()
             def resetTask = task "${taskName}" (type: ResetSourcesTask) {
                 group = 'mcplus project ' + side
                 dependsOn sourceTask
@@ -553,9 +545,9 @@ task projectMakePatchesAll (group: 'mcplus project') {
 
 [configuration].each { child ->
     def distConfig = Utils.distributionConfig(CONFIG, side)
-    def project_dir = project.file(PATH_PROJECTS + side)
-    def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
-    def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES + side)
+    def project_dir = project.file(PATH_PROJECT)
+    def patches_dir = project.file(PATH_SOURCE_PATCHES)
+    def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES)
 
     child.makePatchesDirTask = task "project${child.Name}MakePatchesDir"() {
         group = 'mcplus project ' + side
@@ -570,68 +562,46 @@ task projectMakePatchesAll (group: 'mcplus project') {
     }
 
     // Make and apply tasks
-    if (child.sourceSets == null) {
-        child.makePatchesTask = task "project${child.Name}MakePatches"(type: MakePatchesTask) {
+    child.makePatchesTask = task "project${child.Name}MakePatches" {
+        group = 'mcplus project ' + side
+        description = 'Makes patches of all sourcesets in project'
+    }
+
+    child.applyPatchesTask = task "project${child.Name}ApplyPatches" {
+        group = 'mcplus project ' + side
+        description = 'Applies patches in all projects'
+    }
+
+    child.sourceSets.each {
+        def taskSuffix = it.suffix as String
+        def sourceTask = it.task as Task
+        def outputDirectory = new File(project_dir, it.outputDir as String)
+        def patchesDirectory = new File(patches_dir, taskSuffix as String)
+
+        def makeTaskName = 'project' + child.Name + "MakePatches" + taskSuffix.replaceAll("/", "").capitalize()
+        def makeTask = task "${makeTaskName}" (type: MakePatchesTask) {
             group = 'mcplus project ' + side
-            dependsOn child.decompileTask
+            dependsOn sourceTask
             dependsOn child.projectCreateTask
             dependsOn child.makePatchesDirTask
 
-            rootZip child.decompileTask.dest
-            target new File(project_dir, 'src/main/java')
-            patches patches_dir
+            rootZip sourceTask.dest
+            target outputDirectory
+            patches patchesDirectory
         }
+        child.makePatchesTask.dependsOn(makeTask)
 
-        child.applyPatchesTask = task "project${child.Name}ApplyPatches"(type: ApplyPatchesTask) {
+        def applyTaskName = 'project' + child.Name + "ApplyPatches" + taskSuffix.replaceAll("/", "").capitalize()
+        def applyTask = task "${applyTaskName}" (type: ApplyPatchesTask) {
             group = 'mcplus project ' + side
             dependsOn child.projectCreateTask
             dependsOn child.projectResetTask
+            dependsOn child.makePatchesDirTask
 
-            target child.makePatchesTask.target
-            patches child.makePatchesTask.patches
+            target makeTask.target
+            patches makeTask.patches
         }
-    } else {
-        child.makePatchesTask = task "project${child.Name}MakePatches" {
-            group = 'mcplus project ' + side
-            description = 'Makes patches of all sourcesets in project'
-        }
-
-        child.applyPatchesTask = task "project${child.Name}ApplyPatches" {
-            group = 'mcplus project ' + side
-            description = 'Applies patches in all projects'
-        }
-
-        child.sourceSets.each {
-            def taskSuffix = it.suffix as String
-            def sourceTask = it.task as Task
-            def outputDirectory = new File(project_dir, it.outputDir as String)
-            def patchesDirectory = new File(patches_dir, taskSuffix as String)
-
-            def makeTaskName = 'project' + child.Name + "MakePatches" + taskSuffix.capitalize()
-            def makeTask = task "${makeTaskName}" (type: MakePatchesTask) {
-                group = 'mcplus project ' + side
-                dependsOn sourceTask
-                dependsOn child.projectCreateTask
-                dependsOn child.makePatchesDirTask
-
-                rootZip sourceTask.dest
-                target outputDirectory
-                patches patchesDirectory
-            }
-            child.makePatchesTask.dependsOn(makeTask)
-
-            def applyTaskName = 'project' + child.Name + "ApplyPatches" + taskSuffix.capitalize()
-            def applyTask = task "${applyTaskName}" (type: ApplyPatchesTask) {
-                group = 'mcplus project ' + side
-                dependsOn child.projectCreateTask
-                dependsOn child.projectResetTask
-                dependsOn child.makePatchesDirTask
-
-                target makeTask.target
-                patches makeTask.patches
-            }
-            child.applyPatchesTask.dependsOn(applyTask)
-        }
+        child.applyPatchesTask.dependsOn(applyTask)
     }
     tasks.projectMakePatchesAll.dependsOn(child.makePatchesTask)
     tasks.projectApplyPatchesAll.dependsOn(child.applyPatchesTask)
@@ -772,7 +742,7 @@ task projectMakePatchesAll (group: 'mcplus project') {
                         def outputDirectory = new File(project_dir, it.outputDir as String)
                         def patchesDirectory = new File(smartpatches_dir, commit.id)
 
-                        def sourceSetTaskName = "smartpatch${child.Name}Make@" + commit.id + (taskSuffix ? "_" + taskSuffix : "")
+                        def sourceSetTaskName = "smartpatch${child.Name}Make@" + commit.id + (taskSuffix.replaceAll("/", "") ? "_" + taskSuffix.replaceAll("/", "") : "")
                         sourceSetMakeTask = task "${sourceSetTaskName}" (type: SmartMakePatches) {
                             group 'mcplus smartpatch ' + side
                             description = "Make patch set of extracted commit ${commit.id} for sourceset ${taskSuffix}"
@@ -835,7 +805,7 @@ task repositoryReleaseAll (group: 'mcplus repository') {
 }
 
 [configuration].each { child ->
-    def project_dir = project.file(PATH_PROJECTS + side)
+    def project_dir = project.file(PATH_PROJECT + side)
     def distConfig = Utils.distributionConfig(CONFIG, side)
 
     child.repoCreateTask = task "repository${child.Name}Create"(type: CreateRepository) {
