@@ -1,17 +1,10 @@
-buildscript {
-    dependencies {
-        if (findProject(':resources') != null) {
-            classpath rootProject.project(':resources')
-        }
-    }
-}
-
 plugins {
     id 'java'
     id 'eclipse'
     id 'idea'
     id 'checkstyle'
     id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
+    id 'org.minecraftplus.gradle.assetator' version '0.1.0'
 }
 
 repositories {
@@ -43,10 +36,13 @@ dependencies {
     {libraries}
 }
 
+
 import org.minecraftplus.gradle.tasks.Utils
 import org.minecraftplus.gradle.tasks.meta.GenerateVersionInfo
-// Generating timestamp
+
 import java.time.ZonedDateTime
+
+// Generating timestamp
 
 Utils.init() // Initialize special gradle utils
 
@@ -59,6 +55,10 @@ ext {
     RESOURCES = DIST_CONFIG.resources ?: 'internal'
     SHADE = DIST_CONFIG.artifact.shaded ?: false
     MAIN_CLASS = DIST_CONFIG.artifact.mainclass ?: null
+
+    INDEX_ID = DIST_CONFIG.index
+    PATH_BUILD = file('build').absolutePath + '/'
+    PATH_BUILD_ASSETS = PATH_BUILD + 'assets/'
 }
 
 group = rootProject.group
@@ -67,14 +67,53 @@ version = rootProject.version
 archivesBaseName = String.join('-', rootProject.name, project.name)
 
 sourceSets {
+    remote {
+        resources.srcDirs = ['src/main/resources/remote']
+    }
+    internal {
+        resources.srcDirs = ['src/main/resources/internal']
+    }
+    shared {
+        resources {
+            srcDirs = ['src/main/resources/internal']
+
+            // Resources shared between client and server
+            include "assets/.mcassetsroot"
+            include "data/**"
+            include "log4j2.xml"
+            include "pack.mcmeta"
+            include "version.json"
+        }
+    }
+    client {
+        resources {
+            srcDirs = ['src/main/resources/internal']
+            setIncludes shared.resources.getIncludes()
+
+            // Resources special to client
+            include "assets/**"
+            include "pack.png"
+        }
+    }
+    server {
+        resources {
+            srcDirs = ['src/main/resources/internal']
+            setIncludes shared.resources.getIncludes()
+
+            // Resources special to server
+            include "assets/minecraft/lang/en_us.json"
+            include "Log4j-config.xsd"
+            include "Log4j-events.dtd"
+            include "Log4j-events.xsd"
+            include "Log4j-levels.xsd"
+        }
+    }
     main {
-        if (findProject(':resources') != null) {
-            resources {
-                def resourceSet = project(":resources").sourceSets[RESOURCES as String].resources
-                srcDir resourceSet.srcDirs
-                srcDir 'build/resources/generated'
-                setIncludes resourceSet.getIncludes()
-            }
+        resources {
+            def resourceSet = sourceSets['internal'].resources
+            srcDir resourceSet.srcDirs
+            srcDir 'build/resources/generated'
+            setIncludes resourceSet.getIncludes()
         }
     }
 }
@@ -137,10 +176,18 @@ artifacts {
     }
 }
 
+assets {
+    generate {
+        input = sourceSets.remote.resources.srcDirs as File[]
+        output = file(PATH_BUILD_ASSETS + 'indexes/' + INDEX_ID + '.json')
+        objectsDir = file(PATH_BUILD_ASSETS + 'objects/')
+    }
+}
+
 /**
  * Generate version.json information file with project variables
  */
-def genTask = task generateVersionJson (type: GenerateVersionInfo) {
+def genTask = task generateVersionJson(type: GenerateVersionInfo) {
     def versionInfo = Utils.versionInfo(CONFIG)
 
     id = versionInfo.id
@@ -167,7 +214,6 @@ tasks.processResources.dependsOn(genTask)
 tasks.withType(Checkstyle) {
     group = 'checkstyle'
 }
-tasks.findAll {it.name.containsIgnoreCase('eclipse') }.each { task ->
+tasks.findAll { it.name.containsIgnoreCase('eclipse') }.each { task ->
     task.group = 'eclipse'
 }
-

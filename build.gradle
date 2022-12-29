@@ -326,7 +326,7 @@ tasks.filterVersionJars.dependsOn(tasks.mergeJoinedResources)
  */
 def configuration = [
     Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,
-    projectTemplate: 'distro_build.gradle',
+    projectTemplate: 'project_build.gradle',
 //    decompileTask: tasks.packageVersionAssets, // TODO Make this not needed, as it is in remote sourceset
     mappingsTask: tasks.convertClientMappings,
     splitTask: tasks.mergeVersionJoinedJar,
@@ -464,7 +464,7 @@ def side = 'joined'
         dest project_dir
         distro side
         template project.file(PATH_CONFIG_TEMPLATES + child.projectTemplate)
-        gitignore project.file(PATH_CONFIG_TEMPLATES + 'distro_gitignore')
+        gitignore project.file(PATH_CONFIG_TEMPLATES + 'project_gitignore')
 
         if (child.jsonlibs)
             meta tasks.downloadVersionJson.dest
@@ -994,10 +994,10 @@ subprojects { Project subproject ->
                 manifest rootProject.tasks.generateVersionJsonMeta.manifestFull
             }
 
-            if ((config?.assets ?: false) && findProject(':resources') != null) {
-                dependsOn project(":resources").tasks.generateAssets
-                assets new File(project(":resources").PATH_BUILD_ASSETS).absolutePath
-                index project(":resources").INDEX_ID
+            if ((config?.assets ?: false)) {
+                dependsOn subproject.tasks.generateAssets
+                assets new File(subproject.PATH_BUILD_ASSETS).absolutePath
+                index subproject.INDEX_ID
             }
 
             if (config?.natives ?: false) {

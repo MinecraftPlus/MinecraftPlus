@@ -10,7 +10,7 @@ pluginManagement {
 rootProject.name = "minecraftplus"
 
 def loadProject(path) {
-    if (path.exists()) {
+    if (path.exists() && new File(path, "build.gradle").exists()) {
         def relative = rootDir.toPath().relativize(path.toPath()).toFile()
         include relative.path
         project(':' + relative.path).name = path.name
