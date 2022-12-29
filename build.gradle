@@ -324,118 +324,81 @@ tasks.filterVersionJars.dependsOn(tasks.mergeJoinedResources)
 /**
  * Process sides configuration
  */
-def configs = [
-    joined: [Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,
-             projectTemplate: 'distro_build.gradle',
-             mappingsTask: tasks.convertClientMappings,
-             splitTask: tasks.mergeVersionJoinedJar,
-             resources: 'internal',
-             natives: tasks.extractNatives.dest
-    ],
-    client: [Name: 'Client', jsonlibs: true,  extra: 'Client', assets: true,
-             projectTemplate: 'distro_build.gradle',
-             mappingsTask: tasks.convertClientMappings,
-             splitTask: tasks.filterVersionClientJar,
-             natives: tasks.extractNatives.dest
-    ],
-    server: [Name: 'Server', jsonlibs: false, extra: 'Server', assets: false,
-             projectTemplate: 'distro_build.gradle',
-             mappingsTask: tasks.convertServerMappings,
-             splitTask: tasks.filterVersionServerJar,
-             natives: null
-    ],
-    resources: [
-            Name: 'Resources',
-            projectTemplate: 'resources_build.gradle',
-            decompileTask: tasks.packageVersionAssets, // TODO Make this not needed, as it is in remote sourceset
-            sourceSets: [
-                    [ suffix: 'internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/internal' ],
-                    [ suffix: 'remote', task: tasks.packageVersionAssets, outputDir: 'src/main/remote' ]
-            ]
+def configuration = [
+    Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,
+    projectTemplate: 'distro_build.gradle',
+    decompileTask: tasks.packageVersionAssets, // TODO Make this not needed, as it is in remote sourceset
+    mappingsTask: tasks.convertClientMappings,
+    splitTask: tasks.mergeVersionJoinedJar,
+    resources: 'internal',
+    natives: tasks.extractNatives.dest,
+    sourceSets: [
+         [ suffix: 'internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/internal' ],
+         [ suffix: 'remote', task: tasks.packageVersionAssets, outputDir: 'src/main/remote' ]
     ]
 ]
-
-def sides = configs.findAll {
-    ['joined', 'client', 'server'].contains(it.key)
-}
 
 /**
  * Prepare list of libraries for Vignette and Fernflower
  */
-task generateProcessLibraries(group: 'mcplus process') {
-    description = 'Renames jars using mappings'
-}
+configuration.librariesTask = task generateProcessLibraries(type: CreateFernflowerLibraries) {
+    group = 'mcplus process'
+    description = 'Prepare list of libraries for Vignette and Fernflower'
 
-sides.each { s, child ->
-    def taskName = 'generateProcess' + child.Name + 'Libraries'
-    child.librariesTask = task "${taskName}" (type: CreateFernflowerLibraries) {
-        group = 'mcplus process ' + s
-        dependsOn tasks.downloadVersionLibraries
-        dependsOn tasks.downloadVersionJson
+    dependsOn tasks.downloadVersionLibraries
+    dependsOn tasks.downloadVersionJson
 
-        meta = tasks.downloadVersionJson.dest
-        config = CONFIG
-        side = s
-        root = file(PATH_BUILD_LIBRARIES)
-        dest file(PATH_BUILD + 'mapped/' + s + '.fernflower.libs.txt')
-    }
-    tasks.generateProcessLibraries.dependsOn(child.librariesTask)
+    meta = tasks.downloadVersionJson.dest
+    config = CONFIG
+    side = 'joined'
+    root = file(PATH_BUILD_LIBRARIES)
+    dest file(PATH_BUILD + 'mapped/fernflower.libs.txt')
 }
 
 /**
  * Vignette renaming
  */
-task renameVersionJars(group: 'mcplus process') {
+configuration.renameTask = task renameVersionJars(type: RemapJar) {
+    group = 'mcplus process'
     description = 'Renames jars using mappings'
+
+    dependsOn tasks.downloadRenameTool
+    dependsOn configuration.splitTask
+    dependsOn configuration.mappingsTask
+    dependsOn configuration.librariesTask
+
+    config RENAMETOOL, tasks.downloadRenameTool
+    input = configuration.splitTask.dest
+    mappings = configuration.mappingsTask.dest
+    libraries = configuration.librariesTask.dest
+    dictionary = file(PATH_CONFIG + 'dictionary.dict')
+    dest = file(PATH_BUILD + 'mapped/mapped.jar')
+    log = file(PATH_BUILD + 'mapped/mapped.log')
 }
 
-sides.each { side, child ->
-    def taskName = 'renameVersion' + child.Name + 'Jar'
-    child.renameTask = task "${taskName}" (type: RemapJar) {
-        group = 'mcplus process ' + side
-        dependsOn tasks.downloadRenameTool
-        dependsOn child.splitTask
-        dependsOn child.mappingsTask
-        dependsOn child.librariesTask
-
-        config RENAMETOOL, tasks.downloadRenameTool
-        input = 'joined'.equals(side) ? child.splitTask.dest : child.splitTask.sources // Use dest if input is from MergeJars
-        mappings = child.mappingsTask.dest
-        libraries = child.librariesTask.dest
-        dictionary = file(PATH_CONFIG + 'dictionary.dict')
-        dest = file(PATH_BUILD + 'mapped/' + side + '.mapped.jar')
-        log = file(PATH_BUILD + 'mapped/' + side + '.mapped.log')
-    }
-    tasks.renameVersionJars.dependsOn(child.renameTask)
-}
 
 /**
  * Fernflower decompilation
  */
-task decompileVersionJars (group: 'mcplus process') {
+configuration.decompileTask = task decompileVersionJars (type: FernflowerTask) {
+    group = 'mcplus process'
     description = 'Decompiles jars'
-}
 
-sides.each { side, child ->
-    def taskName = 'decompileVersion' + child.Name + 'Jar'
-    child.decompileTask = task "${taskName}" (type: FernflowerTask) {
-        group = 'mcplus process ' + side
-        dependsOn tasks.downloadFernflower
-        dependsOn child.librariesTask
-        dependsOn child.renameTask
+    dependsOn tasks.downloadFernflower
+    dependsOn configuration.librariesTask
+    dependsOn configuration.renameTask
 
-        config FERNFLOWER, tasks.downloadFernflower
-        javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
-        }
-        libraries = child.librariesTask.dest
-        input = child.renameTask.dest
-
-        log = file(PATH_BUILD + '/decompile/' + side + '.decompile.log')
-        dest = file(PATH_BUILD + '/decompile/' + side + '.decompile.jar')
+    config FERNFLOWER, tasks.downloadFernflower
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
     }
-    tasks.decompileVersionJars.dependsOn(child.decompileTask)
+    libraries = configuration.librariesTask.dest
+    input = configuration.renameTask.dest
+
+    log = file(PATH_BUILD + '/decompile/decompile.log')
+    dest = file(PATH_BUILD + '/decompile/decompile.jar')
 }
+
 
 
 
@@ -476,7 +439,8 @@ task projectResetAll (group: 'mcplus project') {
     description = 'Resets sources in all projects'
 }
 
-configs.each { side, child ->
+def side = 'joined'
+[configuration].each { child ->
     def project_dir = project.file(PATH_PROJECTS + side)
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
 
@@ -587,7 +551,7 @@ task projectMakePatchesAll (group: 'mcplus project') {
     description = 'Makes patches for all projects'
 }
 
-configs.each { side, child ->
+[configuration].each { child ->
     def distConfig = Utils.distributionConfig(CONFIG, side)
     def project_dir = project.file(PATH_PROJECTS + side)
     def patches_dir = project.file(PATH_SOURCE_PATCHES + side)
@@ -870,7 +834,7 @@ task repositoryReleaseAll (group: 'mcplus repository') {
     description = 'Releases changes in repositories from development into release branch'
 }
 
-configs.each { side, child ->
+[configuration].each { child ->
     def project_dir = project.file(PATH_PROJECTS + side)
     def distConfig = Utils.distributionConfig(CONFIG, side)
 
