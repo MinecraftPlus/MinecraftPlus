@@ -8,12 +8,12 @@ import org.minecraftplus.gradle.tasks.Utils
 import java.util.zip.ZipFile
 
 class CreateProjectWithTemplate extends DefaultTask {
-    @Input String distro
     @InputFile File template
     @Optional @InputFile File gitignore
     @Optional @InputFile File meta
     @Optional @InputFile File bundle
     @Input List<String> libraries = new ArrayList<>()
+    @Optional @Input List<String> serverlibraries = new ArrayList<>()
     @Input Map<String, String> replace = new HashMap<>()
     @Internal Set<File> directories = new HashSet<>()
     
@@ -64,29 +64,37 @@ class CreateProjectWithTemplate extends DefaultTask {
     }
 
     def processTemplate(data) {
-        data = data.replace('{distro}', distro)
-        data = data.replace('{projectname}', "${project.name}-${distro}")
+        data = data.replace('{projectname}', "${project.name}")
 
         for (def k : replace.keySet()) {
             def v = replace.get(k)
             data = data.replace(k, v ?: 'null')
         }
 
-        def libs = []
         if (bundle != null) {
             def zf = new ZipFile(bundle)
             zf.entries().findAll{ it.name.equals('META-INF/libraries.list') }.each {
                 zf.getInputStream(it).text.split('\r?\n').each { line ->
-                    libs.add("'" + line.split('\t')[1] + "'")
+                    libraries.add("'" + line.split('\t')[1] + "'")
                 }
             }
         }
         if (meta != null) {
             def json = new JsonSlurper().parse(meta)
-            libs += json.libraries.findAll { Utils.testJsonRules(it.rules) }.collect { lib -> "'${lib.name}' " }.unique { a, b -> a <=> b }
+            libraries.addAll(json.libraries.findAll {
+                Utils.testJsonRules(it.rules)
+            }.collect {
+                lib -> lib.name
+            }.unique { a, b -> a <=> b })
         }
-        libs += libraries
-        data = data.replace('{libraries}', 'implementation ' + libs.join('\n    implementation '))
+
+        def libs = []
+        libraries.each { it
+            def inServer = serverlibraries.any { lib -> it.startsWith(lib) }
+            libs += (inServer ? 'server ' : 'client ') + "'${it}'"
+        }
+
+        data = data.replace('{libraries}', libs.join('\n    '))
 
         return data
     }

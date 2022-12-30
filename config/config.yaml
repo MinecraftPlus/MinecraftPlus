@@ -15,6 +15,26 @@ version_info:
   protocol_version: 578             # Should be incerased when packet-based communication between client and server changes
   pack_version: 5                   # Should be incerased when resource-pack implementation changes
 
+# This is list of dependencies shared between server and client.
+# TODO Later it will be replaced with server bundle processing
+server_libraries:
+  - com.mojang:javabridge
+  - net.sf.jopt-simple:jopt-simple
+  - io.netty:netty-all
+  - com.google.guava:guava
+  - org.apache.commons:commons-lang3
+  - commons-io:commons-io
+  - commons-codec:commons-codec
+  - com.mojang:brigadier
+  - com.mojang:datafixerupper
+  - com.google.code.gson:gson
+  - com.mojang:authlib
+  - it.unimi.dsi:fastutil
+  - org.apache.logging.log4j:log4j-api
+  - org.apache.logging.log4j:log4j-core
+  - com.google.code.findbugs:jsr305
+  - net.minecraftforge:mergetool
+
 ##
 # TOOLS CONFIGURATION
 #

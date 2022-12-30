@@ -27,6 +27,20 @@ configurations {
     all {
         transitive = false
     }
+
+    server {
+        description = 'Contains server dependencies'
+    }
+    serverImplementation.extendsFrom implementation
+
+    client {
+        description = 'Contains client dependencies'
+        extendsFrom server
+    }
+    clientImplementation.extendsFrom client
+
+    implementation.extendsFrom server, client
+
     checkstyle {
         transitive = true
     }
@@ -39,10 +53,8 @@ dependencies {
 
 import org.minecraftplus.gradle.tasks.Utils
 import org.minecraftplus.gradle.tasks.meta.GenerateVersionInfo
-
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.time.ZonedDateTime
-
-// Generating timestamp
 
 Utils.init() // Initialize special gradle utils
 
@@ -50,11 +62,7 @@ ext {
     CONFIG = rootProject.ext.CONFIG // Load and use config from root project
     DIST_CONFIG = Utils.projectConfig(CONFIG)
 
-    DISTRO = project.name
     JAVA = CONFIG.java_target ?: 8
-    RESOURCES = DIST_CONFIG.resources ?: 'internal'
-    SHADE = DIST_CONFIG.artifact.shaded ?: false
-    MAIN_CLASS = DIST_CONFIG.artifact.mainclass ?: null
 
     INDEX_ID = DIST_CONFIG.index
     PATH_BUILD = file('build').absolutePath + '/'
@@ -63,8 +71,6 @@ ext {
 
 group = rootProject.group
 version = rootProject.version
-
-archivesBaseName = String.join('-', rootProject.name, project.name)
 
 sourceSets {
     remote {
@@ -75,7 +81,7 @@ sourceSets {
     }
     shared {
         resources {
-            srcDirs = ['src/main/resources/internal']
+            srcDirs = ['src/main/resources/internal', 'build/resources/generated']
 
             // Resources shared between client and server
             include "assets/.mcassetsroot"
@@ -86,6 +92,9 @@ sourceSets {
         }
     }
     client {
+        java {
+            srcDir sourceSets.main.java.srcDirs
+        }
         resources {
             srcDirs = ['src/main/resources/internal']
             setIncludes shared.resources.getIncludes()
@@ -96,6 +105,14 @@ sourceSets {
         }
     }
     server {
+        java {
+            srcDir sourceSets.main.java.srcDirs
+
+            exclude "net/minecraft/client"
+            exclude "net/minecraft/realms"
+            exclude "com/mojang/realmsclient"
+            exclude "com/mojang/blaze3d"
+        }
         resources {
             srcDirs = ['src/main/resources/internal']
             setIncludes shared.resources.getIncludes()
@@ -109,12 +126,7 @@ sourceSets {
         }
     }
     main {
-        resources {
-            def resourceSet = sourceSets['internal'].resources
-            srcDir resourceSet.srcDirs
-            srcDir 'build/resources/generated'
-            setIncludes resourceSet.getIncludes()
-        }
+        resources.srcDirs = shared.resources.srcDirs
     }
 }
 
@@ -122,18 +134,58 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(JAVA)
 
 checkstyle {
     toolVersion = '8.2'
-    configFile file(rootProject.PATH_CONFIG_CHECKSTYLE + DISTRO + "/checkstyle.xml")
+    configFile file(rootProject.PATH_CONFIG + "/checkstyle.xml")
 }
 
-jar {
+archivesBaseName = String.join('-', rootProject.name, project.name)
+
+task serverJar(type: ShadowJar) {
+    archiveClassifier.set('server')
     manifest {
         attributes 'version': project.version
         attributes 'javaCompliance': project.targetCompatibility
         attributes 'group': project.group
-        if (MAIN_CLASS) {
-            attributes 'Main-Class': MAIN_CLASS
-        }
+        attributes 'Main-Class': DIST_CONFIG.runnables.server.mainclass
     }
+
+    from sourceSets.server.output
+    configurations = [project.configurations.server]
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    // Filter META-INF stuff from dependencies
+    exclude 'META-INF/versions/**'
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/org/**'
+    exclude 'META-INF/services/**'
+    exclude 'META-INF/eclipse.inf'
+    exclude 'META-INF/ECLIPSE_.*'
+    exclude 'META-INF/DEPENDENCIES**'
+    exclude 'META-INF/LICENSE**'
+    exclude 'META-INF/NOTICE**'
+}
+
+task clientJar(type: ShadowJar) {
+    archiveClassifier.set('client')
+    manifest {
+        attributes 'version': project.version
+        attributes 'javaCompliance': project.targetCompatibility
+        attributes 'group': project.group
+        attributes 'Main-Class': DIST_CONFIG.runnables.client.mainclass
+    }
+
+    from sourceSets.client.output
+}
+
+task jar(type: ShadowJar, overwrite: true) {
+    archiveClassifier.set('bundle')
+    manifest {
+        attributes 'version': project.version
+        attributes 'javaCompliance': project.targetCompatibility
+        attributes 'group': project.group
+    }
+
+    configurations = [project.configurations.server, project.configurations.client]
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -148,33 +200,14 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-if (SHADE) {
-    apply plugin: 'com.github.johnrengelman.shadow'
-    shadowJar {
-        classifier = 'bundle'
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-        // Filter META-INF stuff from dependencies
-        exclude 'META-INF/versions/**'
-        exclude 'META-INF/maven/**'
-        exclude 'META-INF/org/**'
-        exclude 'META-INF/services/**'
-        exclude 'META-INF/eclipse.inf'
-        exclude 'META-INF/ECLIPSE_.*'
-        exclude 'META-INF/DEPENDENCIES**'
-        exclude 'META-INF/LICENSE**'
-        exclude 'META-INF/NOTICE**'
-    }
-}
 
 artifacts {
-    archives jar
+    archives serverJar
+    archives clientJar
     archives sourcesJar
     archives javadocJar
-    if (SHADE) {
-        archives shadowJar
-    }
 }
+
 
 assets {
     generate {
@@ -203,7 +236,9 @@ def genTask = task generateVersionJson(type: GenerateVersionInfo) {
 
     output = file('build/resources/generated/version.json')
 }
-tasks.processResources.dependsOn(genTask)
+tasks.withType(ProcessResources) {
+    dependsOn(genTask)
+}
 
 
 /*
