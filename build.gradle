@@ -23,6 +23,7 @@ import org.minecraftplus.gradle.tasks.maven.*
 import org.minecraftplus.gradle.tasks.meta.*
 import org.minecraftplus.gradle.tasks.smart.*
 import org.minecraftplus.gradle.tasks.repo.*
+import de.undercouch.gradle.tasks.download.Download
 import org.minecraftplus.gradle.tasks.RunApplication
 // Inherit some tasks from MinecraftForge
 import net.minecraftforge.mcpconfig.tasks.DownloadTool
@@ -85,23 +86,26 @@ if (PRODUCTION_MODE) {
     logger.lifecycle('Project is in PRODUCTION environment mode!')
 }
 
-task downloadMergeTool(group: 'mcplus download', type: DownloadTool) {
+tasks.register('downloadMergeTool', DownloadTool) {
+    group = 'mcplus download'
     description = 'Downloads merge tool'
 
     config MERGETOOL, PATH_BUILD_LIBRARIES
 }
-task downloadRenameTool(group: 'mcplus download', type: DownloadTool) {
+tasks.register('downloadRenameTool', DownloadTool) {
+    group = 'mcplus download'
     description = 'Downloads rename tool'
 
     config RENAMETOOL, PATH_BUILD_LIBRARIES
 }
-task downloadFernflower(group: 'mcplus download', type: DownloadTool) {
+tasks.register('downloadFernflower', DownloadTool) {
+    group = 'mcplus download'
     description = 'Downloads decompiler'
 
     config FERNFLOWER, PATH_BUILD_LIBRARIES
 }
 
-task downloadManifest(type: Download) {
+tasks.register('downloadManifest', Download) {
     group = 'mcplus download'
     description = 'Downloads version manifest from mojang.com.'
 
@@ -112,13 +116,13 @@ task downloadManifest(type: Download) {
     quiet true
 }
 
-task downloadVersionJson(type: Download) {
+tasks.register('downloadVersionJson', Download) {
     group = 'mcplus download'
     description = 'Downloads minecraft version JSON configuration.'
     dependsOn tasks.downloadManifest
 
     inputs.file tasks.downloadManifest.dest
-    src { tasks.downloadManifest.dest.json.versions.find{ it.id == MINECRAFT_VERSION }.url }
+    src { tasks.downloadManifest.dest.json.versions.find { it.id == MINECRAFT_VERSION }.url }
     dest file(PATH_BUILD + 'version/version.json')
     useETag 'all'
     onlyIfModified true
@@ -128,7 +132,7 @@ task downloadVersionJson(type: Download) {
 /**
  * Generate JSON version manifest to pass it to game launcher
  */
-task generateVersionJsonMeta(type: GenerateVersionManifest) {
+tasks.register('generateVersionJsonMeta', GenerateVersionManifest) {
     group = 'mcplus meta'
     description = "Generates version's launcher meta"
 
@@ -143,13 +147,14 @@ task generateVersionJsonMeta(type: GenerateVersionManifest) {
 /**
  * Download client and server JARs
  */
-task downloadVersionJars(group: 'mcplus download') {
+tasks.register('downloadVersionJars') {
+    group = 'mcplus download'
     description = 'Downloads minecraft version jars (client and server).'
 }
 
 ['client', 'server'].each { id ->
     def taskName = 'downloadVersion' + id.capitalize() + "Jar"
-    def versionTask = task "${taskName}" (type: Download) {
+    def versionTask = tasks.register(taskName, Download) {
         group = 'mcplus download ' + id
         dependsOn tasks.downloadVersionJson
 
@@ -166,7 +171,7 @@ task downloadVersionJars(group: 'mcplus download') {
 /**
  * Download version libraries with extra added by project configuration
  */
-task downloadVersionLibraries(type: DownloadLibraries) {
+tasks.register('downloadVersionLibraries', DownloadLibraries) {
     group = 'mcplus download'
     description = 'Downloads libraries needed by game version.'
     dependsOn tasks.downloadVersionJson
@@ -179,7 +184,7 @@ task downloadVersionLibraries(type: DownloadLibraries) {
 /**
  * Download client assets
  */
-task downloadVersionAssets(type: DownloadAssets) {
+tasks.register('downloadVersionAssets', DownloadAssets) {
     group = 'mcplus download'
     description = 'Downloads assets used by game version.'
     dependsOn tasks.downloadVersionJson
@@ -191,7 +196,7 @@ task downloadVersionAssets(type: DownloadAssets) {
 /**
  * Package remote assets
  */
-task packageVersionAssets(type: PackageAssets) {
+tasks.register('packageVersionAssets', PackageAssets) {
     group = 'mcplus process'
     description = 'Packages remote assets used by game version into JAR.'
     dependsOn tasks.downloadVersionJson
@@ -205,7 +210,7 @@ task packageVersionAssets(type: PackageAssets) {
 /**
  * Extract natives for client
  */
-task extractNatives(type: ExtractNatives) {
+tasks.register('extractNatives', ExtractNatives) {
     group = 'mcplus project'
     dependsOn tasks.downloadVersionJson
     dependsOn tasks.downloadVersionLibraries
@@ -218,13 +223,14 @@ task extractNatives(type: ExtractNatives) {
 /**
  * Download official mappings for client and server
  */
-task downloadMappings(group: 'mcplus download') {
+tasks.register('downloadMappings') {
+    group = 'mcplus download'
     description = 'Downloads official mappings.'
 }
 
 ['client', 'server'].each { side ->
     def taskName = 'download' + side.capitalize() + "Mappings"
-    def mappingsTask = task "${taskName}" (type: Download) {
+    def mappingsTask = tasks.register(taskName, Download) {
         group = 'mcplus process ' + side
         dependsOn tasks.downloadVersionJson
 
@@ -241,17 +247,18 @@ task downloadMappings(group: 'mcplus download') {
 /**
  * Convert official mappings to TSRG2 format
  */
-task convertMappings(group: 'mcplus process') {
+tasks.register('convertMappings') {
+    group = 'mcplus process'
     description = 'Converts official mappings to TSRG format.'
 }
 
 ['client', 'server'].each { side ->
     def taskName = 'convert' + side.capitalize() + "Mappings"
-    def convertTask = task "${taskName}" (type: ConvertMappings) {
+    def convertTask = tasks.register(taskName, ConvertMappings) {
         group = 'mcplus process ' + side
-        dependsOn tasks.getByPath("download${side.capitalize()}Mappings")
+        dependsOn tasks.named("download${side.capitalize()}Mappings")
 
-        input =  tasks.getByPath("download${side.capitalize()}Mappings").dest
+        input =  tasks.named("download${side.capitalize()}Mappings").get().dest
         dest = file(PATH_BUILD + 'mappings/' + side + '_mappings.tsrg')
     }
     tasks.convertMappings.dependsOn(convertTask)
@@ -261,19 +268,20 @@ task convertMappings(group: 'mcplus process') {
 /**
  * Filter version jars to contain only classes
  */
-task filterVersionJars(group: 'mcplus process') {
+tasks.register('filterVersionJars') {
+    group = 'mcplus process'
     description = 'Filters version jars.'
 }
 
 ['client', 'server'].each { side ->
     def taskName = 'filterVersion' + side.capitalize() + "Jar"
-    def filterTask = task "${taskName}" (type: SplitJar) {
+    def filterTask = tasks.register(taskName, SplitJar) {
         group = 'mcplus process ' + side
-        dependsOn tasks.getByPath("convert${side.capitalize()}Mappings")
-        dependsOn tasks.getByPath("downloadVersion${side.capitalize()}Jar")
+        dependsOn tasks.named("convert${side.capitalize()}Mappings")
+        dependsOn tasks.named("downloadVersion${side.capitalize()}Jar")
 
-        input = tasks.getByPath("downloadVersion${side.capitalize()}Jar").dest
-        mappings = tasks.getByPath("convert${side.capitalize()}Mappings").dest
+        input = tasks.named("downloadVersion${side.capitalize()}Jar").get().dest
+        mappings = tasks.named("convert${side.capitalize()}Mappings").get().dest
         acceptable = [ "assets/", "data/", "net/minecraft/", "com/mojang/blaze3d", "com/mojang/realms",
                        "log4j2.xml", "Log4j-config.xsd", "Log4j-events.dtd", "Log4j-events.xsd", "Log4j-levels.xsd",
                        "pack.mcmeta", "pack.png", "version.json"]
@@ -288,7 +296,7 @@ task filterVersionJars(group: 'mcplus process') {
 /**
  * Merge client and server JAR to one annotated with @OnlyIn(Dist.<SIDE>)
  */
-task mergeVersionJoinedJar(type: MergeJar) {
+tasks.register('mergeVersionJoinedJar', MergeJar) {
     group = 'mcplus process'
     description = 'Merges source JARs into one annotated with Dist marker.'
     dependsOn tasks.downloadMergeTool
@@ -306,9 +314,8 @@ task mergeVersionJoinedJar(type: MergeJar) {
 /**
  * Merge client and server internal resources to joined
  */
-task mergeJoinedResources(type: CombineArchives) {
-    def side = 'joined'
-    group = 'mcplus process ' + side
+tasks.register('mergeJoinedResources', CombineArchives) {
+    group = 'mcplus process joined'
     description = 'Merges JARs into one.'
     dependsOn tasks.filterVersionClientJar
     dependsOn tasks.filterVersionServerJar
@@ -319,29 +326,10 @@ task mergeJoinedResources(type: CombineArchives) {
 }
 tasks.filterVersionJars.dependsOn(tasks.mergeJoinedResources)
 
-
-/**
- * Process sides configuration
- */
-def configuration = [
-    Name: 'Joined', jsonlibs: true,  extra: 'Client', assets: true,
-    projectTemplate: 'project_build.gradle',
-//    decompileTask: tasks.packageVersionAssets, // TODO Make this not needed, as it is in remote sourceset
-    mappingsTask: tasks.convertClientMappings,
-    splitTask: tasks.mergeVersionJoinedJar,
-    resources: 'internal',
-    natives: tasks.extractNatives.dest,
-//    sourceSets: [
-//         [ suffix: 'java', task: tasks.decompileVersionJars, outputDir: 'src/main/java' ],
-//         [ suffix: 'resources/internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/resources/internal' ],
-//         [ suffix: 'resources/remote', task: tasks.packageVersionAssets, outputDir: 'src/main/resources/remote' ]
-//    ]
-]
-
 /**
  * Prepare list of libraries for Vignette and Fernflower
  */
-configuration.librariesTask = task generateProcessLibraries(type: CreateFernflowerLibraries) {
+tasks.register('generateProcessLibraries', CreateFernflowerLibraries) {
     group = 'mcplus process'
     description = 'Prepare list of libraries for Vignette and Fernflower'
 
@@ -357,19 +345,19 @@ configuration.librariesTask = task generateProcessLibraries(type: CreateFernflow
 /**
  * Vignette renaming
  */
-configuration.renameTask = task renameVersionJars(type: RemapJar) {
+tasks.register('renameVersionJoinedJar', RemapJar) {
     group = 'mcplus process'
     description = 'Renames jars using mappings'
 
     dependsOn tasks.downloadRenameTool
-    dependsOn configuration.splitTask
-    dependsOn configuration.mappingsTask
-    dependsOn configuration.librariesTask
+    dependsOn tasks.mergeVersionJoinedJar
+    dependsOn tasks.convertClientMappings
+    dependsOn tasks.generateProcessLibraries
 
     config RENAMETOOL, tasks.downloadRenameTool
-    input = configuration.splitTask.dest
-    mappings = configuration.mappingsTask.dest
-    libraries = configuration.librariesTask.dest
+    input = tasks.mergeVersionJoinedJar.dest
+    mappings = tasks.convertClientMappings.dest
+    libraries = tasks.generateProcessLibraries.dest
     dictionary = file(PATH_CONFIG + 'dictionary.dict')
     dest = file(PATH_BUILD + 'mapped/mapped.jar')
     log = file(PATH_BUILD + 'mapped/mapped.log')
@@ -378,29 +366,36 @@ configuration.renameTask = task renameVersionJars(type: RemapJar) {
 /**
  * Fernflower decompilation
  */
-configuration.decompileTask = task decompileVersionJars (type: FernflowerTask) {
+tasks.register('decompileVersionJoinedJar', FernflowerTask) {
     group = 'mcplus process'
     description = 'Decompiles jars'
 
     dependsOn tasks.downloadFernflower
-    dependsOn configuration.librariesTask
-    dependsOn configuration.renameTask
+    dependsOn tasks.generateProcessLibraries
+    dependsOn tasks.renameVersionJoinedJar
 
     config FERNFLOWER, tasks.downloadFernflower
     javaLauncher = javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
     }
-    libraries = configuration.librariesTask.dest
-    input = configuration.renameTask.dest
+    libraries = tasks.generateProcessLibraries.dest
+    input = tasks.renameVersionJoinedJar.dest
 
     log = file(PATH_BUILD + '/decompile/decompile.log')
     dest = file(PATH_BUILD + '/decompile/decompile.jar')
 }
 
+/**
+ * Process sides configuration
+ */
+def configuration = [
+        Name: 'Joined'
+]
+
 configuration.sourceSets = [
-        [ suffix: 'java', task: tasks.decompileVersionJars, outputDir: 'src/main/java' ],
+        [ suffix: 'java', task: tasks.decompileVersionJoinedJar, outputDir: 'src/main/java' ],
         [ suffix: 'resources/internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/resources/internal' ],
-        [ suffix: 'resources/remote', task: tasks.packageVersionAssets, outputDir: 'src/main/resources/remote' ]
+        [ suffix: 'resources/remote', task: tasks.packageVersionAssets, outputDir: 'src/main/resources/remote' ],
 ]
 
 
@@ -457,23 +452,16 @@ def side = 'joined'
     child.projectCreateTask = task "project${child.Name}Create"(type: CreateProjectWithTemplate) {
         group = 'mcplus project ' + side
         dependsOn child.projectRootTask
-        dependsOn(child.jsonlibs ? [tasks.downloadVersionJson] : [])
+        dependsOn tasks.downloadVersionJson
         mustRunAfter child.projectDeleteTask
 
         dest project_dir
-        template project.file(PATH_CONFIG_TEMPLATES + child.projectTemplate)
+        template project.file(PATH_CONFIG_TEMPLATES + 'project_build.gradle')
         gitignore project.file(PATH_CONFIG_TEMPLATES + 'project_gitignore')
 
-        if (child.jsonlibs) {
-            meta tasks.downloadVersionJson.dest
-            serverlibraries = CONFIG.server_libraries?: [] //TODO Replace this with bundle processing in later versions
-        }
+        meta tasks.downloadVersionJson.dest
+        serverlibraries = CONFIG.server_libraries?: [] //TODO Replace this with bundle processing in later versions
         Utils.projectConfig(CONFIG).libraries?.each { library it }
-
-        replace '{java_target}', JAVA_TARGET as String
-        replace '{resources}', child.resources?: side
-        replaceFile '{natives}', child.natives?: null
-        replace '{shade}', (!child.jsonlibs || side.equals('joined')) as String
 
         doFirst {
             if (child.sourceSets) {
@@ -495,10 +483,10 @@ def side = 'joined'
     if (child.sourceSets == null) {
         child.projectResetTask = task "project${child.Name}Reset" (type: ResetSourcesTask) {
             group = 'mcplus project ' + side
-            dependsOn child.decompileTask
+            dependsOn tasks.decompileVersionJoinedJar
             dependsOn child.projectRootTask
 
-            rootZip child.decompileTask.dest
+            rootZip tasks.decompileVersionJoinedJar.dest
             target new File(project_dir, 'src/main/java')
         }
     } else {
@@ -710,12 +698,12 @@ task projectMakePatchesAll (group: 'mcplus project') {
                         group 'mcplus smartpatch ' + side
                         description = "Make patch set of extracted commit ${commit.id}"
                         dependsOn child.smartExtractTask
-                        dependsOn child.decompileTask
+                        dependsOn tasks.decompileVersionJoinedJar
 
                         commitId = commit.id
                         gitrepo = project_dir
 
-                        rootZip child.decompileTask.dest
+                        rootZip tasks.decompileVersionJoinedJar.dest
                         target new File(project_dir, 'src/main/java')
                         patches new File(smartpatches_dir, commitId)
                     }
