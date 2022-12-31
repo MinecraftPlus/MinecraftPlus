@@ -459,7 +459,7 @@ configuration.sourceSets.each {
     def resetTask = tasks.register(taskName, ResetSourcesTask) {
         group = 'mcplus project'
         dependsOn sourceTask
-        dependsOn tasks.projectRootCreate
+        dependsOn tasks.projectCreate
 
         rootZip sourceTask.dest
         target outputDirectory
@@ -484,6 +484,7 @@ tasks.register('patchesMake') {
     description = 'Makes patches of all sourcesets in project'
 }
 
+def projectConfig = Utils.projectConfig(CONFIG)
 def patches_dir = project.file(PATH_SOURCE_PATCHES)
 
 tasks.register('patchesDirectories') {
@@ -531,10 +532,9 @@ configuration.sourceSets.each {
 }
 
 
-def side = 'joined'
-[configuration].each { child ->
-    def distConfig = Utils.projectConfig(CONFIG)
 
+[configuration].each { child ->
+    def side = 'joined'
     def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES)
 
     /**
@@ -549,7 +549,7 @@ def side = 'joined'
         // Do not overwrite previously generated configuration
         onlyIf { !output.exists()}
 
-        def branches = distConfig.repository.branches
+        def branches = projectConfig.repository.branches
         branch = branches.release
         output = new File(project_dir, ".smartconfig")
 
@@ -700,160 +700,54 @@ def side = 'joined'
 
 
 /**
- * Create repositories
+ * Create project repository
  */
-task repositoryCreateAll (group: 'mcplus repository') {
-    description = 'Creates repositories for all projects'
+tasks.register('repositoryCreate', CreateRepository) {
+    group = 'mcplus repository'
+    description = 'Creates empty git repository for project'
+
+    dependsOn tasks.projectRootCreate
+
+    // Skip git repository creating when .git folder exists
+    onlyIf { !new File(target, '.git').exists() }
+
+    target = project_dir
 }
 
 /**
- * Init repositories
+ * Init project repository
  */
-task repositoryInitAll (group: 'mcplus repository') {
-    description = 'Inits repositories in all projects'
+tasks.register('repositoryInit', InitRepository) {
+    group = 'mcplus repository'
+    description = "Initiates repository with initial commit and starting branches"
+
+    dependsOn tasks.repositoryCreate
+    dependsOn tasks.patchesApply
+
+    target = tasks.repositoryCreate.target
+    branchName = projectConfig.repository.branches.development
+    commitMessage = "Initial commit"
+    additionalBranches = projectConfig.repository.branches.collect { type, name -> name }
 }
 
 /**
- * Check repositories
+ * Checks if repository is in clean state and checked out on development branch
  */
-task repositoryCheckAll (group: 'mcplus repository') {
-    description = 'Checks state of all projects repositories'
+tasks.register('repositoryCheckState', CheckRepositoryState) {
+    group = 'mcplus repository'
+    description = "Checks if repository is in clean state and checked out on development branch"
+
+    dependsOn tasks.repositoryCreate
+    mustRunAfter tasks.repositoryInit
+
+    target = tasks.repositoryCreate.target
+    isClean = true
+    containsBranch = [projectConfig.repository.branches.development, projectConfig.repository.branches.buildscript]
+    checkedOn = projectConfig.repository.branches.development
 }
+//tasks.smartExtractTask.dependsOn(child.repoCheckStateTask) // TODO Reorder tasks to keep them chronologically?
 
-/**
- * Synchronize repos
- */
-task repositorySyncAll (group: 'mcplus repository') {
-    description = 'Synchronizes distro repositories with JOINED'
-}
 
-/**
- * Capture changes in distributions repositories
- */
-task repositoryReleaseAll (group: 'mcplus repository') {
-    description = 'Releases changes in repositories from development into release branch'
-}
-
-[configuration].each { child ->
-    def distConfig = Utils.projectConfig(CONFIG)
-
-    child.repoCreateTask = task "repository${child.Name}Create"(type: CreateRepository) {
-        group = 'mcplus repository'
-        description = "Creates empty git repository in projects directory"
-        dependsOn tasks.projectRootCreate
-
-        // Skip git repository creating when .git folder exists
-        onlyIf { !new File(target, '.git').exists() }
-
-        target = project_dir
-    }
-    tasks.repositoryCreateAll.dependsOn(child.repoCreateTask)
-
-    child.repoInitTask = task "repository${child.Name}Init"(type: InitRepository) {
-        group = 'mcplus repository'
-        description = "Initiates repository with initial commit and starting branches"
-        dependsOn child.repoCreateTask
-        dependsOn tasks.patchesApply
-
-        target = child.repoCreateTask.target
-        branchName = distConfig.repository.branches.development
-        commitMessage = "Initial commit of ${side.toUpperCase()}"
-        additionalBranches = distConfig.repository.branches.collect { type, name -> name }
-    }
-    tasks.repositoryInitAll.dependsOn(child.repoInitTask)
-
-    /**
-     * Checks if repository is in clean state and checked out on development branch
-     */
-    child.repoCheckStateTask = task "repository${child.Name}CheckState"(type: CheckRepositoryState) {
-        group = 'mcplus repository'
-        dependsOn child.repoCreateTask
-        mustRunAfter child.repoInitTask
-
-        target = child.repoCreateTask.target
-        isClean = true
-        containsBranch = [distConfig.repository.branches.development, distConfig.repository.branches.buildscript]
-        checkedOn = distConfig.repository.branches.development
-    }
-    tasks.repositoryCheckAll.dependsOn(child.repoCheckStateTask)
-    child.smartExtractTask.dependsOn(child.repoCheckStateTask) // TODO Reorder tasks to keep them chronologically?
-
-    /**
-     * Tasks for distro (client, server) only repositories
-     */
-    if (['client', 'server'].contains(side)) {
-        def joinedConfig = Utils.projectConfig(CONFIG)
-
-        child.repoSyncTask = task "repository${child.Name}Sync"(type: SyncChanges) {
-            group = 'mcplus repository'
-            description = "Fetches changes made in JOINED distribution and merges into development branch"
-            dependsOn child.repoInitTask
-            dependsOn sides.joined.repoInitTask // sync with these
-            dependsOn child.repoCheckStateTask
-
-            target = child.repoInitTask.target
-            remoteName = "joined"
-            remoteUrl = project_dir.relativePath(sides.joined.repoInitTask.target)
-            remoteBranch = joinedConfig.repository.branches.release
-            synchronizationBranch = distConfig.repository.branches.synchronization
-            developmentBranch = distConfig.repository.branches.development
-            updateMessage = "Apply synchronization changes"
-        }
-        tasks.repositorySyncAll.dependsOn(child.repoSyncTask)
-    }
-
-    if (['joined'].contains(side)) {
-
-        /**
-         * Supporting task for buildscript changes commiting
-         */
-        def checkoutTask = task "repository${child.Name}CheckoutBuildscript"(type: CheckoutBranch) {
-            group = 'mcplus repository'
-            dependsOn child.repoInitTask
-            dependsOn child.repoCheckStateTask
-
-            target = child.repoInitTask.target
-            branchName = distConfig.repository.branches.buildscript
-        }
-
-        /**
-         * Task used to update buildscript after changes in template or project create task.
-         * It commits buildscript update on 'buildscript' project type branch then merges it to 'development' type branch
-         */
-        child.repoBuildUpdateTask = task "repository${child.Name}BuildscriptUpdate"(type: UpdateBuildscript) {
-            group = 'mcplus repository'
-            description = "Updates distro buildscript and commits changes into repository"
-            dependsOn child.repoCreateTask
-            dependsOn checkoutTask
-            dependsOn tasks.projectCreate
-            tasks.projectCreate.mustRunAfter(checkoutTask)
-
-            target = child.repoCreateTask.target
-            developmentBranch = distConfig.repository.branches.development
-            buildscriptBranch = distConfig.repository.branches.buildscript
-            updateMessage = "Apply buildscript changes"
-        }
-    }
-
-    /**
-     * Release tasks for auto-merging changes made on development branch into release branch
-     */
-    child.repoReleaseTask = task "repository${child.Name}Release" (type: ReleaseChanges) {
-        group = 'mcplus repository'
-        description = "Releases changes from development into release branch"
-        dependsOn child.repoCreateTask
-        dependsOn child.repoCheckStateTask
-        // TODO: Depends this on CHECKSTYLE if client or server side!
-
-        target = child.repoCreateTask.target
-
-        developmentBranch = distConfig.repository.branches.development
-        releaseBranch = distConfig.repository.branches.release
-
-        message = "Release commit of ${side.toUpperCase()}"
-    }
-    tasks.repositoryReleaseAll.dependsOn(child.repoReleaseTask) // TODO Joined need to be released first and other need to be synced
-}
 
 /**
  * Overbuild everything
@@ -865,8 +759,7 @@ task buildAll {
     group = 'mcplus build'
     description = 'Builds everything'
     dependsOn tasks.build
-    dependsOn tasks.repositoryInitAll
-    dependsOn tasks.repositorySyncAll
+    dependsOn tasks.repositoryInit
     project.subprojects.each {sub ->
         dependsOn sub.getTasksByName('build', false)
     }
@@ -875,13 +768,11 @@ task buildAll {
 
 subprojects { Project subproject ->
 
-    def distConfig = Utils.projectConfig(CONFIG)
-
     /**
      * Configure downloadable artifact in JSON version manifest
      */
-    if (distConfig.artifact?.downloadable) {
-        def artifactTask = distConfig.artifact.shaded ? subproject.tasks.shadowJar : subproject.tasks.jar
+    if (projectConfig.artifact?.downloadable) {
+        def artifactTask = projectConfig.artifact.shaded ? subproject.tasks.shadowJar : subproject.tasks.jar
         if (artifactTask) {
             rootProject.tasks.generateVersionJsonMeta.configure {
                 download subproject.name, artifactTask.archiveFile.get().asFile
@@ -893,8 +784,8 @@ subprojects { Project subproject ->
     /**
      * Configure runnables for testing purposes
      */
-    def prefix =  distConfig.runnables?.size() > 1 ? subproject.name : ''
-    distConfig.runnables?.each { name, config ->
+    def prefix =  projectConfig.runnables?.size() > 1 ? subproject.name : ''
+    projectConfig.runnables?.each { name, config ->
 
         def workingDir = subproject.file("build/run/${name}/")
 
