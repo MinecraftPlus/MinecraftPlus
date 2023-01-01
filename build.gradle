@@ -742,76 +742,13 @@ tasks.register('repositoryCheckState', CheckRepositoryState) {
  * Run this task to build everything needed to result in ready to go
  * project with output binaries built
  */
-task buildAll {
+tasks.register('buildAll') {
     group = 'mcplus build'
     description = 'Builds everything'
+
     dependsOn tasks.build
     dependsOn tasks.repositoryInit
-    project.subprojects.each {sub ->
+    project.subprojects.each { sub ->
         dependsOn sub.getTasksByName('build', false)
-    }
-}
-
-
-subprojects { Project subproject ->
-
-    /**
-     * Configure downloadable artifact in JSON version manifest
-     */
-    if (projectConfig.artifact?.downloadable) {
-        def artifactTask = projectConfig.artifact.shaded ? subproject.tasks.shadowJar : subproject.tasks.jar
-        if (artifactTask) {
-            rootProject.tasks.generateVersionJsonMeta.configure {
-                download subproject.name, artifactTask.archiveFile.get().asFile
-                dependsOn artifactTask // Depend on that task
-            }
-        }
-    }
-
-    /**
-     * Configure runnables for testing purposes
-     */
-    def prefix =  projectConfig.runnables?.size() > 1 ? subproject.name : ''
-    projectConfig.runnables?.each { name, config ->
-
-        def workingDir = subproject.file("build/run/${name}/")
-
-        def taskName = 'run' + prefix.capitalize() + name.capitalize()
-        def runTask = task "${taskName}" (type: RunApplication) {
-            group = "mcplus run"
-            description = "Run ${subproject.name} ${name} application"
-            dependsOn subproject.tasks.classes
-//            dependsOn rootProject.tasks.generateVersionJsonMeta
-//            dependsOn config.assets ? [project(":resources").tasks.generateAssets] : []
-
-            doFirst {
-                mkdir workingDir
-            }
-
-            type = config.type
-            classpath = subproject.sourceSets.main.runtimeClasspath
-            mainClass = config.mainclass
-            args = config.args?.application ?: []
-            jvmArgs = config.args?.jvm ?: []
-
-            workDir workingDir
-            versionType project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
-
-            if (config?.type == "CLIENT" ?: false) {
-                dependsOn rootProject.tasks.generateVersionJsonMeta
-                manifest rootProject.tasks.generateVersionJsonMeta.manifestFull
-            }
-
-            if ((config?.assets ?: false)) {
-                dependsOn subproject.tasks.generateAssets
-                assets new File(subproject.PATH_BUILD_ASSETS).absolutePath
-                index subproject.INDEX_ID
-            }
-
-            if (config?.natives ?: false) {
-                dependsOn rootProject.tasks.extractNatives
-                systemProperty "java.library.path", rootProject.tasks.extractNatives.dest.absolutePath
-            }
-        }
     }
 }

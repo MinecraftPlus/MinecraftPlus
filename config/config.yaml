@@ -85,9 +85,8 @@ project:
   libraries:
     - net.minecraftforge:mergetool:1.1.3:api
     - com.google.code.findbugs:jsr305:3.0.1
-  artifact:
-    shaded: true
-    downloadable: false # If true, this artifact will be attached to version JSON manifest
+  resources:
+    index: mcplus-0.0.0
   runnables: # This section specifies runnable parts (each main's) which is used only for testing purposes, not used in generating output artifact jar
     client: &client_runnable
       type: CLIENT
