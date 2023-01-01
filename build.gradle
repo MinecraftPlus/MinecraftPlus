@@ -51,6 +51,7 @@ project.ext {
     PATH_CONFIG_TEMPLATES = PATH_CONFIG + 'templates/'
 
     CONFIG = file(PATH_CONFIG + 'config.yaml').yaml
+    PROJECT_CONFIG = Utils.projectConfig(CONFIG)
 
     PROJECT_VERSION = CONFIG.get('project_version', '0.0.0-SNAPSHOT')
     MINECRAFT_VERSION = CONFIG.get('minecraft_version', '1.15.2')
@@ -71,6 +72,12 @@ project.ext {
     ])
 
     PRODUCTION_MODE = project.hasProperty('ENV_MODE') && project.property('ENV_MODE') == 'PRODUCTION'
+
+    SOURCE_SETS = PROJECT_CONFIG.sources ?: [
+        [ name: 'java', task: 'decompileVersionJoinedJar', outputDir: 'src/main/java' ],
+        [ name: 'resources/internal', task: 'mergeJoinedResources', outputDir: 'src/main/resources/internal' ],
+        [ name: 'resources/remote', task: 'packageVersionAssets', outputDir: 'src/main/resources/remote' ],
+    ]
 }
 
 group = "org.minecraftplus"
@@ -385,19 +392,6 @@ tasks.register('decompileVersionJoinedJar', FernflowerTask) {
     dest = file(PATH_BUILD + '/decompile/decompile.jar')
 }
 
-/**
- * Process sides configuration
- */
-def configuration = [
-        Name: 'Joined'
-]
-
-configuration.sourceSets = [
-        [ suffix: 'java', task: tasks.decompileVersionJoinedJar, outputDir: 'src/main/java' ],
-        [ suffix: 'resources/internal', task: tasks.mergeJoinedResources, outputDir: 'src/main/resources/internal' ],
-        [ suffix: 'resources/remote', task: tasks.packageVersionAssets, outputDir: 'src/main/resources/remote' ],
-]
-
 
 /**
  * Create project root directory
@@ -434,10 +428,10 @@ tasks.register('projectCreate', CreateProjectWithTemplate) {
 
     meta tasks.downloadVersionJson.dest
     serverlibraries = CONFIG.server_libraries ?: [] //TODO Replace this with bundle processing in later versions
-    Utils.projectConfig(CONFIG).libraries?.each { library it }
+    PROJECT_CONFIG.libraries?.each { library it }
 
     doFirst {
-        configuration.sourceSets.each {
+        SOURCE_SETS.each {
             def directory = new File(project_dir, it.outputDir as String)
             logger.info("Creating sourceset directory {}", directory)
             mkdir directory
@@ -450,9 +444,9 @@ tasks.register('projectReset') {
     description = 'Resets all sourcesets in project'
 }
 
-configuration.sourceSets.each {
-    def taskSuffix = it.suffix as String
-    def sourceTask = it.task as Task
+SOURCE_SETS.each {
+    def taskSuffix = it.name as String
+    def sourceTask = tasks.named(it.task as String).get()
     def outputDirectory = new File(project_dir, it.outputDir as String)
 
     def taskName = 'projectReset' + taskSuffix.split("/").collect { it.capitalize() }.join('')
@@ -484,24 +478,23 @@ tasks.register('patchesMake') {
     description = 'Makes patches of all sourcesets in project'
 }
 
-def projectConfig = Utils.projectConfig(CONFIG)
 def patches_dir = project.file(PATH_SOURCE_PATCHES)
 
 tasks.register('patchesDirectories') {
     group = 'mcplus patches'
     doLast {
         mkdir patches_dir
-        configuration.sourceSets.each {
-            def directory = new File(patches_dir, it.suffix as String)
+        SOURCE_SETS.each {
+            def directory = new File(patches_dir, it.name as String)
             logger.info("Creating patches directory {}", directory)
             mkdir directory
         }
     }
 }
 
-configuration.sourceSets.each {
-    def taskSuffix = it.suffix as String
-    def sourceTask = it.task as Task
+SOURCE_SETS.each {
+    def taskSuffix = it.name as String
+    def sourceTask = tasks.named(it.task as String).get()
     def outputDirectory = new File(project_dir, it.outputDir as String)
     def patchesDirectory = new File(patches_dir, taskSuffix as String)
 
@@ -547,7 +540,7 @@ tasks.register('smartpatchCreateConfig', CreateSmartConfig) {
     // Do not overwrite previously generated configuration
     onlyIf { !output.exists() }
 
-    def branches = projectConfig.repository.branches
+    def branches = PROJECT_CONFIG.repository.branches
     branch = branches.development
     output = new File(project_dir, ".smartconfig")
 
@@ -650,9 +643,9 @@ if (smartlist.exists()) {
             }
 
             def sourceSetMakeTask = null
-            configuration.sourceSets.each {
-                def taskSuffix = it.suffix as String
-                def sourceTask = it.task as Task
+            SOURCE_SETS.each {
+                def taskSuffix = it.name as String
+                def sourceTask = tasks.named(it.task as String).get()
                 def outputDirectory = new File(project_dir, it.outputDir as String)
                 def patchesDirectory = new File(smartpatches_dir, commit.id)
 
@@ -712,9 +705,9 @@ tasks.register('repositoryInit', InitRepository) {
     dependsOn tasks.patchesApply
 
     target = tasks.repositoryCreate.target
-    branchName = projectConfig.repository.branches.development
+    branchName = PROJECT_CONFIG.repository.branches.development
     commitMessage = "Initial commit"
-    additionalBranches = projectConfig.repository.branches.collect { type, name -> name }
+    additionalBranches = PROJECT_CONFIG.repository.branches.collect { type, name -> name }
 }
 
 /**
@@ -729,10 +722,9 @@ tasks.register('repositoryCheckState', CheckRepositoryState) {
 
     target = tasks.repositoryCreate.target
     isClean = true
-    containsBranch = [projectConfig.repository.branches.development, projectConfig.repository.branches.buildscript]
-    checkedOn = projectConfig.repository.branches.development
+    containsBranch = [PROJECT_CONFIG.repository.branches.development, PROJECT_CONFIG.repository.branches.buildscript]
+    checkedOn = PROJECT_CONFIG.repository.branches.development
 }
-//tasks.smartExtractTask.dependsOn(child.repoCheckStateTask) // TODO Reorder tasks to keep them chronologically?
 
 
 
