@@ -1,0 +1,308 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'checkstyle'
+    id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
+    id 'org.minecraftplus.gradle.assetator' version '0.1.0' apply false
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'minecraft'
+        url 'https://libraries.minecraft.net/'
+    }
+    maven {
+        name 'minecraftplus'
+        url 'https://maven.minecraftplus.org/'
+    }
+    maven {
+        name 'forge'
+        url 'https://maven.minecraftforge.net/'
+    }
+}
+
+configurations {
+    all {
+        transitive = false
+    }
+
+    server {
+        description = 'Contains server dependencies'
+    }
+    serverImplementation.extendsFrom implementation
+
+    client {
+        description = 'Contains client dependencies'
+        extendsFrom server
+    }
+    clientImplementation.extendsFrom client
+
+    implementation.extendsFrom server, client
+
+    checkstyle {
+        transitive = true
+    }
+}
+
+dependencies {
+    {libraries}
+}
+
+
+import org.minecraftplus.gradle.tasks.RunApplication
+import org.minecraftplus.gradle.tasks.Utils
+import org.minecraftplus.gradle.tasks.meta.GenerateVersionInfo
+import org.minecraftplus.gradle.assetator.task.GenerateAssets
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import java.time.ZonedDateTime
+
+Utils.init() // Initialize special gradle utils
+
+ext {
+    CONFIG = rootProject.ext.CONFIG // Load and use config from root project
+    PROJECT_CONFIG = Utils.projectConfig(CONFIG)
+
+    JAVA = CONFIG.java_target ?: 8
+
+    INDEX_ID = PROJECT_CONFIG.resources.index
+    PATH_BUILD = file('build').absolutePath + '/'
+    PATH_BUILD_ASSETS = PATH_BUILD + 'assets/'
+}
+
+group = rootProject.group
+version = rootProject.version
+
+sourceSets {
+    remote {
+        resources.srcDirs = ['src/main/resources/remote']
+    }
+    internal {
+        resources.srcDirs = ['src/main/resources/internal']
+    }
+    shared {
+        resources {
+            srcDirs = ['src/main/resources/internal', 'build/resources/generated']
+
+            // Resources shared between client and server
+            include "assets/.mcassetsroot"
+            include "data/**"
+            include "log4j2.xml"
+            include "pack.mcmeta"
+            include "version.json"
+        }
+    }
+    client {
+        java {
+            srcDir sourceSets.main.java.srcDirs
+        }
+        resources {
+            srcDirs = ['src/main/resources/internal']
+            setIncludes shared.resources.getIncludes()
+
+            // Resources special to client
+            include "assets/**"
+            include "pack.png"
+        }
+    }
+    server {
+        java {
+            srcDir sourceSets.main.java.srcDirs
+
+            exclude "net/minecraft/client"
+            exclude "net/minecraft/realms"
+            exclude "com/mojang/realmsclient"
+            exclude "com/mojang/blaze3d"
+        }
+        resources {
+            srcDirs = ['src/main/resources/internal']
+            setIncludes shared.resources.getIncludes()
+
+            // Resources special to server
+            include "assets/minecraft/lang/en_us.json"
+            include "Log4j-config.xsd"
+            include "Log4j-events.dtd"
+            include "Log4j-events.xsd"
+            include "Log4j-levels.xsd"
+        }
+    }
+    main {
+        resources.srcDirs = shared.resources.srcDirs
+    }
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(JAVA)
+
+checkstyle {
+    toolVersion = '8.2'
+    configFile file(rootProject.PATH_CONFIG + "/checkstyle.xml")
+}
+
+archivesBaseName = String.join('-', rootProject.name, project.name)
+
+tasks.register('serverJar', ShadowJar) {
+    group = 'build'
+
+    archiveClassifier.set('server')
+    manifest {
+        attributes 'version': project.version
+        attributes 'javaCompliance': project.targetCompatibility
+        attributes 'group': project.group
+        attributes 'Main-Class': PROJECT_CONFIG.runnables.server.mainclass
+    }
+
+    from sourceSets.server.output
+    configurations = [project.configurations.server]
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    // Filter META-INF stuff from dependencies
+    exclude 'META-INF/versions/**'
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/org/**'
+    exclude 'META-INF/services/**'
+    exclude 'META-INF/eclipse.inf'
+    exclude 'META-INF/ECLIPSE_.*'
+    exclude 'META-INF/DEPENDENCIES**'
+    exclude 'META-INF/LICENSE**'
+    exclude 'META-INF/NOTICE**'
+}
+
+tasks.register('clientJar', ShadowJar) {
+    group = 'build'
+
+    archiveClassifier.set('client')
+    manifest {
+        attributes 'version': project.version
+        attributes 'javaCompliance': project.targetCompatibility
+        attributes 'group': project.group
+        attributes 'Main-Class': PROJECT_CONFIG.runnables.client.mainclass
+    }
+
+    from sourceSets.client.output
+}
+
+tasks.replace('jar', ShadowJar).configure {
+    group = 'build'
+
+    archiveClassifier.set('bundle')
+    manifest {
+        attributes 'version': project.version
+        attributes 'javaCompliance': project.targetCompatibility
+        attributes 'group': project.group
+    }
+
+    configurations = [project.configurations.server, project.configurations.client]
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('sourcesJar', Jar) {
+    group = 'build'
+
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+tasks.register('javadocJar', Jar) {
+    group = 'build'
+
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+rootProject.tasks.generateVersionJsonMeta.configure {
+    download 'client', tasks.clientJar.archiveFile.get().asFile
+    download 'server', tasks.serverJar.archiveFile.get().asFile
+}
+
+tasks.register('generateAssets', GenerateAssets) {
+    input = sourceSets.remote.resources.srcDirs as File[]
+    output = file(PATH_BUILD_ASSETS + 'indexes/' + INDEX_ID + '.json')
+    objectsDir = file(PATH_BUILD_ASSETS + 'objects/')
+}
+
+/**
+ * Generate version.json information file with project variables
+ */
+def genTask = tasks.register('generateVersionJson', GenerateVersionInfo) {
+    def versionInfo = Utils.versionInfo(CONFIG)
+
+    id = versionInfo.id
+    release_name = versionInfo.name
+    release_target = versionInfo.release_target
+    world_version = versionInfo.world_version
+    protocol_version = versionInfo.protocol_version
+    pack_version = versionInfo.pack_version
+    // Update build timestamp only if in production mode - skip unnecessary resource processing
+    if (rootProject.ext.PRODUCTION_MODE)
+        build_time = ZonedDateTime.now()
+    stable = versionInfo.id.endsWith("SNAPSHOT") ? false : true
+
+    output = file('build/resources/generated/version.json')
+}
+tasks.withType(ProcessResources).configureEach {
+    dependsOn(genTask)
+}
+
+artifacts {
+    archives serverJar
+    archives clientJar
+    archives sourcesJar
+    archives javadocJar
+}
+
+
+/**
+ * Configure runnables for testing purposes
+ */
+PROJECT_CONFIG.runnables?.each { name, config ->
+
+    def workingDir = project.file("build/run/${name}/")
+
+    def runTask = tasks.register("run${name.capitalize()}", RunApplication) {
+        group = "mcplus run"
+        description = "Run ${project.name} ${name} application"
+
+        doFirst {
+            mkdir workingDir
+        }
+
+        type = config.type
+        classpath = project.sourceSets.getByName(name).runtimeClasspath + files('build/resources/generated')
+        mainClass = config.mainclass
+        args = config.args?.application ?: []
+        jvmArgs = config.args?.jvm ?: []
+
+        workDir workingDir
+        versionType project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
+
+        if (config?.type == "CLIENT" ?: false) {
+            dependsOn rootProject.tasks.generateVersionJsonMeta
+            manifest rootProject.tasks.generateVersionJsonMeta.manifestFull
+        }
+
+        if ((config?.assets ?: false)) {
+            dependsOn project.tasks.generateAssets
+            assets new File(project.PATH_BUILD_ASSETS).absolutePath
+            index project.INDEX_ID
+        }
+
+        if (config?.natives ?: false) {
+            dependsOn rootProject.tasks.extractNatives
+            systemProperty "java.library.path", rootProject.tasks.extractNatives.dest.absolutePath
+        }
+    }
+}
+
+
+/*
+ * Miscellaneous, not much important
+ */
+
+// Group some task in more meaningful groups
+tasks.withType(Checkstyle) {
+    group = 'checkstyle'
+}
+tasks.findAll { it.name.containsIgnoreCase('eclipse') }.each { task ->
+    task.group = 'eclipse'
+}

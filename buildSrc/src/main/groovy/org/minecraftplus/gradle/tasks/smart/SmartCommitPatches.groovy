@@ -23,7 +23,6 @@ class SmartCommitPatches extends DefaultTask {
     @Input String commitMessage
 
     @Input gitRepo //TODO Annotating this as @InputDirectory causes wrong task dependency resolution with makeTask
-    @Optional @Input String[] projects = null
 
     @Input
     Map<File, File> patchSets = new HashMap<>()
@@ -90,12 +89,8 @@ class SmartCommitPatches extends DefaultTask {
             def addResult = addCommand.call()
             logger.trace("Staged all files into repository")
 
-            // Prepare commit message with source projects information
-            def message = "${commitMessage}"
-            if (projects != null && projects.size() > 0) {
-                def sides = Arrays.stream(projects).map(s -> s.substring(0, 3).toUpperCase()).collect(Collectors.joining(" "))
-                message = "[${sides}] ${commitMessage}"
-            }
+            // Prepare commit message
+            def message = "[SP] ${commitMessage}"
             logger.trace("Commit message: '{}'", message)
 
             def commit = git.commit()

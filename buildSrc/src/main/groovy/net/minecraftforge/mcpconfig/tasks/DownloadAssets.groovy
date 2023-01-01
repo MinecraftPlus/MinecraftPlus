@@ -31,6 +31,7 @@ public class DownloadAssets extends DefaultTask {
         ret.useETag('all')
         ret.src url
         ret.dest target
+        ret.quiet true
         ret.execute()
     }
 }
