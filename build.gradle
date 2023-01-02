@@ -528,7 +528,7 @@ SOURCE_SETS.each {
 /**
  * SMART PATCHES
  *
- * It's used to generate one commit witch generated patches, from each commit in distribution branch.
+ * It's used to generate one commit witch generated patches, from each commit in subproject branch.
  */
 
 def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES)
@@ -551,7 +551,7 @@ tasks.register('smartpatchCreateConfig', CreateSmartConfig) {
 
 tasks.register('smartpatchExtractCommits', SmartExtractCommits) {
     group = 'mcplus smartpatch'
-    description = 'Extract commits list from the distribution repository'
+    description = 'Extract commits list from the subproject repository'
     dependsOn tasks.smartpatchCreateConfig
 
     smartconfig = tasks.smartpatchCreateConfig.output
@@ -570,7 +570,7 @@ tasks.register('smartpatchExtractCommits', SmartExtractCommits) {
  */
 tasks.register('smartpatchMakePatches') {
     group = 'mcplus smartpatch'
-    description = 'Make sets of patches of all sourcesets in project, one for each commit'
+    description = 'Make sets of patches of all sourcesets in subproject, one for each commit'
     dependsOn tasks.smartpatchExtractCommits
 }
 
