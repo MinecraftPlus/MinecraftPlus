@@ -1,5 +1,23 @@
 --- a/net/minecraft/client/Minecraft.java
 +++ b/net/minecraft/client/Minecraft.java
+@@ -471,7 +471,7 @@
+    }
+ 
+    private String createTitle() {
+-      StringBuilder builder = new StringBuilder("Minecraft");
++      StringBuilder builder = new StringBuilder("MinecraftPlus");
+       if (this.isProbablyModded()) {
+          builder.append("*");
+       }
+@@ -496,7 +496,7 @@
+    }
+ 
+    public boolean isProbablyModded() {
+-      return !"vanilla".equals(ClientBrandRetriever.getClientModName()) || Minecraft.class.getSigners() == null;
++      return !"minecraftplus".equals(ClientBrandRetriever.getClientModName()) || Minecraft.class.getSigners() == null;
+    }
+ 
+    private void rollbackResourcePacks(Throwable throwable) {
 @@ -1807,9 +1807,9 @@
           return "Yes";
        });

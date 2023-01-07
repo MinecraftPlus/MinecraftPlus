@@ -1,0 +1,42 @@
+--- a/net/minecraft/client/gui/screens/TitleScreen.java
++++ b/net/minecraft/client/gui/screens/TitleScreen.java
+@@ -44,6 +44,8 @@
+    private Screen realmsNotificationsScreen;
+    private int copyrightWidth;
+    private int copyrightX;
++   private int copyrightWidth2;
++   private int copyrightX2;
+    private final PanoramaRenderer panorama = new PanoramaRenderer(CUBE_MAP);
+    private final boolean fading;
+    private long fadeInStart;
+@@ -86,8 +88,10 @@
+          this.splash = this.minecraft.getSplashManager().getSplash();
+       }
+ 
+-      this.copyrightWidth = this.font.width("Copyright Mojang AB. Do not distribute!");
++      this.copyrightWidth = this.font.width("Original Minecraft is property of Mojang AB.");
+       this.copyrightX = this.width - this.copyrightWidth - 2;
++      this.copyrightWidth2 = this.font.width("Do not distribute!");
++      this.copyrightX2 = this.width - this.copyrightWidth2 - 2;
+       int i = 24;
+       int i1 = this.height / 4 + 48;
+       if (this.minecraft.isDemo()) {
+@@ -208,7 +212,7 @@
+             RenderSystem.popMatrix();
+          }
+ 
+-         String s = "Minecraft " + SharedConstants.getCurrentVersion().getName();
++         String s = "MinecraftPlus " + SharedConstants.getCurrentVersion().getName();
+          if (this.minecraft.isDemo()) {
+             s = s + " Demo";
+          } else {
+@@ -220,7 +224,8 @@
+          }
+ 
+          this.drawString(this.font, s, 2, this.height - 10, 16777215 | i5);
+-         this.drawString(this.font, "Copyright Mojang AB. Do not distribute!", this.copyrightX, this.height - 10, 16777215 | i5);
++         this.drawString(this.font, "Original Minecraft is property of Mojang AB.", this.copyrightX, this.height - 10, 16777215 | i5);
++         this.drawString(this.font, "Do not distribute!", this.copyrightX2, this.height - 20, 16777215 | i5);
+          if (i > this.copyrightX && i < this.copyrightX + this.copyrightWidth && i1 > this.height - 10 && i1 < this.height) {
+             fill(this.copyrightX, this.height - 1, this.copyrightX + this.copyrightWidth, this.height, 16777215 | i5);
+          }

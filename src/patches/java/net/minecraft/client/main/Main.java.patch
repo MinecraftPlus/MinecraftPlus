@@ -1,0 +1,13 @@
+--- a/net/minecraft/client/main/Main.java
++++ b/net/minecraft/client/main/Main.java
+@@ -58,8 +58,8 @@
+       OptionSpec<String> optionspec10 = optionparser.accepts("uuid").withRequiredArg();
+       OptionSpec<String> optionspec11 = optionparser.accepts("accessToken").withRequiredArg().required();
+       OptionSpec<String> optionspec12 = optionparser.accepts("version").withRequiredArg().required();
+-      OptionSpec<Integer> optionspec13 = optionparser.accepts("width").withRequiredArg().ofType(Integer.class).defaultsTo(854);
+-      OptionSpec<Integer> optionspec14 = optionparser.accepts("height").withRequiredArg().ofType(Integer.class).defaultsTo(480);
++      OptionSpec<Integer> optionspec13 = optionparser.accepts("width").withRequiredArg().ofType(Integer.class).defaultsTo(1000);
++      OptionSpec<Integer> optionspec14 = optionparser.accepts("height").withRequiredArg().ofType(Integer.class).defaultsTo(500);
+       OptionSpec<Integer> optionspec15 = optionparser.accepts("fullscreenWidth").withRequiredArg().ofType(Integer.class);
+       OptionSpec<Integer> optionspec16 = optionparser.accepts("fullscreenHeight").withRequiredArg().ofType(Integer.class);
+       OptionSpec<String> optionspec17 = optionparser.accepts("userProperties").withRequiredArg().defaultsTo("{}");
