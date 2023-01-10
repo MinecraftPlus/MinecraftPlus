@@ -72,6 +72,7 @@ class SmartCommitPatches extends DefaultTask {
 //            }
 
             def addCommand = git.add()
+            def addCommand2 = git.add().setUpdate(true)
 
             patchSets.each { source, dest ->
                 // Need to remove old patches first
@@ -83,10 +84,12 @@ class SmartCommitPatches extends DefaultTask {
                 logger.lifecycle("Copied patches from '{}' to '{}'", source, dest)
 
                 addCommand.addFilepattern(gitRepo.relativePath(dest))
+                addCommand2.addFilepattern(gitRepo.relativePath(dest))
                 logger.trace("Added stage file-pattern: '{}'", gitRepo.relativePath(dest))
             }
 
             def addResult = addCommand.call()
+            def addResult2 = addCommand2.call()
             logger.trace("Staged all files into repository")
 
             // Prepare commit message
