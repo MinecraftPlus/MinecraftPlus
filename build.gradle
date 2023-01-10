@@ -618,6 +618,7 @@ if (smartlist.exists()) {
         logger.info("Loaded {} commits:", commits.size())
 
         def lastCommitTask = null
+        def lastMakeTask = null
         commits.findAll { c -> !c.applied }.each { commit ->
             logger.info(" # {} {}", commit.id, commit.message)
 
@@ -625,9 +626,7 @@ if (smartlist.exists()) {
             def commitTask = tasks.register("commit@${commit.id}", SmartCommitPatches) {
                 group 'mcplus smartpatch'
                 description = "Commit generated patch set of extracted commit ${commit.id}"
-                if (lastCommitTask) {
-                    dependsOn lastCommitTask
-                } // depend on previous commit
+                if (lastCommitTask) dependsOn lastCommitTask
 
                 branchName = json.info.branch
                 commitId = commit.id
@@ -656,6 +655,7 @@ if (smartlist.exists()) {
                 def makeTask = tasks.register("make@${commit.id}") {
                     group = 'mcplus smartpatch'
                     description = "Make patch set of extracted commit ${commit.id}"
+                    if (lastMakeTask) mustRunAfter lastMakeTask
 
                     doLast {
                         // Find commit in smartlist and mark as 'maked'
@@ -665,6 +665,7 @@ if (smartlist.exists()) {
                     }
                 }
                 tasks.smartpatchMakePatches.dependsOn(makeTask)
+                lastMakeTask = makeTask.get()
 
                 commitTask.configure {
                     dependsOn(makeTask)
