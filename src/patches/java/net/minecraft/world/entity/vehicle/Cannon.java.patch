@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,1001 @@
+@@ -0,0 +1,1012 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -894,36 +894,47 @@
 +    /**
 +     * Handles cannon shot
 +     * 
-+     * @param cannon
-+     * @return
++     * @param gunner player which fires cannon with torch
++     * 
++     * @return true if shoot succeed
 +     */
 +    public boolean handleShoot(ServerPlayer gunner) {
 +        if (!this.isReady()) {
-+            System.out.println("Dzialo niegotowe...");
 +            return false;
 +        }
 +
-+        System.out.println("Proba strzalu...");
-+        Cannonball entitycannonball = new Cannonball(this.level, this, gunner);
-+        entitycannonball.setGunner(gunner);
-+        entitycannonball.shootFromRotation(this, this.getBarrelAngle(), this.yRot, 0.0F, this.getShootPower(), 2.75F);
 +        Vec3 vec3d = this.getViewVector(1.0F);
-+        entitycannonball.setPos(this.getX() + vec3d.x,
-+            (this.getEyePosition(1.0F).y - entitycannonball.getBbHeight() / 2.0F) + vec3d.y , entitycannonball.getZ() + vec3d.z);
++        Vec3 vec3dcannonball = new Vec3(vec3d.x, vec3d.y, vec3d.z);
++        float shootPower = this.getShootPower();
 +
 +        if (!this.level.isClientSide) {
-+            System.out.println("Strzal");
-+            this.level.addFreshEntity(entitycannonball);
++            if (!this.getBullet().isEmpty()) { // Release bullet if loaded
++                Cannonball entitycannonball = new Cannonball(this.level, this, gunner);
++                vec3dcannonball = new Vec3(this.getX() + vec3d.x,
++                    (this.getEyePosition(1.0F).y - entitycannonball.getBbHeight() / 2.0F) + vec3d.y,
++                    entitycannonball.getZ() + vec3d.z);
++                entitycannonball.setPos(vec3dcannonball.x, vec3dcannonball.y, vec3dcannonball.z);
++                entitycannonball.shootFromRotation(this, this.getBarrelAngle(), this.yRot, 0.0F, shootPower, 2.75F);
++
++                this.level.addFreshEntity(entitycannonball);
++            }
++
++            this.getBullet().setCount(0);
++            this.getExplosive().setCount(0);
++            this.containerChanged(this.inventory);
 +        }
 +
 +        // Add shoot knockback
-+        this.setDeltaMovement(this.getDeltaMovement().add(vec3d.scale(-0.25F)));
++        this.setDeltaMovement(this.getDeltaMovement().add(vec3d.scale(-Math.log(shootPower))));
++
 +        // Play cannon shoot sound @LevelRenderer#levelEvent
 +        this.level.levelEvent((Player)null, 4000, new BlockPos(this), 0);
++
 +        // Do smoke
++        this.level.levelEvent((Player)null, 2008, new BlockPos(vec3dcannonball), 3);
++//        TODO try to do better smoke positioning
 +//        this.level.addParticle(ParticleTypes.EXPLOSION, entitycannonball.getX(), entitycannonball.getY(),
 +//            entitycannonball.getZ(), 1.0D, 0.0D, 0.0D);
-+        this.level.levelEvent((Player)null, 2008, new BlockPos(entitycannonball), 3);
 +
 +        return true;
 +    }
