@@ -1,0 +1,12 @@
+--- a/net/minecraft/network/protocol/game/ServerGamePacketListener.java
++++ b/net/minecraft/network/protocol/game/ServerGamePacketListener.java
+@@ -88,4 +88,9 @@
+    void handleChangeDifficulty(ServerboundChangeDifficultyPacket serverboundchangedifficultypacket);
+ 
+    void handleLockDifficulty(ServerboundLockDifficultyPacket serverboundlockdifficultypacket);
++
++   /**
++    * Called when a client is shooting from cannon
++    */
++   void handleCannonShot(ServerboundShootCannonPacket serverboundshootcannonpacket);
+ }

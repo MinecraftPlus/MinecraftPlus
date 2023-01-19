@@ -1,6 +1,15 @@
 --- a/net/minecraft/client/renderer/entity/EntityRenderDispatcher.java
 +++ b/net/minecraft/client/renderer/entity/EntityRenderDispatcher.java
-@@ -197,9 +197,9 @@
+@@ -79,6 +79,8 @@
+       this.register(EntityType.BEE, new BeeRenderer(this));
+       this.register(EntityType.BLAZE, new BlazeRenderer(this));
+       this.register(EntityType.BOAT, new BoatRenderer(this));
++      this.register(EntityType.CANNON, new CannonRenderer(this));
++      this.register(EntityType.CANNONBALL, new ThrownItemRenderer<>(this, itemrenderer));
+       this.register(EntityType.CAT, new CatRenderer(this));
+       this.register(EntityType.CAVE_SPIDER, new CaveSpiderRenderer(this));
+       this.register(EntityType.CHEST_MINECART, new MinecartRenderer<>(this));
+@@ -197,9 +199,9 @@
        if (entity instanceof AbstractClientPlayer) {
           String s = ((AbstractClientPlayer)entity).getModelName();
           PlayerRenderer playerrenderer = this.playerRenderers.get(s);

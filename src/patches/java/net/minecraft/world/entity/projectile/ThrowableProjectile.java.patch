@@ -1,0 +1,14 @@
+--- a/net/minecraft/world/entity/projectile/ThrowableProjectile.java
++++ b/net/minecraft/world/entity/projectile/ThrowableProjectile.java
+@@ -224,6 +224,11 @@
+       return this.owner;
+    }
+ 
++    @Nullable
++    public void setOwner(LivingEntity newOwner) {
++        this.owner = newOwner;
++    }
++
+    public Packet<?> getAddEntityPacket() {
+       return new ClientboundAddEntityPacket(this);
+    }

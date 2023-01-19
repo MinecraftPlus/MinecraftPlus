@@ -1,0 +1,20 @@
+--- a/assets/minecraft/lang/en_us.json
++++ b/assets/minecraft/lang/en_us.json
+@@ -1851,6 +1851,8 @@
+   "entity.minecraft.bee": "Bee",
+   "entity.minecraft.blaze": "Blaze",
+   "entity.minecraft.boat": "Boat",
++  "entity.minecraft.cannon": "Cannon",
++  "entity.minecraft.cannonball": "Cannonball",
+   "entity.minecraft.cat": "Cat",
+   "entity.minecraft.cave_spider": "Cave Spider",
+   "entity.minecraft.chest_minecart": "Minecart with Chest",
+@@ -2205,6 +2207,8 @@
+   "item.minecraft.lingering_potion.effect.luck": "Lingering Potion of Luck",
+   "item.minecraft.lingering_potion.effect.turtle_master": "Lingering Potion of the Turtle Master",
+   "item.minecraft.lingering_potion.effect.slow_falling": "Lingering Potion of Slow Falling",
++  "item.minecraft.cannon": "Cannon",
++  "item.minecraft.cannonball": "Cannonball",
+   "potion.potency.0": "",
+   "potion.potency.1": "II",
+   "potion.potency.2": "III",

@@ -1,0 +1,20 @@
+--- /dev/null
++++ b/net/minecraft/world/item/CannonballItem.java
+@@ -0,0 +1,17 @@
++package net.minecraft.world.item;
++
++import net.minecraft.world.entity.LivingEntity;
++import net.minecraft.world.entity.projectile.Cannonball;
++import net.minecraft.world.level.Level;
++
++public class CannonballItem extends Item
++{
++    public CannonballItem(Item.Properties p_i48466_1_) {
++        super(p_i48466_1_);
++    }
++
++    public Cannonball createArrow(Level p_200887_1_, ItemStack p_200887_2_, LivingEntity p_200887_3_) {
++        Cannonball cannonballentity = new Cannonball(p_200887_1_, p_200887_3_);
++        return cannonballentity;
++    }
++}

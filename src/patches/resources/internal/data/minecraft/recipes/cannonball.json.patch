@@ -1,0 +1,22 @@
+--- /dev/null
++++ b/data/minecraft/recipes/cannonball.json
+@@ -0,0 +1,19 @@
++{
++  "type": "crafting_shaped",
++  "pattern": [
++    " # ",
++    "#P#",
++    " # "
++  ],
++  "key": {
++    "#": {
++      "item": "minecraft:iron_ingot"
++    },
++	"P": {
++      "item": "minecraft:gunpowder"
++    }
++  },
++  "result": {
++    "item": "minecraft:cannonball"
++  }
++}

@@ -1,0 +1,26 @@
+--- /dev/null
++++ b/data/minecraft/recipes/cannon.json
+@@ -0,0 +1,22 @@
++{
++  "type": "minecraft:crafting_shaped",
++  "pattern": [
++    "###",
++    "PSP",
++    "PPP"
++  ],
++  "key": {
++    "#": {
++      "item": "minecraft:iron_block"
++    },
++    "S": {
++      "item": "minecraft:stick"
++    },
++    "P": {
++      "item": "minecraft:oak_planks"
++    }
++  },
++  "result": {
++    "item": "minecraft:cannon"
++  }
++}
+\ No newline at end of file

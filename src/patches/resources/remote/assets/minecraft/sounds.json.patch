@@ -1,0 +1,12 @@
+--- a/assets/minecraft/sounds.json
++++ b/assets/minecraft/sounds.json
+@@ -20,6 +20,9 @@
+       "ambient/cave/cave17",
+       "ambient/cave/cave18",
+       "ambient/cave/cave19"
++
++
++
+     ],
+     "subtitle": "subtitles.ambient.cave"
+   },

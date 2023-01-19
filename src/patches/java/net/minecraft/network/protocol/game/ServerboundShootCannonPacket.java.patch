@@ -1,0 +1,46 @@
+--- /dev/null
++++ b/net/minecraft/network/protocol/game/ServerboundShootCannonPacket.java
+@@ -0,0 +1,43 @@
++package net.minecraft.network.protocol.game;
++
++import java.io.IOException;
++import javax.annotation.Nullable;
++import net.minecraft.network.protocol.Packet;
++import net.minecraft.world.entity.Entity;
++import net.minecraft.world.level.Level;
++import net.minecraft.network.FriendlyByteBuf;
++
++public class ServerboundShootCannonPacket implements Packet<ServerGamePacketListener>
++{
++    private int entityId;
++
++    public ServerboundShootCannonPacket() {
++    }
++
++    public ServerboundShootCannonPacket(Entity cannon) {
++        this.entityId = cannon.getId();
++    }
++
++    public void read(FriendlyByteBuf p_148837_1_) throws IOException {
++        this.entityId = p_148837_1_.readVarInt();
++    }
++
++    public void write(FriendlyByteBuf p_148840_1_) throws IOException {
++        p_148840_1_.writeVarInt(this.entityId);
++    }
++
++    public void handle(ServerGamePacketListener p_148833_1_) {
++        p_148833_1_.handleCannonShot(this);
++    }
++
++    /**
++     * Gets cannon which shoots
++     * 
++     * @param p_149564_1_ level to get entity
++     * @return entity on level, with id from packet
++     */
++    @Nullable
++    public Entity getCannon(Level p_149564_1_) {
++        return p_149564_1_.getEntity(this.entityId);
++    }
++}

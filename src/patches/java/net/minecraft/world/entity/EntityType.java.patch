@@ -1,0 +1,27 @@
+--- a/net/minecraft/world/entity/EntityType.java
++++ b/net/minecraft/world/entity/EntityType.java
+@@ -99,6 +99,7 @@
+ import net.minecraft.world.entity.npc.WanderingTrader;
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.entity.projectile.Arrow;
++import net.minecraft.world.entity.projectile.Cannonball;
+ import net.minecraft.world.entity.projectile.DragonFireball;
+ import net.minecraft.world.entity.projectile.EvokerFangs;
+ import net.minecraft.world.entity.projectile.EyeOfEnder;
+@@ -116,6 +117,7 @@
+ import net.minecraft.world.entity.projectile.ThrownTrident;
+ import net.minecraft.world.entity.projectile.WitherSkull;
+ import net.minecraft.world.entity.vehicle.Boat;
++import net.minecraft.world.entity.vehicle.Cannon;
+ import net.minecraft.world.entity.vehicle.Minecart;
+ import net.minecraft.world.entity.vehicle.MinecartChest;
+ import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+@@ -239,6 +241,8 @@
+    public static final EntityType<LightningBolt> LIGHTNING_BOLT = register("lightning_bolt", EntityType.Builder.<LightningBolt>createNothing(MobCategory.MISC).noSave().sized(0.0F, 0.0F));
+    public static final EntityType<Player> PLAYER = register("player", EntityType.Builder.<Player>createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F));
+    public static final EntityType<FishingHook> FISHING_BOBBER = register("fishing_bobber", EntityType.Builder.<FishingHook>createNothing(MobCategory.MISC).noSave().noSummon().sized(0.25F, 0.25F));
++   public static final EntityType<Cannon> CANNON = register("cannon", EntityType.Builder.<Cannon>of(Cannon::new, MobCategory.MISC).sized(1.25F, 0.9F));
++   public static final EntityType<Cannonball> CANNONBALL = register("cannonball", EntityType.Builder.<Cannonball>of(Cannonball::new, MobCategory.MISC).sized(0.25F, 0.25F));
+    private final EntityType.EntityFactory<T> factory;
+    private final MobCategory category;
+    private final boolean serialize;
