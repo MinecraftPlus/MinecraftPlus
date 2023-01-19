@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,953 @@
+@@ -0,0 +1,952 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -596,7 +596,6 @@
 +
 +    @Override
 +    public boolean interact(Player p_184230_1_, InteractionHand p_184230_2_) {
-+        System.out.println("interact");
 +        if (p_184230_1_.isSecondaryUseActive()) {
 +            return this.openInventory(p_184230_1_);
 +        } else {
