@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,1025 @@
+@@ -0,0 +1,972 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -17,6 +17,7 @@
 +import net.minecraft.network.syncher.SynchedEntityData;
 +import net.minecraft.server.level.ServerPlayer;
 +import net.minecraft.sounds.SoundEvents;
++import net.minecraft.sounds.SoundSource;
 +import net.minecraft.util.Mth;
 +import net.minecraft.world.Container;
 +import net.minecraft.world.ContainerListener;
@@ -29,7 +30,6 @@
 +import net.minecraft.world.entity.EntityDimensions;
 +import net.minecraft.world.entity.EntitySelector;
 +import net.minecraft.world.entity.EntityType;
-+import net.minecraft.world.entity.EquipmentSlot;
 +import net.minecraft.world.entity.MoverType;
 +import net.minecraft.world.entity.Pose;
 +import net.minecraft.world.entity.animal.Animal;
@@ -604,102 +604,55 @@
 +     */
 +    @Override
 +    public InteractionResult interactAt(Player p_184199_1_, Vec3 p_184199_2_, InteractionHand p_184199_3_) {
-+        EquipmentSlot equipmentslottype1 = this.getClickedSlot(p_184199_2_);
-+        System.out.println("interactAt: " + equipmentslottype1.toString());
-+        System.out.println("interactAt Vector: " + p_184199_2_.toString());
-+
-+        System.out.println("isLookingAtTrigger: " + this.isLookingAtTrigger(p_184199_1_));
-+
 +        ItemStack itemstack = p_184199_1_.getItemInHand(p_184199_3_);
-+        if (!itemstack.isEmpty() && itemstack.getItem() == Items.TORCH) {
-+            if (p_184199_1_.isSpectator()) {
-+                return InteractionResult.SUCCESS;
-+            } else if (p_184199_1_.level.isClientSide) {
-+                return InteractionResult.CONSUME;
-+            } else {
-+                if (this.handleShoot((ServerPlayer)p_184199_1_)) {
++        if (!itemstack.isEmpty()) {
++            if (itemstack.getItem() == Items.TORCH && this.isLookingAtTrigger(p_184199_1_)) {
++                if (p_184199_1_.isSpectator()) {
++                    return InteractionResult.SUCCESS;
++                } else if (p_184199_1_.level.isClientSide) {
++                    return InteractionResult.CONSUME;
++                } else {
++                    if (this.handleShoot((ServerPlayer)p_184199_1_)) {
++                        return InteractionResult.SUCCESS;
++                    }
++                }
++            } else if (this.isLookingAtBarrel(p_184199_1_)) {
++                if (p_184199_1_.isSpectator()) {
++                    return InteractionResult.SUCCESS;
++                } else if (p_184199_1_.level.isClientSide) {
++                    return InteractionResult.CONSUME;
++                } else if (itemstack.getItem() == Items.CANNONBALL && this.getBullet().isEmpty()) {
++                    this.setBullet(itemstack.split(1));
++                    this.containerChanged(this.inventory);
++
++                    // TODO: Add cannon loading sound
++                    this.level.playSound(p_184199_1_, this.getX(), this.getY(), this.getZ(), SoundEvents.ANVIL_USE,
++                        SoundSource.NEUTRAL, 0.5F, 1.0F);
++
++                    return InteractionResult.SUCCESS;
++                } else if (itemstack.getItem() == Items.GUNPOWDER
++                    && this.getExplosive().getCount() < this.getExplosive().getMaxStackSize()) {
++                    if (this.getExplosive().sameItem(itemstack)) {
++                        this.getExplosive().grow(1);
++                        itemstack.shrink(1);
++                    } else {
++                        this.setExplosive(itemstack.split(1));
++                    }
++                    this.containerChanged(this.inventory);
++                    
++                    // TODO: Add cannon loading sound
++                    if (this.tickCount > 20) {
++                        this.playSound(SoundEvents.HORSE_SADDLE, 0.5F, 1.0F);
++                    }
++
 +                    return InteractionResult.SUCCESS;
 +                }
-+
 +            }
++            return InteractionResult.SUCCESS;
 +        }
 +
 +        return InteractionResult.PASS;
 +    }
-+
-+//        ItemStack itemstack = p_184199_1_.getItemInHand(p_184199_3_);
-+//        if (!this.isMarker() && itemstack.getItem() != Items.NAME_TAG) {
-+//            if (p_184199_1_.isSpectator()) {
-+//                return InteractionResult.SUCCESS;
-+//            } else if (p_184199_1_.level.isClientSide) {
-+//                return InteractionResult.CONSUME;
-+//            } else {
-+//                EquipmentSlot equipmentslottype = Mob.getEquipmentSlotForItem(itemstack);
-+//                if (itemstack.isEmpty()) {
-+//                    EquipmentSlot equipmentslottype1 = this.getClickedSlot(p_184199_2_);
-+//                    EquipmentSlot equipmentslottype2 = this.isDisabled(equipmentslottype1) ? equipmentslottype
-+//                        : equipmentslottype1;
-+//                    if (this.hasItemInSlot(equipmentslottype2)
-+//                        && this.swapItem(p_184199_1_, equipmentslottype2, itemstack, p_184199_3_)) {
-+//                        return InteractionResult.SUCCESS;
-+//                    }
-+//                } else {
-+//                    if (this.isDisabled(equipmentslottype)) {
-+//                        return InteractionResult.FAIL;
-+//                    }
-+//
-+//                    if (equipmentslottype.getType() == EquipmentSlot.Type.HAND && !this.isShowArms()) {
-+//                        return InteractionResult.FAIL;
-+//                    }
-+//
-+//                    if (this.swapItem(p_184199_1_, equipmentslottype, itemstack, p_184199_3_)) {
-+//                        return InteractionResult.SUCCESS;
-+//                    }
-+//                }
-+//
-+//                return InteractionResult.PASS;
-+//            }
-+//        } else {
-+//            return InteractionResult.PASS;
-+//        }
-+
-+    private EquipmentSlot getClickedSlot(Vec3 p_190772_1_) {
-+        EquipmentSlot equipmentslottype = EquipmentSlot.MAINHAND;
-+        boolean flag = false;
-+        double d0 = flag ? p_190772_1_.y * 2.0D : p_190772_1_.y;
-+        EquipmentSlot equipmentslottype1 = EquipmentSlot.FEET;
-+        if (d0 >= 0.1D && d0 < 0.1D + (flag ? 0.8D : 0.45D)) {
-+            equipmentslottype = EquipmentSlot.FEET;
-+        } else if (d0 >= 0.9D + (flag ? 0.3D : 0.0D) && d0 < 0.9D + (flag ? 1.0D : 0.7D)) {
-+            equipmentslottype = EquipmentSlot.CHEST;
-+        } else if (d0 >= 0.4D && d0 < 0.4D + (flag ? 1.0D : 0.8D)) {
-+            equipmentslottype = EquipmentSlot.LEGS;
-+        } else if (d0 >= 1.6D) {
-+            equipmentslottype = EquipmentSlot.HEAD;
-+        } else {
-+            equipmentslottype = EquipmentSlot.OFFHAND;
-+        }
-+
-+        return equipmentslottype;
-+    }
-+
-+//    public boolean interact(Player p_184230_1_, InteractionHand p_184230_2_) {
-+//        ItemStack itemstack = p_184230_1_.getItemInHand(p_184230_2_);
-+//        if (INGREDIENT.test(itemstack) && this.fuel + 3600 <= 32000) {
-+//            if (!p_184230_1_.abilities.instabuild) {
-+//                itemstack.shrink(1);
-+//            }
-+//
-+//            this.fuel += 3600;
-+//        }
-+//
-+//        if (this.fuel > 0) {
-+//            this.xPush = this.getX() - p_184230_1_.getX();
-+//            this.zPush = this.getZ() - p_184230_1_.getZ();
-+//        }
-+//
-+//        return true;
-+//    }
 +
 +    /* 
 +     * copied from @Boat
@@ -745,15 +698,6 @@
 +    }
 +
 +    /**
-+     * Sets the barrel angle of the cannon.
-+     */
-+    @Deprecated
-+    public void setBarrelAngle(float newAngle) {
-+        this.xRot = newAngle;
-+        this.xRot = Mth.clamp(this.xRot, minAngle, maxAngle);
-+    }
-+
-+    /**
 +     * Gets the barrel angle of the cannon.
 +     */
 +    public float getBarrelAngle() {
@@ -775,8 +719,16 @@
 +        return this.inventory.getItem(0);
 +    }
 +
++    public void setExplosive(ItemStack explosive) {
++        this.inventory.setItem(0, explosive);
++    }
++
 +    public ItemStack getBullet() {
 +        return this.inventory.getItem(1);
++    }
++
++    public void setBullet(ItemStack bullet) {
++        this.inventory.setItem(1, bullet);
 +    }
 +
 +    /**
@@ -1019,11 +971,6 @@
 +        boolean hasBullet = !bullet.isEmpty() && bullet.getItem() == Items.CANNONBALL;
 +
 +        this.setReady(hasExplosive);
-+
-+        // Play load sound TODO: get cannon loading sound
-+        if (this.tickCount > 20) {
-+            this.playSound(SoundEvents.HORSE_SADDLE, 0.5F, 1.0F);
-+        }
 +    }
 +}
 \ No newline at end of file
