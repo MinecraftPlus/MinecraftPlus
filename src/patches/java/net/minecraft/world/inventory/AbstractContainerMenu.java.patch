@@ -1,0 +1,83 @@
+--- a/net/minecraft/world/inventory/AbstractContainerMenu.java
++++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
+@@ -248,48 +248,46 @@
+ 
+                      slot3.set(itemstack7.split(i6));
+                   }
+-               } else if (slot3.mayPickup(player)) {
+-                  if (itemstack7.isEmpty()) {
++               } else if (itemstack7.isEmpty() && slot3.mayPickup(player)) {
++                  if (itemstack6.isEmpty()) {
++                     slot3.set(ItemStack.EMPTY);
++                     inventory.setCarried(ItemStack.EMPTY);
++                  } else {
++                     int i7 = i1 == 0 ? itemstack6.getCount() : (itemstack6.getCount() + 1) / 2;
++                     inventory.setCarried(slot3.remove(i7));
+                      if (itemstack6.isEmpty()) {
+                         slot3.set(ItemStack.EMPTY);
+-                        inventory.setCarried(ItemStack.EMPTY);
+-                     } else {
+-                        int i7 = i1 == 0 ? itemstack6.getCount() : (itemstack6.getCount() + 1) / 2;
+-                        inventory.setCarried(slot3.remove(i7));
+-                        if (itemstack6.isEmpty()) {
+-                           slot3.set(ItemStack.EMPTY);
+-                        }
++                     }
+ 
+-                        slot3.onTake(player, inventory.getCarried());
++                     slot3.onTake(player, inventory.getCarried());
++                  }
++               } else if (!itemstack7.isEmpty() && slot3.mayPlace(itemstack7)) {
++                  if (consideredTheSameItem(itemstack6, itemstack7)) {
++                     int i8 = i1 == 0 ? itemstack7.getCount() : 1;
++                     if (i8 > slot3.getMaxStackSize(itemstack7) - itemstack6.getCount()) {
++                        i8 = slot3.getMaxStackSize(itemstack7) - itemstack6.getCount();
+                      }
+-                  } else if (slot3.mayPlace(itemstack7)) {
+-                     if (consideredTheSameItem(itemstack6, itemstack7)) {
+-                        int i8 = i1 == 0 ? itemstack7.getCount() : 1;
+-                        if (i8 > slot3.getMaxStackSize(itemstack7) - itemstack6.getCount()) {
+-                           i8 = slot3.getMaxStackSize(itemstack7) - itemstack6.getCount();
+-                        }
+ 
+-                        if (i8 > itemstack7.getMaxStackSize() - itemstack6.getCount()) {
+-                           i8 = itemstack7.getMaxStackSize() - itemstack6.getCount();
+-                        }
+-
+-                        itemstack7.shrink(i8);
+-                        itemstack6.grow(i8);
+-                     } else if (itemstack7.getCount() <= slot3.getMaxStackSize(itemstack7)) {
+-                        slot3.set(itemstack7);
+-                        inventory.setCarried(itemstack6);
++                     if (i8 > itemstack7.getMaxStackSize() - itemstack6.getCount()) {
++                        i8 = itemstack7.getMaxStackSize() - itemstack6.getCount();
+                      }
+-                  } else if (itemstack7.getMaxStackSize() > 1 && consideredTheSameItem(itemstack6, itemstack7) && !itemstack6.isEmpty()) {
+-                     int i9 = itemstack6.getCount();
+-                     if (i9 + itemstack7.getCount() <= itemstack7.getMaxStackSize()) {
+-                        itemstack7.grow(i9);
+-                        itemstack6 = slot3.remove(i9);
+-                        if (itemstack6.isEmpty()) {
+-                           slot3.set(ItemStack.EMPTY);
+-                        }
+ 
+-                        slot3.onTake(player, inventory.getCarried());
++                     itemstack7.shrink(i8);
++                     itemstack6.grow(i8);
++                  } else if (itemstack7.getCount() <= slot3.getMaxStackSize(itemstack7)) {
++                     slot3.set(itemstack7);
++                     inventory.setCarried(itemstack6);
++                  }
++               } else if (itemstack7.getMaxStackSize() > 1 && consideredTheSameItem(itemstack6, itemstack7) && !itemstack6.isEmpty()) {
++                  int i9 = itemstack6.getCount();
++                  if (i9 + itemstack7.getCount() <= itemstack7.getMaxStackSize()) {
++                     itemstack7.grow(i9);
++                     itemstack6 = slot3.remove(i9);
++                     if (itemstack6.isEmpty()) {
++                        slot3.set(ItemStack.EMPTY);
+                      }
++
++                     slot3.onTake(player, inventory.getCarried());
+                   }
+                }
+ 
