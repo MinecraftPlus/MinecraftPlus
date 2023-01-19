@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,986 @@
+@@ -0,0 +1,994 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -763,6 +763,14 @@
 +
 +    public void setReady(boolean ready) {
 +        this.getEntityData().set(DATA_ISREADY, ready);
++    }
++
++    public ItemStack getExplosive() {
++        return this.inventory.getItem(0);
++    }
++
++    public ItemStack getBullet() {
++        return this.inventory.getItem(1);
 +    }
 +
 +    /**
