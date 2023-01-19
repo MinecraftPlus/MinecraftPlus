@@ -71,7 +71,7 @@
  import net.minecraft.world.inventory.AbstractContainerMenu;
  import net.minecraft.world.inventory.AnvilMenu;
  import net.minecraft.world.inventory.BeaconMenu;
-@@ -1285,4 +1232,17 @@
+@@ -1285,4 +1232,15 @@
           this.server.setDifficultyLocked(serverboundlockdifficultypacket.isLocked());
        }
     }
@@ -81,11 +81,9 @@
 +    */
 +   public void handleCannonShot(ServerboundShootCannonPacket packet) {
 +      PacketUtils.ensureRunningOnSameThread(packet, this, this.player.getLevel());
-+      //TODO make this work, get entity by id from packet
-+      //Entity vehicle = packet.getCannon(this.player.getLevel());
 +      Entity entity = this.player.getVehicle();
 +      if (entity instanceof Cannon) {
-+         ((Cannon)entity).handleShoot(this.player);
++         ((Cannon)entity).shoot(this.player);
 +      }
 +   }
  }

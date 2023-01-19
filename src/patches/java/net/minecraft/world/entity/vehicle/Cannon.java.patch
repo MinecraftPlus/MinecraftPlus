@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,972 @@
+@@ -0,0 +1,938 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -17,7 +17,6 @@
 +import net.minecraft.network.syncher.SynchedEntityData;
 +import net.minecraft.server.level.ServerPlayer;
 +import net.minecraft.sounds.SoundEvents;
-+import net.minecraft.sounds.SoundSource;
 +import net.minecraft.util.Mth;
 +import net.minecraft.world.Container;
 +import net.minecraft.world.ContainerListener;
@@ -274,14 +273,9 @@
 +            this.outOfWorld();
 +        }
 +
-+        // copied from @Boat
 +        super.tick();
 +        this.tickLerp();
 +        if (this.isControlledByLocalInstance()) {
-+            if (this.getPassengers().isEmpty() || !(this.getPassengers().get(0) instanceof Player)) {
-+                //this.setPaddleState(false, false);
-+            }
-+
 +            this.moveCannon();
 +            if (this.level.isClientSide) {
 +                this.controlCannon();
@@ -291,7 +285,6 @@
 +        } else {
 +            this.setDeltaMovement(Vec3.ZERO);
 +        }
-+        // end
 +
 +        this.applyNaturalSlowdown();
 +
@@ -331,9 +324,6 @@
 +        }
 +    }
 +
-+    /**
-+     * copied from Boat
-+     */
 +    private void tickLerp() {
 +        if (this.isControlledByLocalInstance()) {
 +            this.lerpSteps = 0;
@@ -612,7 +602,7 @@
 +                } else if (p_184199_1_.level.isClientSide) {
 +                    return InteractionResult.CONSUME;
 +                } else {
-+                    if (this.handleShoot((ServerPlayer)p_184199_1_)) {
++                    if (this.shoot((ServerPlayer)p_184199_1_)) {
 +                        return InteractionResult.SUCCESS;
 +                    }
 +                }
@@ -626,8 +616,9 @@
 +                    this.containerChanged(this.inventory);
 +
 +                    // TODO: Add cannon loading sound
-+                    this.level.playSound(p_184199_1_, this.getX(), this.getY(), this.getZ(), SoundEvents.ANVIL_USE,
-+                        SoundSource.NEUTRAL, 0.5F, 1.0F);
++                    if (this.tickCount > 20) {
++                        this.playSound(SoundEvents.ANVIL_PLACE, 0.5F, 1.0F);
++                    }
 +
 +                    return InteractionResult.SUCCESS;
 +                } else if (itemstack.getItem() == Items.GUNPOWDER
@@ -639,7 +630,7 @@
 +                        this.setExplosive(itemstack.split(1));
 +                    }
 +                    this.containerChanged(this.inventory);
-+                    
++
 +                    // TODO: Add cannon loading sound
 +                    if (this.tickCount > 20) {
 +                        this.playSound(SoundEvents.HORSE_SADDLE, 0.5F, 1.0F);
@@ -654,9 +645,6 @@
 +        return InteractionResult.PASS;
 +    }
 +
-+    /* 
-+     * copied from @Boat
-+     */
 +    @Override
 +    public void positionRider(Entity p_184232_1_) {
 +        if (this.hasPassenger(p_184232_1_)) {
@@ -733,7 +721,7 @@
 +
 +    /**
 +     * Return shoot power of cannon, which is used to set start velocity of bullet. Calculated power is based on
-+     * function ln(x+1) where x are quantity of explosives.
++     * function {@code ln(x+1)} where x are quantity of explosives.
 +     * 
 +     * @return shot power based on quantity of explosives loaded
 +     */
@@ -748,13 +736,9 @@
 +
 +    /**
 +     * Update the cannon's speed, based on momentum.
-+     * 
-+     * Adopted from @Boat
 +     */
 +    private void moveCannon() {
 +        double d0 = this.isNoGravity() ? 0.0D : (double)-0.09F;
-+        //double d2 = 0.0D;
-+
 +        float landFriction = this.getControllingPassenger() instanceof Player ? 0.9F : 0.5F;
 +
 +        Vec3 vec3d = this.getDeltaMovement();
@@ -765,8 +749,6 @@
 +
 +    /**
 +     * Used to control cannon.
-+     * 
-+     * Copied from @Boat
 +     */
 +    private void controlCannon() {
 +        if (this.isVehicle()) {
@@ -806,12 +788,6 @@
 +                }
 +            }
 +
-+//            // Old shoot logic
-+//            if (this.inputSkewBarrel) {
-+//                this.inputSkewBarrel = false;
-+//                this.level.sendPacketToServer(new ServerboundShootCannonPacket());
-+//            }
-+
 +            // Add cannon movement
 +            this.setDeltaMovement(
 +                this.getDeltaMovement().add((double)(Mth.sin(-this.yRot * ((float)Math.PI / 180F)) * f), 0.0D,
@@ -819,14 +795,6 @@
 +        }
 +    }
 +
-+    /**
-+     * Copied from @Boat
-+     * 
-+     * @param p_184442_1_
-+     * @param p_184442_2_
-+     * @param p_184442_3_
-+     * @param p_184442_4_
-+     */
 +    @OnlyIn(Dist.CLIENT)
 +    public void setInput(boolean left, boolean right, boolean forward, boolean backward, boolean shoot) {
 +        this.inputLeft = left;
@@ -838,8 +806,6 @@
 +
 +    /**
 +     * Applies this cannon's yaw to the given entity. Used to update the orientation of its passenger.
-+     * 
-+     * Copied from @Boat
 +     */
 +    protected void clampRotation(Entity p_184454_1_) {
 +        p_184454_1_.setYBodyRot(this.yRot);
@@ -857,7 +823,7 @@
 +     * 
 +     * @return true if shoot succeed
 +     */
-+    public boolean handleShoot(ServerPlayer gunner) {
++    public boolean shoot(ServerPlayer gunner) {
 +        if (!this.isReady()) {
 +            return false;
 +        }
