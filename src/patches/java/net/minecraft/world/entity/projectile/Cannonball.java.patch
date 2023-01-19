@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/projectile/Cannonball.java
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,90 @@
 +package net.minecraft.world.entity.projectile;
 +
 +import net.minecraft.world.entity.Entity;
@@ -55,6 +55,21 @@
 +
 +    public void setExplosionPower(int power) {
 +        this.explosionPower = power;
++    }
++
++    @Override
++    protected float getGravity() {
++        return 0.055F;
++    }
++    
++    @Override
++    protected float getAirSlowdown() {
++        return 0.0125F;
++    }
++    
++    @Override
++    protected float getWaterSlowdown() {
++        return 0.025F;
 +    }
 +
 +    /**
