@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,1012 @@
+@@ -0,0 +1,1019 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -734,6 +734,13 @@
 +                p_184232_1_.setYHeadRot(p_184232_1_.getYHeadRot() + (float)j);
 +            }
 +
++            Vec3 cannonViewVector = this.getViewVector(1.0F).normalize();
++            Vec3 riderPos = new Vec3(this.getX(), this.getY() - 0.25F, this.getZ()).subtract(cannonViewVector);
++
++            //Eject operator if not on solid block
++            if (!p_184232_1_.level.getBlockState(new BlockPos(riderPos)).getMaterial().isSolid()) {
++                p_184232_1_.stopRiding();
++            }
 +        }
 +    }
 +
