@@ -170,7 +170,7 @@
 +     */
 +    @Override
 +    public double getRideHeight() {
-+        return -0.1D;
++        return 0.35D;
 +    }
 +
 +    /**
