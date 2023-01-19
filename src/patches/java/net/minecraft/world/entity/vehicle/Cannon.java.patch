@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,994 @@
+@@ -0,0 +1,1001 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -103,7 +103,6 @@
 +    private final float rotationSpeed = 0.35F;
 +    private final float minAngle = -17.0f;
 +    private final float maxAngle = 20.0f;
-+    private final float maxShootPower = 3.5f;
 +
 +    public Cannon(EntityType<? extends Cannon> entityType, Level level) {
 +        super(entityType, level);
@@ -774,10 +773,18 @@
 +    }
 +
 +    /**
-+     * @return cannon shot power
++     * Return shoot power of cannon, which is used to set start velocity of bullet. Calculated power is based on
++     * function ln(x+1) where x are quantity of explosives.
++     * 
++     * @return shot power based on quantity of explosives loaded
 +     */
 +    public float getShootPower() {
-+        return this.maxShootPower;
++        ItemStack explosive = getExplosive();
++        if (!explosive.isEmpty()) {
++            float power = (float)Math.log1p(explosive.getCount());
++            return power;
++        } else
++            return 0.0F;
 +    }
 +
 +    /**
