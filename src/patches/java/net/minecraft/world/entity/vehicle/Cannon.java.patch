@@ -849,7 +849,7 @@
 +        entitycannonball.shootFromRotation(this, this.getBarrelAngle(), this.yRot, 0.0F, this.getShootPower(), 1.75F);
 +        Vec3 vec3d = this.getViewVector(1.0F);
 +        entitycannonball.setPos(this.getX() + vec3d.x,
-+            this.getEyePosition(1.0F).y - entitycannonball.getBbHeight() / 2.0F, entitycannonball.getZ() + vec3d.z);
++            (this.getEyePosition(1.0F).y - entitycannonball.getBbHeight() / 2.0F) + vec3d.y , entitycannonball.getZ() + vec3d.z);
 +
 +        if (!this.level.isClientSide) {
 +            System.out.println("Strzal");
