@@ -1,0 +1,9 @@
+--- /dev/null
++++ b/assets/minecraft/models/item/cannonball_incendiary.json
+@@ -0,0 +1,6 @@
++{
++    "parent": "item/generated",
++    "textures": {
++        "layer0": "item/cannonball_incendiary"
++    }
++}

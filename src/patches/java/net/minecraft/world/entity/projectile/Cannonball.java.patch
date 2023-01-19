@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/projectile/Cannonball.java
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,105 @@
 +package net.minecraft.world.entity.projectile;
 +
 +import net.minecraft.world.entity.Entity;
@@ -9,7 +9,6 @@
 +import net.minecraft.world.entity.vehicle.Cannon;
 +import net.minecraft.world.item.Item;
 +import net.minecraft.world.item.Items;
-+import net.minecraft.server.level.ServerPlayer;
 +import net.minecraft.world.damagesource.DamageSource;
 +import net.minecraft.world.phys.EntityHitResult;
 +import net.minecraft.world.phys.HitResult;
@@ -19,7 +18,8 @@
 +
 +public class Cannonball extends ThrowableItemProjectile implements ItemSupplier
 +{
-+    private float explosionPower = 2.5F;
++    private Type type = Type.IMPACT;
++    private float explosionPower = 0.0F;
 +
 +    public Cannonball(EntityType<? extends Cannonball> p_i50159_1_, Level p_i50159_2_) {
 +        super(p_i50159_1_, p_i50159_2_);
@@ -33,9 +33,11 @@
 +        super(EntityType.CANNONBALL, p_i1775_2_, p_i1775_4_, p_i1775_6_, p_i1775_1_);
 +    }
 +
-+    public Cannonball(Level level, Cannon cannon, ServerPlayer gunner) {
++    public Cannonball(Level level, Cannon cannon, LivingEntity gunner, Cannonball.Type type) {
 +        this(level, cannon.getX(), cannon.getEyeY() - (double)0.1F, cannon.getZ());
-+        this.setGunner(gunner);
++        this.type = type;
++        this.explosionPower = type.getExplosionPower();
++        this.setOwner(gunner);
 +    }
 +
 +    @Override
@@ -43,19 +45,15 @@
 +        return Items.CANNONBALL;
 +    }
 +
-+    public LivingEntity getGunner() {
-+        return this.owner;
-+    }
-+
-+    public void setGunner(LivingEntity gunner) {
-+        this.owner = gunner;
++    public Type getCannonballType() {
++        return this.type;
 +    }
 +
 +    public float getExplosionPower() {
-+        return this.explosionPower;
++        return this.explosionPower > 0.0F ? this.explosionPower : this.type.getExplosionPower();
 +    }
 +
-+    public void setExplosionPower(int power) {
++    public void setExplosionPower(float power) {
 +        this.explosionPower = power;
 +    }
 +
@@ -91,6 +89,20 @@
 +                    incendiary, flag ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
 +                this.remove();
 +            }
++        }
++    }
++
++    public static enum Type {
++        IMPACT(2.5F), INCENDIARY(1.25F);
++
++        private final float explosionPower;
++
++        Type(float explosionPower) {
++            this.explosionPower = explosionPower;
++        }
++
++        float getExplosionPower() {
++            return this.explosionPower;
 +        }
 +    }
 +}

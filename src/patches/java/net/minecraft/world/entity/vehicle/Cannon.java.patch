@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,952 @@
+@@ -0,0 +1,956 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -39,6 +39,7 @@
 +import net.minecraft.world.inventory.AbstractContainerMenu;
 +import net.minecraft.world.inventory.CannonMenu;
 +import net.minecraft.world.inventory.MenuType;
++import net.minecraft.world.item.CannonballItem;
 +import net.minecraft.world.item.ItemStack;
 +import net.minecraft.world.item.Items;
 +import net.minecraft.world.level.GameRules;
@@ -625,7 +626,7 @@
 +                    return InteractionResult.SUCCESS;
 +                } else if (p_184199_1_.level.isClientSide) {
 +                    return InteractionResult.CONSUME;
-+                } else if (itemstack.getItem() == Items.CANNONBALL && this.getBullet().isEmpty()) {
++                } else if (itemstack.getItem() instanceof CannonballItem && this.getBullet().isEmpty()) {
 +                    this.setBullet(itemstack.split(1));
 +                    this.containerChanged(this.inventory);
 +
@@ -848,8 +849,11 @@
 +        float shootPower = this.getShootPower();
 +
 +        if (!this.level.isClientSide) {
-+            if (!this.getBullet().isEmpty()) { // Release bullet if loaded
-+                Cannonball entitycannonball = new Cannonball(this.level, this, gunner);
++            ItemStack bullet = this.getBullet();
++            if (bullet.getItem() instanceof CannonballItem && !bullet.isEmpty()) { // Release bullet if loaded
++                Cannonball entitycannonball = new Cannonball(this.level, this, gunner,
++                    ((CannonballItem)bullet.getItem()).getType());
++                entitycannonball.setItem(bullet);
 +                vec3dcannonball = new Vec3(vec3dcannonball.x, vec3dcannonball.y - entitycannonball.getBbHeight() / 2.0F,
 +                    vec3dcannonball.z);
 +                entitycannonball.setPos(vec3dcannonball.x, vec3dcannonball.y, vec3dcannonball.z);
