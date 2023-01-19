@@ -101,13 +101,13 @@
 +     * Sets this entity's model rotation angles
 +     */
 +    @Override
-+    public void setupAnim(Cannon cannon, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw,
-+        float headPitch) {
++    public void setupAnim(Cannon cannon, float barrelRotation, float wheelsRotation, float shock, float dummy1,
++        float dummy2) {
 +        // Rotate barrel
-+        this.barrel.xRot = (headPitch / 100.0F) + (float)(-(cannon.xRot * (Math.PI / 180F)) - (Math.PI / 2));
++        this.barrel.xRot = (shock / 100.0F) + (float)(-(barrelRotation * (Math.PI / 180F)) - (Math.PI / 2));
 +
 +        // Rotate wheels
-+        this.wheels[0].xRot = this.wheels[1].xRot = this.wheels[2].xRot = this.wheels[3].xRot = limbSwing;
++        this.wheels[0].xRot = this.wheels[1].xRot = this.wheels[2].xRot = this.wheels[3].xRot = wheelsRotation;
 +
 +        // Show ignitor when cannon ready to shoot
 +        this.barrel_ignitor.visible = cannon.isReady();
