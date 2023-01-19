@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,889 @@
+@@ -0,0 +1,890 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -87,6 +87,7 @@
 +    private final float rotationSpeed = 0.35F;
 +    private final float minAngle = -17.0f;
 +    private final float maxAngle = 20.0f;
++    private final float maxShootPower = 3.5f;
 +
 +    public Cannon(EntityType<? extends Cannon> entityType, Level level) {
 +        super(entityType, level);
@@ -724,7 +725,7 @@
 +     * @return cannon shot power
 +     */
 +    public float getShootPower() {
-+        return 1.25f;
++        return this.maxShootPower;
 +    }
 +
 +    /**
@@ -846,7 +847,7 @@
 +        System.out.println("Proba strzalu...");
 +        Cannonball entitycannonball = new Cannonball(this.level, this, gunner);
 +        entitycannonball.setGunner(gunner);
-+        entitycannonball.shootFromRotation(this, this.getBarrelAngle(), this.yRot, 0.0F, this.getShootPower(), 1.75F);
++        entitycannonball.shootFromRotation(this, this.getBarrelAngle(), this.yRot, 0.0F, this.getShootPower(), 2.75F);
 +        Vec3 vec3d = this.getViewVector(1.0F);
 +        entitycannonball.setPos(this.getX() + vec3d.x,
 +            (this.getEyePosition(1.0F).y - entitycannonball.getBbHeight() / 2.0F) + vec3d.y , entitycannonball.getZ() + vec3d.z);
@@ -857,7 +858,7 @@
 +        }
 +
 +        // Add shoot knockback
-+        this.setDeltaMovement(this.getDeltaMovement().add(this.getViewVector(1.0F).scale(-0.25F)));
++        this.setDeltaMovement(this.getDeltaMovement().add(vec3d.scale(-0.25F)));
 +        // Play shoot sound : 1002 dispenser shoot, 1018 blaze shoot
 +        this.level.levelEvent((Player)null, 1018, new BlockPos(this), 0);
 +        // Do smoke
