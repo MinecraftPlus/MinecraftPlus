@@ -325,7 +325,7 @@
 +
 +            // Calculate movement for wheel rotating
 +            Vec3 vector = new Vec3(this.getX() - this.xo, 0.0d, this.getZ() - this.zo);
-+            float distance = (float)(vector.length() * 4.0F);
++            float distance = (float)(vector.length() * 3.0F);
 +            if (distance > 1.0F) {
 +                distance = 1.0F;
 +            }
