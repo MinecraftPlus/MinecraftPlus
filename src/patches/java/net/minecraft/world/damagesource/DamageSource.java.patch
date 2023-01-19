@@ -16,7 +16,7 @@
 +    * returns EntityDamageSourceIndirect of an cannonball
 +    */
 +   public static DamageSource cannonball(Cannonball cannonball, @Nullable Entity owner) {
-+      return (new IndirectEntityDamageSource("arrow", cannonball, owner)).setProjectile();
++      return (new IndirectEntityDamageSource("cannonball", cannonball, owner)).setProjectile();
 +   }
 +
     public static DamageSource thrown(Entity entity, @Nullable Entity entity1) {
