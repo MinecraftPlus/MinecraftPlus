@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,885 @@
+@@ -0,0 +1,889 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -860,6 +860,10 @@
 +        this.setDeltaMovement(this.getDeltaMovement().add(this.getViewVector(1.0F).scale(-0.25F)));
 +        // Play shoot sound : 1002 dispenser shoot, 1018 blaze shoot
 +        this.level.levelEvent((Player)null, 1018, new BlockPos(this), 0);
++        // Do smoke
++//        this.level.addParticle(ParticleTypes.EXPLOSION, entitycannonball.getX(), entitycannonball.getY(),
++//            entitycannonball.getZ(), 1.0D, 0.0D, 0.0D);
++        this.level.levelEvent((Player)null, 2008, new BlockPos(entitycannonball), 3);
 +
 +        return true;
 +    }
