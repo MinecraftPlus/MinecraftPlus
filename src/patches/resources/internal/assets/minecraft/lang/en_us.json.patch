@@ -19,3 +19,12 @@
    "potion.potency.0": "",
    "potion.potency.1": "II",
    "potion.potency.2": "III",
+@@ -3761,6 +3766,8 @@
+   "advancements.story.smelt_iron.description": "Smelt an iron ingot",
+   "advancements.story.upgrade_tools.title": "Getting an Upgrade",
+   "advancements.story.upgrade_tools.description": "Construct a better pickaxe",
++  "advancements.story.artillery.title": "Some firepower",
++  "advancements.story.artillery.description": "Construct a cannon",
+   "team.visibility.always": "Always",
+   "team.visibility.never": "Never",
+   "team.visibility.hideForOtherTeams": "Hide for other teams",
