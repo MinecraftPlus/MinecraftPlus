@@ -1,6 +1,23 @@
 --- a/net/minecraft/world/entity/projectile/ThrowableProjectile.java
 +++ b/net/minecraft/world/entity/projectile/ThrowableProjectile.java
-@@ -224,6 +224,11 @@
+@@ -59,6 +59,16 @@
+       return d < d1 * d1;
+    }
+ 
++   /**
++    * Sets throwable heading based on an entity that's throwing it
++     *
++     * @param entity shooting entity
++     * @param f roation pitch
++     * @param f1 rotation yaw
++     * @param f2 rotation offset
++     * @param f3 motion scale
++     * @param f4 direction deviation
++    */
+    public void shootFromRotation(Entity entity, float f, float f1, float f2, float f3, float f4) {
+       float f5 = -Mth.sin(f1 * ((float)Math.PI / 180F)) * Mth.cos(f * ((float)Math.PI / 180F));
+       float f6 = -Mth.sin((f + f2) * ((float)Math.PI / 180F));
+@@ -224,6 +234,11 @@
        return this.owner;
     }
  
