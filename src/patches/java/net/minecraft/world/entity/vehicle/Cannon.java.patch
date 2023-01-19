@@ -895,8 +895,8 @@
 +
 +        // Add shoot knockback
 +        this.setDeltaMovement(this.getDeltaMovement().add(vec3d.scale(-0.25F)));
-+        // Play shoot sound : 1002 dispenser shoot, 1018 blaze shoot
-+        this.level.levelEvent((Player)null, 1018, new BlockPos(this), 0);
++        // Play cannon shoot sound @LevelRenderer#levelEvent
++        this.level.levelEvent((Player)null, 4000, new BlockPos(this), 0);
 +        // Do smoke
 +//        this.level.addParticle(ParticleTypes.EXPLOSION, entitycannonball.getX(), entitycannonball.getY(),
 +//            entitycannonball.getZ(), 1.0D, 0.0D, 0.0D);

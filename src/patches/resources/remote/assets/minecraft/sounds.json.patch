@@ -10,3 +10,19 @@
      ],
      "subtitle": "subtitles.ambient.cave"
    },
+@@ -2761,6 +2764,15 @@
+       }
+     ]
+   },
++  "entity.cannon.shoot": {
++    "sounds": [
++      {
++        "name": "entity/cannon/shoot1",
++        "volume": 0.8
++      }
++    ],
++    "subtitle": "subtitles.entity.cannon.shoot"
++  },
+   "entity.cat.ambient": {
+     "sounds": [
+       {
