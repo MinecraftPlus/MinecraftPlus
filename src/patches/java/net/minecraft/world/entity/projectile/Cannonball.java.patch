@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/projectile/Cannonball.java
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,91 @@
 +package net.minecraft.world.entity.projectile;
 +
 +import net.minecraft.world.entity.Entity;
@@ -35,6 +35,7 @@
 +
 +    public Cannonball(Level level, Cannon cannon, ServerPlayer gunner) {
 +        this(level, cannon.getX(), cannon.getEyeY() - (double)0.1F, cannon.getZ());
++        this.setGunner(gunner);
 +    }
 +
 +    protected Item getDefaultItem() {
