@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,938 @@
+@@ -0,0 +1,954 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -102,6 +102,10 @@
 +    private final float rotationSpeed = 0.35F;
 +    private final float minAngle = -17.0f;
 +    private final float maxAngle = 20.0f;
++    
++    public float animationSpeed;
++    public float animationPosition;
++    public float animationPositionOld;
 +
 +    public Cannon(EntityType<? extends Cannon> entityType, Level level) {
 +        super(entityType, level);
@@ -319,6 +323,18 @@
 +                    }
 +                }
 +            }
++            
++            // Calculate movement for wheel rotating
++            Vec3 vector = new Vec3(this.getX() - this.xo, 0.0d, this.getZ() - this.zo);
++            float distance = (float)(vector.length() * 4.0F);
++            if (distance > 1.0F) {
++                distance = 1.0F;
++            }
++            boolean forward = vector.normalize().subtract(this.getViewVector(1.0F)).length() >= 1.0F;
++
++            this.animationPositionOld = this.animationPosition;
++            this.animationPosition += forward ? this.animationSpeed : -this.animationSpeed;
++            this.animationSpeed += (distance - this.animationSpeed) * 0.6F;
 +        } else {
 +            this.updateInWaterState();
 +        }

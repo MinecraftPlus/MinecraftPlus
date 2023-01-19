@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/client/model/CannonModel.java
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,117 @@
 +package net.minecraft.client.model;
 +
 +import java.util.Arrays;
@@ -12,103 +12,109 @@
 +@OnlyIn(Dist.CLIENT)
 +public class CannonModel extends ListModel<Cannon>
 +{
-+    private final ModelPart[] cubes = new ModelPart[6];
-+    private ModelPart ignitor;
++    private ModelPart frame;
++    private ModelPart[] wheels = new ModelPart[4];
++    private ModelPart barrel;
++    private ModelPart barrel_ignitor;
 +
 +    public CannonModel() {
-+        this.cubes[0] = new ModelPart(this, 0, 10).setTexSize(128, 64); // barrel
-+        this.cubes[1] = new ModelPart(this, 0, 0).setTexSize(128, 64); // frame
-+        this.cubes[2] = new ModelPart(this, 15, 31).setTexSize(128, 64); // wheel 1
-+        this.cubes[3] = new ModelPart(this, 15, 31).setTexSize(128, 64); // wheel 2
-+        this.cubes[4] = new ModelPart(this, 15, 31).setTexSize(128, 64); // wheel 3
-+        this.cubes[5] = new ModelPart(this, 15, 31).setTexSize(128, 64); // wheel 4
++        build();
++    }
 +
-+        //Barrel with rotation
++    public void build() {
++        // Frame
++        this.frame = new ModelPart(this, 0, 0).setTexSize(128, 64);
++        this.frame.texOffs(0, 31).addBox(0.0F, 0.0F, 0.0F, 23, 3, 15, 0.0F);
++        this.frame.texOffs(31, 0).addBox(0.5F, 3.0F, 0.5F, 16, 9, 2, 0.0F);
++        this.frame.texOffs(31, 0).addBox(0.5F, 3.0F, 12.5F, 16, 9, 2, 0.0F);
++        this.frame.setPos(7.5F, 1.5F, -10.0F);
++        this.frame.yRot = (float)-(Math.PI / 2D);
 +
-+        //Zapalanie
-+        this.cubes[0].addBox(-2.0F, -15.0F, -2.0F, 4, 2, 4, 0.0F);
-+        this.cubes[0].texOffs(2, 2).addBox(-3.5F, -13.0F, -3.5F, 7, 2, 7, 0.25F);
++        // Wheels
++        this.wheels[0] = creteWheel();
++        this.wheels[1] = creteWheel();
++        this.wheels[2] = creteWheel();
++        this.wheels[3] = creteWheel();
 +
-+        //Lufa 1
-+        this.cubes[0].texOffs(0, 2).addBox(-3.5F, -11.0F, -3.5F, 7, 6, 7, 0.0F);
++        // Wheels positioning
++        this.wheels[0].setPos(-8.75F, 3.0F, 11.0F);
++        this.wheels[1].setPos(8.75F, 3.0F, 11.0F);
++        this.wheels[2].setPos(-8.75F, 3.0F, -8.0F);
++        this.wheels[3].setPos(8.75F, 3.0F, -8.0F);
 +
-+        //Prążek
-+        this.cubes[0].texOffs(2, 2).addBox(-3.5F, -5.0F, -3.5F, 7, 2, 7, 0.3F);
++        this.barrel = createBarrel();
 +
-+        //Lufa 2
-+        this.cubes[0].texOffs(0, 2).addBox(-3.5F, -3.0F, -3.5F, 7, 8, 7, 0.0F);
++    }
 +
-+        //Prążek
-+        this.cubes[0].texOffs(0, 0).addBox(-3.5F, 5.0F, -3.5F, 7, 2, 7, 0.3F);
++    private ModelPart createBarrel() {
++        ModelPart barrel = new ModelPart(this, 0, 10).setTexSize(128, 64);
 +
-+        //Lufa 3
-+        this.cubes[0].texOffs(0, 2).addBox(-3.5F, 7.0F, -3.5F, 7, 8, 7, 0.0F);
++        // Zapalanie
++        barrel.addBox(-2.0F, -15.0F, -2.0F, 4, 2, 4, 0.0F);
++        barrel.texOffs(2, 2).addBox(-3.5F, -13.0F, -3.5F, 7, 2, 7, 0.25F);
++
++        // Lufa 1
++        barrel.texOffs(0, 2).addBox(-3.5F, -11.0F, -3.5F, 7, 6, 7, 0.0F);
++
++        // Prążek
++        barrel.texOffs(2, 2).addBox(-3.5F, -5.0F, -3.5F, 7, 2, 7, 0.3F);
++
++        // Lufa 2
++        barrel.texOffs(0, 2).addBox(-3.5F, -3.0F, -3.5F, 7, 8, 7, 0.0F);
++
++        // Prążek
++        barrel.texOffs(0, 0).addBox(-3.5F, 5.0F, -3.5F, 7, 2, 7, 0.3F);
++
++        // Lufa 3
++        barrel.texOffs(0, 2).addBox(-3.5F, 7.0F, -3.5F, 7, 8, 7, 0.0F);
 +
 +        // Top lufy
-+        this.cubes[0].texOffs(2, 21).addBox(-3.5F, 15.0F, -3.5F, 7, 2, 7, 0.5F);
++        barrel.texOffs(2, 21).addBox(-3.5F, 15.0F, -3.5F, 7, 2, 7, 0.5F);
 +
-+        //Zawiasy
-+        this.cubes[0].addBox(-7.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
-+        this.cubes[0].addBox(3.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
++        // Zawiasy
++        barrel.addBox(-7.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
++        barrel.addBox(3.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
 +
-+        this.cubes[0].setPos(0.0F, 13.0F, 0.0F);
-+        this.cubes[0].xRot = (float)-(Math.PI / 2D);
++        barrel.setPos(0.0F, 13.0F, 0.0F);
++        barrel.xRot = (float)-(Math.PI / 2D);
 +
-+        //Frame with rotation
-+        this.cubes[1].texOffs(0, 31).addBox(0.0F, 0.0F, 0.0F, 23, 3, 15, 0.0F);
-+        this.cubes[1].texOffs(31, 0).addBox(0.5F, 3.0F, 0.5F, 16, 9, 2, 0.0F);
-+        this.cubes[1].texOffs(31, 0).addBox(0.5F, 3.0F, 12.5F, 16, 9, 2, 0.0F);
-+        this.cubes[1].setPos(7.5F, 1.5F, -10.0F);
-+        this.cubes[1].yRot = (float)-(Math.PI / 2D);
++        // Ignitor
++        this.barrel_ignitor = new ModelPart(this).setTexSize(128, 64);
++        barrel_ignitor.texOffs(0, 31).addBox(-1.0F, -1.0F, 0.0F, 2, 3, 2, -0.5F);
++        barrel_ignitor.setPos(0.0F, -13.0F, 2.0F);
++        barrel_ignitor.xRot = 1.85F;
++        barrel.addChild(barrel_ignitor);
 +
-+        //Wheels with rotation
-+        this.cubes[2].addBox(-2.0F, -3.0F, -1.0F, 4, 6, 2, 0.0F);
-+        this.cubes[2].addBox(-3.0F, -2.0F, -1.01F, 6, 4, 2, 0.0F);
-+        this.cubes[2].texOffs(0, 0).addBox(-1.0F, -1.0F, -1.5F, 2, 2, 3, -0.1F);
-+        this.cubes[2].yRot = (float)-(Math.PI / 2);
++        return barrel;
++    }
 +
-+        this.cubes[3].addBox(-2.0F, -3.0F, -1.0F, 4, 6, 2, 0.0F);
-+        this.cubes[3].addBox(-3.0F, -2.0F, -1.01F, 6, 4, 2, 0.0F);
-+        this.cubes[3].texOffs(0, 0).addBox(-1.0F, -1.0F, -1.5F, 2, 2, 3, -0.1F);
-+        this.cubes[3].yRot = (float)-(Math.PI / 2);
++    private ModelPart creteWheel() {
++        ModelPart wheel = new ModelPart(this, 15, 31).setTexSize(128, 64);
++        wheel.addBox(-1.0F, -3.0F, -2.0F, 2, 6, 4, 0.0F);
++        wheel.addBox(-1.01F, -2.0F, -3.0F, 2, 4, 6, 0.0F);
++        wheel.texOffs(0, 0).addBox(-1.5F, -1.0F, -1.0F, 3, 2, 2, -0.1F);
 +
-+        this.cubes[4].addBox(-2.0F, -3.0F, -1.0F, 4, 6, 2, 0.0F);
-+        this.cubes[4].addBox(-3.0F, -2.0F, -1.01F, 6, 4, 2, 0.0F);
-+        this.cubes[4].texOffs(0, 0).addBox(-1.0F, -1.0F, -1.5F, 2, 2, 3, -0.1F);
-+        this.cubes[4].yRot = (float)-(Math.PI / 2);
-+
-+        this.cubes[5].addBox(-2.0F, -3.0F, -1.0F, 4, 6, 2, 0.0F);
-+        this.cubes[5].addBox(-3.0F, -2.0F, -1.01F, 6, 4, 2, 0.0F);
-+        this.cubes[5].texOffs(0, 0).addBox(-1.0F, -1.0F, -1.5F, 2, 2, 3, -0.1F);
-+        this.cubes[5].yRot = (float)-(Math.PI / 2);
-+
-+        //Wheels positioning
-+        this.cubes[2].setPos(-8.75F, 3.0F, 11.0F);
-+        this.cubes[3].setPos(8.75F, 3.0F, 11.0F);
-+        this.cubes[4].setPos(-8.75F, 3.0F, -8.0F);
-+        this.cubes[5].setPos(8.75F, 3.0F, -8.0F);
-+        
-+        // Add ignitor
-+        this.ignitor = new ModelPart(this).setTexSize(128, 64);
-+        ignitor.texOffs(0, 31).addBox(-1.0F, -1.0F, 0.0F, 2, 3, 2, -0.5F);
-+        ignitor.setPos(0.0F, -13.0F, 2.0F);
-+        ignitor.xRot = 1.85F;
-+        this.cubes[0].addChild(ignitor);
++        return wheel;
 +    }
 +
 +    /**
 +     * Sets this entity's model rotation angles
 +     */
-+    public void setupAnim(Cannon p_225597_1_, float p_225597_2_, float p_225597_3_, float p_225597_4_,
-+        float p_225597_5_, float p_225597_6_) {
++    @Override
++    public void setupAnim(Cannon cannon, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw,
++        float headPitch) {
 +        // Rotate barrel
-+        this.cubes[0].xRot = (float)(-(p_225597_1_.xRot * (Math.PI / 180F)) - (Math.PI / 2));
-+        
++        this.barrel.xRot = (headPitch / 100.0F) + (float)(-(cannon.xRot * (Math.PI / 180F)) - (Math.PI / 2));
++
++        // Rotate wheels
++        this.wheels[0].xRot = this.wheels[1].xRot = this.wheels[2].xRot = this.wheels[3].xRot = limbSwing;
++
 +        // Show ignitor when cannon ready to shoot
-+        this.ignitor.visible = p_225597_1_.isReady();
++        this.barrel_ignitor.visible = cannon.isReady();
 +    }
 +
++    @Override
 +    public Iterable<ModelPart> parts() {
-+        return Arrays.asList(this.cubes);
++        return Arrays.asList(this.frame, this.wheels[0], this.wheels[1], this.wheels[2], this.wheels[3], this.barrel);
 +    }
 +}

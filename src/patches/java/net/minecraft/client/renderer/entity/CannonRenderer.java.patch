@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/client/renderer/entity/CannonRenderer.java
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,85 @@
 +package net.minecraft.client.renderer.entity;
 +
 +import com.mojang.blaze3d.vertex.PoseStack;
@@ -59,8 +59,11 @@
 +            //this.renderCannonContents(p_225623_1_, p_225623_3_, blockstate, p_225623_4_, p_225623_5_, p_225623_6_);
 +            p_225623_4_.popPose();
 +        }
++        
++        // Lerp wheels rotation
++        float wheelsRotation = Mth.lerp(p_225623_3_, p_225623_1_.animationPositionOld, p_225623_1_.animationPosition);
 +
-+        this.model.setupAnim(p_225623_1_, p_225623_3_, 0.0F, 0.0F, 0.0F, 0.0F);
++        this.model.setupAnim(p_225623_1_, wheelsRotation, 0.0F, 0.0F, 0.0F, f1);
 +        VertexConsumer ivertexbuilder = p_225623_5_
 +            .getBuffer(this.model.renderType(this.getTextureLocation(p_225623_1_)));
 +        this.model.renderToBuffer(p_225623_4_, ivertexbuilder, p_225623_6_, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F,
