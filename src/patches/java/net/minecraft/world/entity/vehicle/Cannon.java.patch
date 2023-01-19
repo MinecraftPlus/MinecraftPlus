@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,978 @@
+@@ -0,0 +1,986 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -68,6 +68,9 @@
 +    private static final EntityDataAccessor<Boolean> DATA_ID_CUSTOM_DISPLAY = SynchedEntityData.defineId(Cannon.class,
 +        EntityDataSerializers.BOOLEAN);
 +
++    private static final EntityDataAccessor<Boolean> DATA_ISREADY = SynchedEntityData.defineId(Cannon.class,
++        EntityDataSerializers.BOOLEAN);
++
 +    /** Cannon inventory for explosives and bullet */
 +    protected SimpleContainer inventory;
 +
@@ -125,6 +128,7 @@
 +        this.entityData.define(DATA_ID_DISPLAY_BLOCK, Block.getId(Blocks.AIR.defaultBlockState()));
 +        this.entityData.define(DATA_ID_DISPLAY_OFFSET, 6);
 +        this.entityData.define(DATA_ID_CUSTOM_DISPLAY, false);
++        this.entityData.define(DATA_ISREADY, false);
 +    }
 +
 +    /**
@@ -751,10 +755,14 @@
 +    }
 +
 +    /**
-+     * Get the cannon status. If ready then can do shoot.
++     * Gets the cannon status if is ready to shoot.
 +     */
 +    public boolean isReady() {
-+        return true; //TODO make logic to check for cannon is ready for shoot
++        return this.getEntityData().get(DATA_ISREADY);
++    }
++
++    public void setReady(boolean ready) {
++        this.getEntityData().set(DATA_ISREADY, ready);
 +    }
 +
 +    /**
