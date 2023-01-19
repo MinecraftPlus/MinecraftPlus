@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/client/renderer/entity/CannonRenderer.java
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,81 @@
 +package net.minecraft.client.renderer.entity;
 +
 +import com.mojang.blaze3d.vertex.PoseStack;
@@ -44,7 +44,9 @@
 +
 +        // Animate hurt
 +        if (f > 0.0F) {
-+            poseStack.mulPose(Vector3f.XP.rotationDegrees(Mth.sin(f) * f * f1 / 10.0F * (float)cannon.getHurtDir()));
++            poseStack.mulPose(Vector3f.ZP.rotationDegrees(Mth.sin(f) * f * f1 / 25.0F * (float)cannon.getHurtDir()));
++        } else {
++            f = 0.0F;
 +        }
 +
 +        // TODO: Check if this works
@@ -63,7 +65,7 @@
 +        float wheelsRotation = Mth.lerp(partialTicks, cannon.animationPositionOld, cannon.animationPosition);
 +        float barrelRotation = Mth.lerp(partialTicks, cannon.xRotO, cannon.xRot);
 +
-+        this.model.setupAnim(cannon, barrelRotation, wheelsRotation, f1, 0.0F, 0.0F);
++        this.model.setupAnim(cannon, barrelRotation, wheelsRotation, f, 0.0F, 0.0F);
 +        VertexConsumer ivertexbuilder = renderBuffer.getBuffer(this.model.renderType(this.getTextureLocation(cannon)));
 +        this.model.renderToBuffer(poseStack, ivertexbuilder, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F,
 +            1.0F);
