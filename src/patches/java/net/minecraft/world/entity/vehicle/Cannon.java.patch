@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,1019 @@
+@@ -0,0 +1,1025 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -948,24 +948,30 @@
 +
 +    /**
 +     * Checks to see if interacting player is looking on trrigger.
-+     * 
-+     * Based on isLookingAtMe from @Enderman
 +     */
 +    private boolean isLookingAtTrigger(Player p_70821_1_) {
-+        Vec3 vec3dplayer = p_70821_1_.getViewVector(1.0F).normalize();
-+        vec3dplayer = new Vec3(vec3dplayer.x, 0.0F, vec3dplayer.z); //#
-+        System.out.println("vec3dplayer: " + vec3dplayer);
-+        Vec3 vec3distance = new Vec3(this.getX() - p_70821_1_.getX(), 0.0F/*this.getEyeY() - p_70821_1_.getEyeY()*/,
-+            this.getZ() - p_70821_1_.getZ());
-+        System.out.println("vec3distance: " + vec3distance);
-+        double distance = vec3distance.length();
-+        System.out.println("distance: " + distance);
-+        vec3distance = vec3distance.normalize();
-+        System.out.println("vec3distance: " + vec3distance);
-+        double d1 = vec3dplayer.dot(vec3distance);
-+        System.out.println("d1: " + d1);
-+        System.out.println("d1 <  0.025D / distance: " + (d1 < 0.025D / distance));
-+        return d1 < 0.025D / distance ? p_70821_1_.canSee(this) : false;
++        Vec3 vec3dplayer = p_70821_1_.getViewVector(1.0F);
++        Vec3 vec3dtrigger = this.getEyePosition(1.0F).subtract(this.getViewVector(1.0F));
++        Vec3 vec3dbetween = vec3dtrigger.subtract(p_70821_1_.getEyePosition(1.0F)).normalize();
++
++        boolean lookingOnTrigger = vec3dbetween.dot(vec3dplayer) > 0.985D;
++        boolean behind = this.getViewVector(1.0F).dot(vec3dplayer) > 0.5D;
++
++        return lookingOnTrigger && behind;
++    }
++
++    /**
++     * Checks to see if interacting player is looking on barrel top.
++     */
++    private boolean isLookingAtBarrel(Player p_70821_1_) {
++        Vec3 vec3dplayer = p_70821_1_.getViewVector(1.0F);
++        Vec3 vec3dbarrel = this.getEyePosition(1.0F).add(this.getViewVector(1.0F));
++        Vec3 vec3dbetween = vec3dbarrel.subtract(p_70821_1_.getEyePosition(1.0F)).normalize();
++
++        boolean lookingOnBarrel = vec3dbetween.dot(vec3dplayer) > 0.985D;
++        boolean inFront = this.getViewVector(1.0F).dot(vec3dplayer) < -0.55D;
++
++        return lookingOnBarrel && inFront;
 +    }
 +
 +    protected int getInventorySize() {
