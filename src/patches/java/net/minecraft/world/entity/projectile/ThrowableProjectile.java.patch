@@ -17,7 +17,48 @@
     public void shootFromRotation(Entity entity, float f, float f1, float f2, float f3, float f4) {
        float f5 = -Mth.sin(f1 * ((float)Math.PI / 180F)) * Mth.cos(f * ((float)Math.PI / 180F));
        float f6 = -Mth.sin((f + f2) * ((float)Math.PI / 180F));
-@@ -224,6 +234,11 @@
+@@ -158,16 +168,16 @@
+ 
+       this.xRot = Mth.lerp(0.2F, this.xRotO, this.xRot);
+       this.yRot = Mth.lerp(0.2F, this.yRotO, this.yRot);
+-      float f2;
++      float f2 = 1.0F;
+       if (this.isInWater()) {
+          for(int i = 0; i < 4; ++i) {
+             float f1 = 0.25F;
+             this.level.addParticle(ParticleTypes.BUBBLE, d - vec3.x * 0.25D, d1 - vec3.y * 0.25D, d2 - vec3.z * 0.25D, vec3.x, vec3.y, vec3.z);
+          }
+ 
+-         f2 = 0.8F;
++         f2 -= this.getWaterSlowdown();
+       } else {
+-         f2 = 0.99F;
++         f2 -= this.getAirSlowdown();
+       }
+ 
+       this.setDeltaMovement(vec3.scale((double)f2));
+@@ -183,6 +193,20 @@
+       return 0.03F;
+    }
+ 
++   /**
++    * Gets the amount of air slowdown to apply to the thrown entity with each tick in air.
++    */
++   protected float getAirSlowdown() {
++      return 0.01F;
++   }
++
++   /**
++    * Gets the amount of water slowdown to apply to the thrown entity with each tick in water.
++    */
++   protected float getWaterSlowdown() {
++      return 0.2F;
++   }
++
+    protected abstract void onHit(HitResult hitresult);
+ 
+    public void addAdditionalSaveData(CompoundTag tag) {
+@@ -224,6 +248,11 @@
        return this.owner;
     }
  
