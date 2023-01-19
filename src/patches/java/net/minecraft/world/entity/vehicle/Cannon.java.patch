@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,954 @@
+@@ -0,0 +1,953 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -53,6 +53,11 @@
 +
 +public class Cannon extends Entity implements ContainerListener, MenuProvider
 +{
++    private static final float BARREL_SPEED = 0.5F;
++    private static final float ROTATION_SPEED = 0.35F;
++    private static final float BARREL_ANGLE_MIN = -17.0f;
++    private static final float BARREL_ANGLE_MAX = 20.0f;
++
 +    private static final EntityDataAccessor<Integer> DATA_ID_HURT = SynchedEntityData.<Integer>defineId(Cannon.class,
 +        EntityDataSerializers.INT);
 +    private static final EntityDataAccessor<Integer> DATA_ID_HURTDIR = SynchedEntityData.<Integer>defineId(Cannon.class,
@@ -97,12 +102,6 @@
 +    private boolean inputBackward;
 +    private boolean inputSkewBarrel;
 +
-+    // Some movement constants
-+    private final float barrelSpeed = 0.5F;
-+    private final float rotationSpeed = 0.35F;
-+    private final float minAngle = -17.0f;
-+    private final float maxAngle = 20.0f;
-+    
 +    public float animationSpeed;
 +    public float animationPosition;
 +    public float animationPositionOld;
@@ -323,7 +322,7 @@
 +                    }
 +                }
 +            }
-+            
++
 +            // Calculate movement for wheel rotating
 +            Vec3 vector = new Vec3(this.getX() - this.xo, 0.0d, this.getZ() - this.zo);
 +            float distance = (float)(vector.length() * 4.0F);
@@ -772,22 +771,22 @@
 +
 +            if (this.inputSkewBarrel) {
 +                if (this.inputForward) {
-+                    this.deltaXRotation -= this.barrelSpeed;
++                    this.deltaXRotation -= BARREL_SPEED;
 +                }
 +
 +                if (this.inputBackward) {
-+                    this.deltaXRotation += this.barrelSpeed;
++                    this.deltaXRotation += BARREL_SPEED;
 +                }
 +
 +                this.xRot += this.deltaXRotation;
-+                this.xRot = Mth.clamp(this.xRot, minAngle, maxAngle);
++                this.xRot = Mth.clamp(this.xRot, BARREL_ANGLE_MIN, BARREL_ANGLE_MAX);
 +            } else {
 +                if (this.inputLeft) {
-+                    this.deltaYRotation -= this.rotationSpeed;
++                    this.deltaYRotation -= ROTATION_SPEED;
 +                }
 +
 +                if (this.inputRight) {
-+                    this.deltaYRotation += this.rotationSpeed;
++                    this.deltaYRotation += ROTATION_SPEED;
 +                }
 +
 +                if (this.inputRight != this.inputLeft && !this.inputForward && !this.inputBackward) {
