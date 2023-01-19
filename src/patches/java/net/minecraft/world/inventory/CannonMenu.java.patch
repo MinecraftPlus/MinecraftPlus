@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/inventory/CannonMenu.java
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,110 @@
 +package net.minecraft.world.inventory;
 +
 +import net.minecraft.world.Container;
@@ -16,82 +16,80 @@
 +    private final Container cannonContainer;
 +    private final Cannon cannon;
 +
-+    public CannonMenu(int p_i50091_2_, Inventory p_i50091_3_) {
-+        this(MenuType.CANNON, p_i50091_2_, p_i50091_3_, new SimpleContainer(2), null);
++    public CannonMenu(int containerId, Inventory inventory) {
++        this(MenuType.CANNON, containerId, inventory, new SimpleContainer(2), null);
 +    }
 +
-+    public CannonMenu(MenuType<?> menuType, int p_i50077_1_, Inventory p_i50077_2_, Container p_i50077_3_,
-+        Cannon cannon) {
-+        super(menuType, p_i50077_1_);
-+        this.cannonContainer = p_i50077_3_;
++    public CannonMenu(MenuType<?> menuType, int containerId, Inventory inventory, Container container, Cannon cannon) {
++        super(menuType, containerId);
++        this.cannonContainer = container;
 +        this.cannon = cannon;
 +
-+        checkContainerSize(p_i50077_3_, 2);
-+//        checkContainerDataCount(p_i50104_6_, 4);
++        checkContainerSize(container, 2);
 +
-+        p_i50077_3_.startOpen(p_i50077_2_.player);
++        container.startOpen(inventory.player);
 +
 +        // Cannon slots
-+        this.addSlot(new Slot(p_i50077_3_, 0, 62, 20) {
++        this.addSlot(new Slot(container, 0, 62, 20) {
 +            @Override
-+            public boolean mayPlace(ItemStack p_94041_2_) {
-+                return p_94041_2_.getItem() == Items.GUNPOWDER;
++            public boolean mayPlace(ItemStack itemstack) {
++                return itemstack.getItem() == Items.GUNPOWDER;
 +            }
 +
 +            @Override
-+            public boolean mayPickup(Player p_82869_1_) {
-+                return p_82869_1_.abilities.instabuild;
++            public boolean mayPickup(Player player) {
++                return player.abilities.instabuild;
 +            }
 +        });
-+        this.addSlot(new Slot(p_i50077_3_, 1, 98, 20) {
++        this.addSlot(new Slot(container, 1, 98, 20) {
 +            @Override
 +            public int getMaxStackSize() {
 +                return 1;
 +            }
 +
 +            @Override
-+            public boolean mayPlace(ItemStack p_94041_2_) {
-+                return p_94041_2_.getItem() == Items.CANNONBALL;
++            public boolean mayPlace(ItemStack itemstack) {
++                return itemstack.getItem() == Items.CANNONBALL;
 +            }
 +        });
 +
 +        // Player inventory slots
 +        for (int i = 0; i < 3; ++i) {
 +            for (int j = 0; j < 9; ++j) {
-+                this.addSlot(new Slot(p_i50077_2_, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
++                this.addSlot(new Slot(inventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 +            }
 +        }
 +
 +        for (int k = 0; k < 9; ++k) {
-+            this.addSlot(new Slot(p_i50077_2_, k, 8 + k * 18, 142));
++            this.addSlot(new Slot(inventory, k, 8 + k * 18, 142));
 +        }
 +
 +    }
 +
 +    @Override
-+    public void removed(Player p_75134_1_) {
-+        super.removed(p_75134_1_);
-+        this.cannonContainer.stopOpen(p_75134_1_);
++    public void removed(Player player) {
++        super.removed(player);
++        this.cannonContainer.stopOpen(player);
 +    }
 +
 +    @Override
-+    public boolean stillValid(Player p_75145_1_) {
-+        return this.cannonContainer.stillValid(p_75145_1_) && this.cannon.isAlive()
-+            && this.cannon.distanceTo(p_75145_1_) < 8.0F;
++    public boolean stillValid(Player player) {
++        return this.cannonContainer.stillValid(player) && this.cannon.isAlive()
++            && this.cannon.distanceTo(player) < 8.0F;
 +    }
 +
 +    @Override
-+    public ItemStack quickMoveStack(Player p_82846_1_, int p_82846_2_) {
++    public ItemStack quickMoveStack(Player player, int slotNumber) {
 +        ItemStack itemstack = ItemStack.EMPTY;
-+        Slot slot = this.slots.get(p_82846_2_);
++        Slot slot = this.slots.get(slotNumber);
 +        if (slot != null && slot.hasItem()) {
 +            ItemStack itemstack1 = slot.getItem();
 +            itemstack = itemstack1.copy();
-+            if (p_82846_2_ >= 2 && p_82846_2_ < 38) {
++            if (slotNumber >= 2 && slotNumber < 38) {
 +                if (!this.moveItemStackTo(itemstack1, 0, 1, true)) {
 +                    return ItemStack.EMPTY;
 +                }
-+            } else if (p_82846_2_ == 0 || p_82846_2_ == 1) {
++            } else if (slotNumber == 0 || slotNumber == 1) {
 +                if (!this.moveItemStackTo(itemstack1, 2, 38, true)) {
 +                    return ItemStack.EMPTY;
 +                }
@@ -107,7 +105,7 @@
 +                return ItemStack.EMPTY;
 +            }
 +
-+            slot.onTake(p_82846_1_, itemstack1);
++            slot.onTake(player, itemstack1);
 +        }
 +
 +        return itemstack;

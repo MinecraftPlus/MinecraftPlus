@@ -14,15 +14,14 @@
 +@OnlyIn(Dist.CLIENT)
 +public class CannonScreen extends AbstractContainerScreen<CannonMenu>
 +{
-+    private static final ResourceLocation CANNON_LOCATION = new ResourceLocation(
-+        "textures/gui/container/cannon.png");
++    private static final ResourceLocation CANNON_LOCATION = new ResourceLocation("textures/gui/container/cannon.png");
 +
-+    public CannonScreen(CannonMenu p_i51084_1_, Inventory p_i51084_2_, Component p_i51084_3_) {
-+        super(p_i51084_1_, p_i51084_2_, p_i51084_3_);
++    public CannonScreen(CannonMenu menu, Inventory inventory, Component title) {
++        super(menu, inventory, title);
 +    }
 +
 +    @Override
-+    protected void renderLabels(int p_146979_1_, int p_146979_2_) {
++    protected void renderLabels(int mouseX, int mouseY) {
 +        String s = this.title.getColoredString();
 +        this.font.draw(s, (float)(this.imageWidth / 2 - this.font.width(s) / 2), 6.0F, 4210752);
 +        this.font.draw(this.inventory.getDisplayName().getColoredString(), 8.0F, (float)(this.imageHeight - 96 + 2),
@@ -30,13 +29,14 @@
 +    }
 +
 +    @Override
-+    public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
++    public void render(int mouseX, int mouseY, float partialTicks) {
 +        this.renderBackground();
-+        super.render(p_render_1_, p_render_2_, p_render_3_);
-+        this.renderTooltip(p_render_1_, p_render_2_);
++        super.render(mouseX, mouseY, partialTicks);
++        this.renderTooltip(mouseX, mouseY);
 +    }
 +
-+    protected void renderBg(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
++    @Override
++    protected void renderBg(float partialTicks, int mouseX, int mouseY) {
 +        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 +        this.minecraft.getTextureManager().bind(CANNON_LOCATION);
 +        int i = (this.width - this.imageWidth) / 2;
