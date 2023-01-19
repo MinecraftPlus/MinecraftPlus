@@ -1,0 +1,13 @@
+--- a/net/minecraft/client/player/RemotePlayer.java
++++ b/net/minecraft/client/player/RemotePlayer.java
+@@ -34,8 +34,8 @@
+    public void tick() {
+       super.tick();
+       this.animationSpeedOld = this.animationSpeed;
+-      double d = this.getX() - this.xo;
+-      double d1 = this.getZ() - this.zo;
++      double d = !this.isPassenger() ? this.getX() - this.xo : this.getVehicle().getX() - this.getVehicle().xo;
++      double d1 = !this.isPassenger() ? this.getZ() - this.zo : this.getVehicle().getZ() - this.getVehicle().zo;
+       float f = Mth.sqrt(d * d + d1 * d1) * 4.0F;
+       if (f > 1.0F) {
+          f = 1.0F;
