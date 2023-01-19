@@ -925,7 +925,7 @@
 +        }
 +
 +        // Add shoot knockback
-+        this.setDeltaMovement(this.getDeltaMovement().add(vec3d.scale(-Math.log(shootPower))));
++        this.setDeltaMovement(this.getDeltaMovement().add(vec3d.scale(-Math.log(shootPower + 1.0F))));
 +
 +        // Play cannon shoot sound @LevelRenderer#levelEvent
 +        this.level.levelEvent((Player)null, 4000, new BlockPos(this), 0);
