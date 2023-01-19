@@ -1,6 +1,14 @@
 --- a/net/minecraft/client/gui/screens/MenuScreens.java
 +++ b/net/minecraft/client/gui/screens/MenuScreens.java
-@@ -53,7 +53,7 @@
+@@ -8,6 +8,7 @@
+ import net.minecraft.client.gui.screens.inventory.BeaconScreen;
+ import net.minecraft.client.gui.screens.inventory.BlastFurnaceScreen;
+ import net.minecraft.client.gui.screens.inventory.BrewingStandScreen;
++import net.minecraft.client.gui.screens.inventory.CannonScreen;
+ import net.minecraft.client.gui.screens.inventory.CartographyTableScreen;
+ import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+ import net.minecraft.client.gui.screens.inventory.CraftingScreen;
+@@ -53,7 +54,7 @@
  
     @Nullable
     private static <T extends AbstractContainerMenu> MenuScreens.ScreenConstructor<T, ?> getConstructor(MenuType<T> type) {
@@ -9,3 +17,11 @@
     }
  
     private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(MenuType<? extends M> type, MenuScreens.ScreenConstructor<M, U> screenconstructor) {
+@@ -100,6 +101,7 @@
+       register(MenuType.SMOKER, SmokerScreen::new);
+       register(MenuType.CARTOGRAPHY_TABLE, CartographyTableScreen::new);
+       register(MenuType.STONECUTTER, StonecutterScreen::new);
++        register(MenuType.CANNON, CannonScreen::new);
+    }
+ 
+    @OnlyIn(Dist.CLIENT)
