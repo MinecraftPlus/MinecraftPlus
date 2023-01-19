@@ -904,15 +904,15 @@
 +        }
 +
 +        Vec3 vec3d = this.getViewVector(1.0F);
-+        Vec3 vec3dcannonball = new Vec3(vec3d.x, vec3d.y, vec3d.z);
++        Vec3 vec3dcannonball = new Vec3(this.getX() + vec3d.x, this.getEyePosition(1.0F).y + vec3d.y,
++            this.getZ() + vec3d.z);
 +        float shootPower = this.getShootPower();
 +
 +        if (!this.level.isClientSide) {
 +            if (!this.getBullet().isEmpty()) { // Release bullet if loaded
 +                Cannonball entitycannonball = new Cannonball(this.level, this, gunner);
-+                vec3dcannonball = new Vec3(this.getX() + vec3d.x,
-+                    (this.getEyePosition(1.0F).y - entitycannonball.getBbHeight() / 2.0F) + vec3d.y,
-+                    entitycannonball.getZ() + vec3d.z);
++                vec3dcannonball = new Vec3(vec3dcannonball.x, vec3dcannonball.y - entitycannonball.getBbHeight() / 2.0F,
++                    vec3dcannonball.z);
 +                entitycannonball.setPos(vec3dcannonball.x, vec3dcannonball.y, vec3dcannonball.z);
 +                entitycannonball.shootFromRotation(this, this.getBarrelAngle(), this.yRot, 0.0F, shootPower, 2.75F);
 +
