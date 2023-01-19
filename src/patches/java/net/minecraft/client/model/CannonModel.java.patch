@@ -49,29 +49,29 @@
 +    private ModelPart createBarrel() {
 +        ModelPart barrel = new ModelPart(this, 0, 10).setTexSize(128, 64);
 +
-+        // Zapalanie
++        // Barrel down
 +        barrel.addBox(-2.0F, -15.0F, -2.0F, 4, 2, 4, 0.0F);
 +        barrel.texOffs(2, 2).addBox(-3.5F, -13.0F, -3.5F, 7, 2, 7, 0.25F);
 +
-+        // Lufa 1
++        // Barrel first section
 +        barrel.texOffs(0, 2).addBox(-3.5F, -11.0F, -3.5F, 7, 6, 7, 0.0F);
 +
-+        // Prążek
++        // Barrel rib
 +        barrel.texOffs(2, 2).addBox(-3.5F, -5.0F, -3.5F, 7, 2, 7, 0.3F);
 +
-+        // Lufa 2
++        // Barrel second section
 +        barrel.texOffs(0, 2).addBox(-3.5F, -3.0F, -3.5F, 7, 8, 7, 0.0F);
 +
-+        // Prążek
++        // Barrel rib
 +        barrel.texOffs(0, 0).addBox(-3.5F, 5.0F, -3.5F, 7, 2, 7, 0.3F);
 +
-+        // Lufa 3
++        // Barrel third section
 +        barrel.texOffs(0, 2).addBox(-3.5F, 7.0F, -3.5F, 7, 8, 7, 0.0F);
 +
-+        // Top lufy
++        // Barrel top
 +        barrel.texOffs(2, 21).addBox(-3.5F, 15.0F, -3.5F, 7, 2, 7, 0.5F);
 +
-+        // Zawiasy
++        // Barrel hinge
 +        barrel.addBox(-7.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
 +        barrel.addBox(3.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
 +
