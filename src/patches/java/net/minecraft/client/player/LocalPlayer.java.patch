@@ -28,7 +28,7 @@
 +      } else if (this.getVehicle() instanceof Cannon) {
 +         Cannon cannon = (Cannon)this.getVehicle();
 +         cannon.setInput(this.input.left, this.input.right, this.input.up, this.input.down, this.input.jumping);
-+         this.handsBusy |= this.input.left || this.input.right || this.input.up || this.input.down || this.input.jumping;
++         this.handsBusy = true;
        }
  
     }
