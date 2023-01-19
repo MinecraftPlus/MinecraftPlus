@@ -691,7 +691,7 @@
 +                p_184232_1_.setYHeadRot(p_184232_1_.getYHeadRot() + (float)j);
 +            }
 +
-+            Vec3 cannonViewVector = this.getViewVector(1.0F).normalize();
++            Vec3 cannonViewVector = this.getViewVector(1.0F).multiply(1.0D, 0.0D, 1.0D);
 +            Vec3 riderPos = new Vec3(this.getX(), this.getY() - 0.25F, this.getZ()).subtract(cannonViewVector);
 +
 +            //Eject operator if not on solid block
