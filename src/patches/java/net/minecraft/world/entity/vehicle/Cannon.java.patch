@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,889 @@
+@@ -0,0 +1,885 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -279,10 +279,6 @@
 +
 +        this.handleNetherPortal();
 +        if (this.level.isClientSide) {
-+            this.lerpX = this.getX();
-+            this.lerpY = this.getY();
-+            this.lerpZ = this.getZ();
-+
 +            if (!this.isNoGravity()) {
 +                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
 +            }
@@ -312,7 +308,7 @@
 +                    }
 +                }
 +            }
-+
++        } else {
 +            this.updateInWaterState();
 +        }
 +    }
@@ -351,7 +347,7 @@
 +        this.lerpZ = p_180426_5_;
 +        this.lerpYRot = (double)p_180426_7_;
 +        this.lerpXRot = (double)p_180426_8_;
-+        this.lerpSteps = 10;
++        this.lerpSteps = p_180426_9_ + 2;
 +    }
 +
 +    /**
@@ -368,7 +364,7 @@
 +
 +    private void applyNaturalSlowdown() {
 +        double d0 = this.isVehicle() ? 0.95D : 0.35D;
-+        this.setDeltaMovement(this.getDeltaMovement().multiply(d0, 0.0D, d0));
++        this.setDeltaMovement(this.getDeltaMovement().multiply(d0, 1.0D, d0));
 +    }
 +
 +    /**
