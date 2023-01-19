@@ -19,7 +19,7 @@
 +
 +public class Cannonball extends ThrowableItemProjectile implements ItemSupplier
 +{
-+    private int explosionPower = 1;
++    private float explosionPower = 2.5F;
 +
 +    public Cannonball(EntityType<? extends Cannonball> p_i50159_1_, Level p_i50159_2_) {
 +        super(p_i50159_1_, p_i50159_2_);
@@ -50,7 +50,7 @@
 +        this.owner = gunner;
 +    }
 +
-+    public int getExplosionPower() {
++    public float getExplosionPower() {
 +        return this.explosionPower;
 +    }
 +
@@ -85,7 +85,7 @@
 +            }
 +
 +            boolean flag = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-+            this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, flag,
++            this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), this.explosionPower, false,
 +                flag ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
 +            this.remove();
 +        }
