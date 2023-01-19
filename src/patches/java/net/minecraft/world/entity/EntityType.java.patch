@@ -25,3 +25,15 @@
     private final EntityType.EntityFactory<T> factory;
     private final MobCategory category;
     private final boolean serialize;
+@@ -558,9 +562,9 @@
+          if (this.serialize) {
+             try {
+                DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().getWorldVersion())).getChoiceType(References.ENTITY_TREE, s);
+-            } catch (IllegalStateException var3) {
++            } catch (IllegalArgumentException e) {
+                if (SharedConstants.IS_RUNNING_IN_IDE) {
+-                  throw var3;
++                  throw e;
+                }
+ 
+                EntityType.LOGGER.warn("No data fixer registered for entity {}", (Object)s);
