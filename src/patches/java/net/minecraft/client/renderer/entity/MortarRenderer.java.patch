@@ -18,13 +18,13 @@
 +@OnlyIn(Dist.CLIENT)
 +public class MortarRenderer extends EntityRenderer<Mortar>
 +{
-+    private static final ResourceLocation[] CANNON_TEXTURE_LOCATION = new ResourceLocation[] {
-+        new ResourceLocation("textures/entity/cannon/oak.png"),
-+        new ResourceLocation("textures/entity/cannon/spruce.png"),
-+        new ResourceLocation("textures/entity/cannon/birch.png"),
-+        new ResourceLocation("textures/entity/cannon/jungle.png"),
-+        new ResourceLocation("textures/entity/cannon/acacia.png"),
-+        new ResourceLocation("textures/entity/cannon/dark_oak.png") };
++    private static final ResourceLocation[] MORTAR_TEXTURE_LOCATION = new ResourceLocation[] {
++        new ResourceLocation("textures/entity/mortar/oak.png"),
++        new ResourceLocation("textures/entity/mortar/spruce.png"),
++        new ResourceLocation("textures/entity/mortar/birch.png"),
++        new ResourceLocation("textures/entity/mortar/jungle.png"),
++        new ResourceLocation("textures/entity/mortar/acacia.png"),
++        new ResourceLocation("textures/entity/mortar/dark_oak.png") };
 +    protected final MortarModel model;
 +
 +    public MortarRenderer(EntityRenderDispatcher renderDispatcher) {
@@ -70,6 +70,6 @@
 +     */
 +    @Override
 +    public ResourceLocation getTextureLocation(Mortar mortar) {
-+        return CANNON_TEXTURE_LOCATION[mortar.getWoodType().ordinal()];
++        return MORTAR_TEXTURE_LOCATION[mortar.getWoodType().ordinal()];
 +    }
 +}
