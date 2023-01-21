@@ -16,16 +16,25 @@
  import net.minecraft.world.entity.vehicle.Minecart;
  import net.minecraft.world.entity.vehicle.MinecartChest;
  import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
-@@ -239,6 +241,8 @@
+@@ -123,6 +125,7 @@
+ import net.minecraft.world.entity.vehicle.MinecartHopper;
+ import net.minecraft.world.entity.vehicle.MinecartSpawner;
+ import net.minecraft.world.entity.vehicle.MinecartTNT;
++import net.minecraft.world.entity.vehicle.Mortar;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.LevelReader;
+@@ -239,6 +242,9 @@
     public static final EntityType<LightningBolt> LIGHTNING_BOLT = register("lightning_bolt", EntityType.Builder.<LightningBolt>createNothing(MobCategory.MISC).noSave().sized(0.0F, 0.0F));
     public static final EntityType<Player> PLAYER = register("player", EntityType.Builder.<Player>createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F));
     public static final EntityType<FishingHook> FISHING_BOBBER = register("fishing_bobber", EntityType.Builder.<FishingHook>createNothing(MobCategory.MISC).noSave().noSummon().sized(0.25F, 0.25F));
 +   public static final EntityType<Cannon> CANNON = register("cannon", EntityType.Builder.<Cannon>of(Cannon::new, MobCategory.MISC).sized(1.25F, 0.9F));
++   public static final EntityType<Mortar> MORTAR = register("mortar", EntityType.Builder.<Mortar>of(Mortar::new, MobCategory.MISC).sized(1.25F, 0.9F));
 +   public static final EntityType<Cannonball> CANNONBALL = register("cannonball", EntityType.Builder.<Cannonball>of(Cannonball::new, MobCategory.MISC).sized(0.25F, 0.25F));
     private final EntityType.EntityFactory<T> factory;
     private final MobCategory category;
     private final boolean serialize;
-@@ -558,9 +562,9 @@
+@@ -558,9 +564,9 @@
           if (this.serialize) {
              try {
                 DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().getWorldVersion())).getChoiceType(References.ENTITY_TREE, s);

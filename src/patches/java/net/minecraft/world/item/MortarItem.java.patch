@@ -1,29 +1,29 @@
 --- /dev/null
-+++ b/net/minecraft/world/item/CannonItem.java
++++ b/net/minecraft/world/item/MortarItem.java
 @@ -0,0 +1,73 @@
 +package net.minecraft.world.item;
 +
-+import java.util.List;
-+import java.util.function.Predicate;
 +import net.minecraft.stats.Stats;
-+import net.minecraft.world.InteractionHand;
-+import net.minecraft.world.InteractionResultHolder;
 +import net.minecraft.world.entity.Entity;
 +import net.minecraft.world.entity.EntitySelector;
 +import net.minecraft.world.entity.player.Player;
-+import net.minecraft.world.entity.vehicle.Cannon;
-+import net.minecraft.world.level.ClipContext;
-+import net.minecraft.world.level.Level;
++import net.minecraft.world.entity.vehicle.Mortar;
 +import net.minecraft.world.phys.AABB;
 +import net.minecraft.world.phys.HitResult;
 +import net.minecraft.world.phys.Vec3;
++import net.minecraft.world.InteractionHand;
++import net.minecraft.world.InteractionResultHolder;
++import java.util.List;
++import java.util.function.Predicate;
++import net.minecraft.world.level.ClipContext;
++import net.minecraft.world.level.Level;
 +
-+public class CannonItem extends Item
++public class MortarItem extends Item
 +{
 +    private static final Predicate<Entity> ENTITY_PREDICATE = EntitySelector.NO_SPECTATORS.and(Entity::isPickable);
-+    private final Cannon.WoodType woodtype;
-+
-+    public CannonItem(Cannon.WoodType woodtype, Item.Properties properties) {
++    private final Mortar.WoodType woodtype;
++    
++    public MortarItem(Mortar.WoodType woodtype, Item.Properties properties) {
 +        super(properties);
 +        this.woodtype = woodtype;
 +    }
@@ -51,15 +51,15 @@
 +            }
 +
 +            if (raytraceresult.getType() == HitResult.Type.BLOCK) {
-+                Cannon cannonentity = new Cannon(level, raytraceresult.getLocation().x, raytraceresult.getLocation().y,
-+                    raytraceresult.getLocation().z);
-+                cannonentity.setWoodType(this.woodtype);
-+                cannonentity.yRot = player.yRot;
-+                if (!level.noCollision(cannonentity, cannonentity.getBoundingBox().inflate(-0.1D))) {
++                Mortar mortarentity = new Mortar(level, raytraceresult.getLocation().x,
++                    raytraceresult.getLocation().y, raytraceresult.getLocation().z);
++                mortarentity.setWoodType(this.woodtype);
++                mortarentity.yRot = player.yRot;
++                if (!level.noCollision(mortarentity, mortarentity.getBoundingBox().inflate(-0.1D))) {
 +                    return InteractionResultHolder.fail(itemstack);
 +                } else {
 +                    if (!level.isClientSide) {
-+                        level.addFreshEntity(cannonentity);
++                        level.addFreshEntity(mortarentity);
 +                        if (!player.abilities.instabuild) {
 +                            itemstack.shrink(1);
 +                        }

@@ -1,14 +1,15 @@
 --- a/net/minecraft/client/Minecraft.java
 +++ b/net/minecraft/client/Minecraft.java
-@@ -175,6 +175,7 @@
+@@ -175,6 +175,8 @@
  import net.minecraft.world.entity.player.Player;
  import net.minecraft.world.entity.vehicle.AbstractMinecart;
  import net.minecraft.world.entity.vehicle.Boat;
 +import net.minecraft.world.entity.vehicle.Cannon;
++import net.minecraft.world.entity.vehicle.Mortar;
  import net.minecraft.world.item.CreativeModeTab;
  import net.minecraft.world.item.Item;
  import net.minecraft.world.item.ItemStack;
-@@ -471,7 +472,7 @@
+@@ -471,7 +473,7 @@
     }
  
     private String createTitle() {
@@ -17,7 +18,7 @@
        if (this.isProbablyModded()) {
           builder.append("*");
        }
-@@ -496,7 +497,7 @@
+@@ -496,7 +498,7 @@
     }
  
     public boolean isProbablyModded() {
@@ -26,16 +27,18 @@
     }
  
     private void rollbackResourcePacks(Throwable throwable) {
-@@ -1728,6 +1729,8 @@
+@@ -1728,6 +1730,10 @@
                 itemstack = new ItemStack(Items.ARMOR_STAND);
              } else if (entity instanceof EndCrystal) {
                 itemstack = new ItemStack(Items.END_CRYSTAL);
 +            } else if (entity instanceof Cannon) {
-+                    itemstack = new ItemStack(((Cannon)entity).getDropItem());
++               itemstack = new ItemStack(((Cannon)entity).getDropItem());
++            } else if (entity instanceof Mortar) {
++               itemstack = new ItemStack(((Mortar)entity).getDropItem());
              } else {
                 SpawnEggItem spawneggitem = SpawnEggItem.byId(entity.getType());
                 if (spawneggitem == null) {
-@@ -1807,9 +1810,9 @@
+@@ -1807,9 +1813,9 @@
           return "Yes";
        });
        category.setDetail("Is Modded", () -> {
@@ -48,7 +51,7 @@
           } else {
              return Minecraft.class.getSigners() == null ? "Very likely; Jar signature invalidated" : "Probably not. Jar signature remains and client brand is untouched.";
           }
-@@ -1819,13 +1822,13 @@
+@@ -1819,13 +1825,13 @@
           category.setDetail("Resource Packs", () -> {
              StringBuilder builder = new StringBuilder();
  
