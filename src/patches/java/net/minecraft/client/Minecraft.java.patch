@@ -31,7 +31,7 @@
              } else if (entity instanceof EndCrystal) {
                 itemstack = new ItemStack(Items.END_CRYSTAL);
 +            } else if (entity instanceof Cannon) {
-+               itemstack = new ItemStack(Items.CANNON);
++                    itemstack = new ItemStack(((Cannon)entity).getDropItem());
              } else {
                 SpawnEggItem spawneggitem = SpawnEggItem.byId(entity.getType());
                 if (spawneggitem == null) {
