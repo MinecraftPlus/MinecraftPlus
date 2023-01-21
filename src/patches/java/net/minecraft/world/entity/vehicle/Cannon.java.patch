@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,966 @@
+@@ -0,0 +1,974 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -48,6 +48,7 @@
 +import net.minecraft.world.level.block.Block;
 +import net.minecraft.world.level.block.Blocks;
 +import net.minecraft.world.level.block.state.BlockState;
++import net.minecraft.world.level.dimension.DimensionType;
 +import net.minecraft.world.phys.AABB;
 +import net.minecraft.world.phys.Vec3;
 +import net.minecraftforge.api.distmarker.Dist;
@@ -216,6 +217,13 @@
 +        }
 +    }
 +
++    @Nullable
++    @Override
++    public Entity changeDimension(DimensionType p_212321_1_) {
++        this.dropEquipment = false;
++        return super.changeDimension(p_212321_1_);
++    }
++    
 +    @Override
 +    public void remove() {
 +        if (!this.level.isClientSide && this.dropEquipment) {
