@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/AbstractArtillery.java
-@@ -0,0 +1,555 @@
+@@ -0,0 +1,553 @@
 +package net.minecraft.world.entity;
 +
 +import net.minecraft.world.Container;
@@ -383,9 +383,8 @@
 +                    this.setBullet(itemstack.split(1));
 +                    this.containerChanged(this.inventory);
 +
-+                    // TODO: Add artillery loading sound
 +                    if (this.tickCount > 20) {
-+                        this.playSound(SoundEvents.ANVIL_PLACE, 0.5F, 1.0F);
++                        this.playSound(SoundEvents.ARTILLERY_LOAD_BULLET, 0.5F, 1.0F);
 +                    }
 +
 +                    return InteractionResult.SUCCESS;
@@ -399,9 +398,8 @@
 +                    }
 +                    this.containerChanged(this.inventory);
 +
-+                    // TODO: Add artillery loading sound
 +                    if (this.tickCount > 20) {
-+                        this.playSound(SoundEvents.HORSE_SADDLE, 0.5F, 1.0F);
++                        this.playSound(SoundEvents.ARTILLERY_LOAD_EXPLOSIVE, 0.5F, 1.0F);
 +                    }
 +
 +                    return InteractionResult.SUCCESS;

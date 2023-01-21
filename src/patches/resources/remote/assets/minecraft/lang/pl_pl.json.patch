@@ -37,7 +37,17 @@
 +    "item.minecraft.spruce_mortar": "\u015awierkowy Mo\u017adzierz",
 +    "item.minecraft.cannonball": "Kula armatnia",
 +    "item.minecraft.cannonball_incendiary": "Zapalaj\u0105ca kula armatnia",
-\ No newline at end of file
      "item.modifiers.chest": "Kiedy na ciele:",
      "item.modifiers.feet": "Kiedy na stopach:",
      "item.modifiers.head": "Kiedy na g\u0142owie:",
+@@ -3914,6 +3933,9 @@
+     "subtitles.entity.arrow.hit": "Uderzenie strza\u0142y",
+     "subtitles.entity.arrow.hit_player": "Uderzono gracza",
+     "subtitles.entity.arrow.shoot": "Strza\u0142 z \u0142uku",
++    "subtitles.entity.artillery.shoot": "Strza\u0142 artylerii",
++    "subtitles.entity.artillery.load.bullet": "Kula armatnia brzd\u0119ka",
++    "subtitles.entity.artillery.load.explosive": "Proch szele\u015bci",
+\ No newline at end of file
+     "subtitles.entity.bat.ambient": "Nietoperz piszczy",
+     "subtitles.entity.bat.death": "Nietoperz ginie",
+     "subtitles.entity.bat.hurt": "Nietoperz cierpi",

@@ -31,7 +31,17 @@
    "potion.potency.0": "",
    "potion.potency.1": "II",
    "potion.potency.2": "III",
-@@ -3761,6 +3778,8 @@
+@@ -3140,6 +3157,9 @@
+   "subtitles.entity.arrow.hit": "Arrow hits",
+   "subtitles.entity.arrow.hit_player": "Player hit",
+   "subtitles.entity.arrow.shoot": "Arrow fired",
++  "subtitles.entity.artillery.shoot": "Artillery fired",
++  "subtitles.entity.artillery.load.bullet": "Cannonball twang",
++  "subtitles.entity.artillery.load.explosive": "Gunpowder rustle",
+   "subtitles.entity.bat.ambient": "Bat screeches",
+   "subtitles.entity.bat.death": "Bat dies",
+   "subtitles.entity.bat.hurt": "Bat hurts",
+@@ -3761,6 +3781,8 @@
    "advancements.story.smelt_iron.description": "Smelt an iron ingot",
    "advancements.story.upgrade_tools.title": "Getting an Upgrade",
    "advancements.story.upgrade_tools.description": "Construct a better pickaxe",
