@@ -1,11 +1,16 @@
 --- /dev/null
 +++ b/data/minecraft/advancements/recipes/transportation/cannon.json
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,37 @@
 +{
 +  "parent": "minecraft:recipes/root",
 +  "rewards": {
 +    "recipes": [
-+      "minecraft:cannon"
++      "minecraft:oak_cannon",
++      "minecraft:spruce_cannon",
++      "minecraft:birch_cannon",
++      "minecraft:jungle_cannon",
++      "minecraft:acacia_cannon",
++      "minecraft:dark_oak_cannon"
 +    ]
 +  },
 +  "criteria": {
@@ -22,7 +27,7 @@
 +    "has_the_recipe": {
 +      "trigger": "minecraft:recipe_unlocked",
 +      "conditions": {
-+        "recipe": "minecraft:cannon"
++        "recipe": "minecraft:oak_cannon"
 +      }
 +    }
 +  },
