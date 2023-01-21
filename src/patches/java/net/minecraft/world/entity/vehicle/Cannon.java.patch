@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,1058 @@
+@@ -0,0 +1,986 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -9,7 +9,6 @@
 +import net.minecraft.core.Direction;
 +import net.minecraft.nbt.CompoundTag;
 +import net.minecraft.nbt.ListTag;
-+import net.minecraft.nbt.NbtUtils;
 +import net.minecraft.network.protocol.Packet;
 +import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 +import net.minecraft.network.syncher.EntityDataAccessor;
@@ -48,7 +47,6 @@
 +import net.minecraft.world.level.Level;
 +import net.minecraft.world.level.block.Block;
 +import net.minecraft.world.level.block.Blocks;
-+import net.minecraft.world.level.block.state.BlockState;
 +import net.minecraft.world.level.dimension.DimensionType;
 +import net.minecraft.world.phys.AABB;
 +import net.minecraft.world.phys.Vec3;
@@ -70,14 +68,6 @@
 +        EntityDataSerializers.FLOAT);
 +    private static final EntityDataAccessor<Integer> DATA_ID_TYPE = SynchedEntityData.defineId(Cannon.class,
 +        EntityDataSerializers.INT);
-+
-+    private static final EntityDataAccessor<Integer> DATA_ID_DISPLAY_BLOCK = SynchedEntityData.defineId(Cannon.class,
-+        EntityDataSerializers.INT);
-+    private static final EntityDataAccessor<Integer> DATA_ID_DISPLAY_OFFSET = SynchedEntityData.defineId(Cannon.class,
-+        EntityDataSerializers.INT);
-+    private static final EntityDataAccessor<Boolean> DATA_ID_CUSTOM_DISPLAY = SynchedEntityData.defineId(Cannon.class,
-+        EntityDataSerializers.BOOLEAN);
-+
 +    private static final EntityDataAccessor<Boolean> DATA_ISREADY = SynchedEntityData.defineId(Cannon.class,
 +        EntityDataSerializers.BOOLEAN);
 +
@@ -134,9 +124,6 @@
 +        this.entityData.define(DATA_ID_HURTDIR, 1);
 +        this.entityData.define(DATA_ID_DAMAGE, 0.0F);
 +        this.entityData.define(DATA_ID_TYPE, Cannon.Type.OAK.ordinal());
-+        this.entityData.define(DATA_ID_DISPLAY_BLOCK, Block.getId(Blocks.AIR.defaultBlockState()));
-+        this.entityData.define(DATA_ID_DISPLAY_OFFSET, 6);
-+        this.entityData.define(DATA_ID_CUSTOM_DISPLAY, false);
 +        this.entityData.define(DATA_ISREADY, false);
 +    }
 +
@@ -227,7 +214,7 @@
 +        this.dropEquipment = false;
 +        return super.changeDimension(p_212321_1_);
 +    }
-+    
++
 +    @Override
 +    public void remove() {
 +        if (!this.level.isClientSide && this.dropEquipment) {
@@ -431,18 +418,6 @@
 +        this.setDeltaMovement(this.getDeltaMovement().multiply(d0, 1.0D, d0));
 +    }
 +
-+    /**
-+     * Gets the bounding box of this Entity, adjusted to take auxiliary entities into account (e.g. the tile contained
-+     * by a minecart, such as a command block).
-+     */
-+    @OnlyIn(Dist.CLIENT)
-+    @Override
-+    public AABB getBoundingBoxForCulling() {
-+        AABB axisalignedbb = this.getBoundingBox();
-+        return this.hasCustomDisplay() ? axisalignedbb.inflate((double)Math.abs(this.getDisplayOffset()) / 16.0D)
-+            : axisalignedbb;
-+    }
-+
 +    @Override
 +    public Entity getControllingPassenger() {
 +        List<Entity> list = this.getPassengers();
@@ -451,11 +426,6 @@
 +
 +    @Override
 +    protected void readAdditionalSaveData(CompoundTag p_70037_1_) {
-+        if (p_70037_1_.getBoolean("CustomDisplayTile")) {
-+            this.setDisplayBlockState(NbtUtils.readBlockState(p_70037_1_.getCompound("DisplayState")));
-+            this.setDisplayOffset(p_70037_1_.getInt("DisplayOffset"));
-+        }
-+
 +        if (p_70037_1_.contains("Type", 8)) {
 +            this.setCannonType(Cannon.Type.byName(p_70037_1_.getString("Type")));
 +        }
@@ -473,12 +443,6 @@
 +
 +    @Override
 +    protected void addAdditionalSaveData(CompoundTag p_213281_1_) {
-+        if (this.hasCustomDisplay()) {
-+            p_213281_1_.putBoolean("CustomDisplayTile", true);
-+            p_213281_1_.put("DisplayState", NbtUtils.writeBlockState(this.getDisplayBlockState()));
-+            p_213281_1_.putInt("DisplayOffset", this.getDisplayOffset());
-+        }
-+
 +        p_213281_1_.putString("Type", this.getCannonType().getName());
 +
 +        ListTag listnbt = new ListTag();
@@ -608,42 +572,6 @@
 +        return Cannon.Type.byId(this.entityData.get(DATA_ID_TYPE));
 +    }
 +
-+    public BlockState getDisplayBlockState() {
-+        return !this.hasCustomDisplay() ? this.getDefaultDisplayBlockState()
-+            : Block.stateById(this.getEntityData().get(DATA_ID_DISPLAY_BLOCK));
-+    }
-+
-+    public BlockState getDefaultDisplayBlockState() {
-+        return Blocks.AIR.defaultBlockState();
-+    }
-+
-+    public int getDisplayOffset() {
-+        return !this.hasCustomDisplay() ? this.getDefaultDisplayOffset()
-+            : this.getEntityData().get(DATA_ID_DISPLAY_OFFSET);
-+    }
-+
-+    public int getDefaultDisplayOffset() {
-+        return 6;
-+    }
-+
-+    public void setDisplayBlockState(BlockState p_174899_1_) {
-+        this.getEntityData().set(DATA_ID_DISPLAY_BLOCK, Block.getId(p_174899_1_));
-+        this.setCustomDisplay(true);
-+    }
-+
-+    public void setDisplayOffset(int p_94086_1_) {
-+        this.getEntityData().set(DATA_ID_DISPLAY_OFFSET, p_94086_1_);
-+        this.setCustomDisplay(true);
-+    }
-+
-+    public boolean hasCustomDisplay() {
-+        return this.getEntityData().get(DATA_ID_CUSTOM_DISPLAY);
-+    }
-+
-+    public void setCustomDisplay(boolean p_94096_1_) {
-+        this.getEntityData().set(DATA_ID_CUSTOM_DISPLAY, p_94096_1_);
-+    }
-+
 +    @Override
 +    public Packet<?> getAddEntityPacket() {
 +        return new ClientboundAddEntityPacket(this);
@@ -747,7 +675,7 @@
 +            Vec3 cannonViewVector = this.getViewVector(1.0F).multiply(1.0D, 0.0D, 1.0D);
 +            Vec3 riderPos = new Vec3(this.getX(), this.getY() - 0.25F, this.getZ()).subtract(cannonViewVector);
 +
-+            //Eject operator if not on solid block
++            // Eject operator if not on solid block
 +            if (!p_184232_1_.level.getBlockState(new BlockPos(riderPos)).getMaterial().isSolid()) {
 +                p_184232_1_.stopRiding();
 +            }
@@ -889,7 +817,6 @@
 +     * Handles cannon shot
 +     * 
 +     * @param gunner player which fires cannon with torch
-+     * 
 +     * @return true if shoot succeed
 +     */
 +    public boolean shoot(ServerPlayer gunner) {
@@ -1011,7 +938,8 @@
 +        this.setReady(hasExplosive);
 +    }
 +
-+    public static enum Type {
++    public static enum Type
++    {
 +        OAK(Blocks.OAK_PLANKS, "oak"), SPRUCE(Blocks.SPRUCE_PLANKS, "spruce"), BIRCH(Blocks.BIRCH_PLANKS, "birch"),
 +        JUNGLE(Blocks.JUNGLE_PLANKS, "jungle"), ACACIA(Blocks.ACACIA_PLANKS, "acacia"),
 +        DARK_OAK(Blocks.DARK_OAK_PLANKS, "dark_oak");

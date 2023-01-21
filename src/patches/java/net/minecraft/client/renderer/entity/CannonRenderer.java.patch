@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/client/renderer/entity/CannonRenderer.java
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,74 @@
 +package net.minecraft.client.renderer.entity;
 +
 +import com.mojang.blaze3d.vertex.PoseStack;
@@ -52,18 +52,6 @@
 +            poseStack.mulPose(Vector3f.ZP.rotationDegrees(Mth.sin(f) * f * f1 / 25.0F * (float)cannon.getHurtDir()));
 +        } else {
 +            f = 0.0F;
-+        }
-+
-+        // TODO: Check if this works
-+        int j = cannon.getDisplayOffset();
-+        BlockState blockstate = cannon.getDisplayBlockState();
-+        if (blockstate.getRenderShape() != RenderShape.INVISIBLE) {
-+            poseStack.pushPose();
-+            float f4 = 0.75F;
-+            poseStack.scale(0.75F, 0.75F, 0.75F);
-+            poseStack.translate(-0.5D, (double)((float)(j - 8) / 16.0F), 0.5D);
-+            poseStack.mulPose(Vector3f.YP.rotationDegrees(90.0F));
-+            poseStack.popPose();
 +        }
 +
 +        // Lerp rotations
