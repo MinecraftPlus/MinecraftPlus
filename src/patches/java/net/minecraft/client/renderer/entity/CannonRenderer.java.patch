@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/client/renderer/entity/CannonRenderer.java
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,86 @@
 +package net.minecraft.client.renderer.entity;
 +
 +import com.mojang.blaze3d.vertex.PoseStack;
@@ -20,8 +20,13 @@
 +@OnlyIn(Dist.CLIENT)
 +public class CannonRenderer extends EntityRenderer<Cannon>
 +{
-+    private static final ResourceLocation CANNON_TEXTURE_LOCATION = new ResourceLocation(
-+        "textures/entity/cannon/cannon.png");
++    private static final ResourceLocation[] CANNON_TEXTURE_LOCATION = new ResourceLocation[] {
++        new ResourceLocation("textures/entity/cannon/oak.png"),
++        new ResourceLocation("textures/entity/cannon/spruce.png"),
++        new ResourceLocation("textures/entity/cannon/birch.png"),
++        new ResourceLocation("textures/entity/cannon/jungle.png"),
++        new ResourceLocation("textures/entity/cannon/acacia.png"),
++        new ResourceLocation("textures/entity/cannon/dark_oak.png") };
 +    protected final CannonModel model;
 +
 +    public CannonRenderer(EntityRenderDispatcher renderDispatcher) {
@@ -79,6 +84,6 @@
 +     */
 +    @Override
 +    public ResourceLocation getTextureLocation(Cannon cannon) {
-+        return CANNON_TEXTURE_LOCATION;
++        return CANNON_TEXTURE_LOCATION[cannon.getCannonType().ordinal()];
 +    }
 +}
