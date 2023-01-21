@@ -1,0 +1,27 @@
+--- /dev/null
++++ b/data/minecraft/recipes/jungle_mortar.json
+@@ -0,0 +1,23 @@
++{
++  "type": "minecraft:crafting_shaped",
++  "group": "mortar",
++  "pattern": [
++    " ##",
++    "PSP",
++    "PPP"
++  ],
++  "key": {
++    "#": {
++      "item": "minecraft:iron_block"
++    },
++    "S": {
++      "item": "minecraft:stick"
++    },
++    "P": {
++      "item": "minecraft:jungle_planks"
++    }
++  },
++  "result": {
++    "item": "minecraft:jungle_mortar"
++  }
++}
+\ No newline at end of file
