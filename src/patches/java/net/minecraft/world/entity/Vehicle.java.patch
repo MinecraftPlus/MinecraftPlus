@@ -1,0 +1,522 @@
+--- /dev/null
++++ b/net/minecraft/world/entity/Vehicle.java
+@@ -0,0 +1,519 @@
++package net.minecraft.world.entity;
++
++import net.minecraft.world.InteractionHand;
++import net.minecraft.world.entity.animal.Animal;
++import net.minecraft.world.entity.animal.IronGolem;
++import net.minecraft.world.entity.player.Player;
++import net.minecraft.world.entity.vehicle.Cannon;
++import java.util.List;
++import javax.annotation.Nullable;
++import net.minecraft.network.protocol.Packet;
++import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
++import net.minecraft.network.syncher.EntityDataAccessor;
++import net.minecraft.network.syncher.EntityDataSerializers;
++import net.minecraft.network.syncher.SynchedEntityData;
++import net.minecraft.util.Mth;
++import net.minecraft.world.level.Level;
++import net.minecraft.world.phys.AABB;
++import net.minecraft.world.phys.Vec3;
++import net.minecraftforge.api.distmarker.Dist;
++import net.minecraftforge.api.distmarker.OnlyIn;
++
++public abstract class Vehicle<T> extends Entity
++{
++
++    private static final EntityDataAccessor<Integer> DATA_ID_HURT = SynchedEntityData.<Integer>defineId(Vehicle.class,
++        EntityDataSerializers.INT);
++    private static final EntityDataAccessor<Integer> DATA_ID_HURTDIR = SynchedEntityData
++        .<Integer>defineId(Vehicle.class, EntityDataSerializers.INT);
++    private static final EntityDataAccessor<Float> DATA_ID_DAMAGE = SynchedEntityData.<Float>defineId(Vehicle.class,
++        EntityDataSerializers.FLOAT);
++
++    /** Maximum vehicle velocity speed */
++    protected double maxSpeed;
++
++    /** Vehicle yaw rotation speed */
++    protected double rotationSpeed;
++    protected float deltaYRotation;
++
++    private int lerpSteps;
++    private double lerpX;
++    private double lerpY;
++    private double lerpZ;
++    private double lerpYRot;
++    private double lerpXRot;
++
++    @OnlyIn(Dist.CLIENT)
++    private double lerpXDelta;
++    @OnlyIn(Dist.CLIENT)
++    private double lerpYDelta;
++    @OnlyIn(Dist.CLIENT)
++    private double lerpZDelta;
++
++    protected boolean inputLeft;
++    protected boolean inputRight;
++    protected boolean inputForward;
++    protected boolean inputBackward;
++
++    public float animationSpeed;
++    public float animationPosition;
++    public float animationPositionOld;
++
++    public Vehicle(EntityType<? extends Vehicle<T>> entityType, Level level) {
++        super(entityType, level);
++        this.blocksBuilding = true;
++        this.setDeltaMovement(Vec3.ZERO);
++    }
++
++    public Vehicle(EntityType<? extends Vehicle<T>> entityType, Level level, double x, double y, double z) {
++        this(entityType, level);
++        this.setPos(x, y, z);
++        this.xo = x;
++        this.yo = y;
++        this.zo = z;
++    }
++
++    @Override
++    public Packet<?> getAddEntityPacket() {
++        return new ClientboundAddEntityPacket(this);
++    }
++
++    @Override
++    protected void defineSynchedData() {
++        this.entityData.define(DATA_ID_HURT, 0);
++        this.entityData.define(DATA_ID_HURTDIR, 1);
++        this.entityData.define(DATA_ID_DAMAGE, 0.0F);
++    }
++
++    /**
++     * Returns a boundingBox used to collide the entity with other entities and blocks. This enables the entity to be
++     * pushable on contact, like boats or minecarts.
++     */
++    @Nullable
++    @Override
++    public AABB getCollideAgainstBox(Entity entity) {
++        return entity.isPushable() ? entity.getBoundingBox() : null;
++    }
++
++    /**
++     * Returns the <b>solid</b> collision bounding box for this entity. Used to make (e.g.) boats solid. Return null if
++     * this entity is not solid. For general purposes, use {@link #width} and {@link #height}.
++     * 
++     * @see getEntityBoundingBox
++     */
++    @Nullable
++    @Override
++    public AABB getCollideBox() {
++        return this.getBoundingBox();
++    }
++
++    /**
++     * Returns true if this entity should push and be pushed by other entities when colliding.
++     */
++    @Override
++    public boolean isPushable() {
++        return true;
++    }
++
++    /**
++     * Returns true if other Entities should be prevented from moving through this Entity.
++     */
++    @Override
++    public boolean isPickable() {
++        return !this.removed;
++    }
++
++    /**
++     * Gets the horizontal facing direction of this Entity, adjusted to take specially-treated entity types into
++     * account.
++     */
++//    @Override
++//    public Direction getMotionDirection() {
++//        return this.getDirection().getClockWise();
++//    }
++
++    /**
++     * Sets the current amount of damage the minecart has taken. Decreases over time. The cart breaks when this is over
++     * 40.
++     */
++    public void setDamage(float damage) {
++        this.entityData.set(DATA_ID_DAMAGE, damage);
++    }
++
++    /**
++     * Gets the current amount of damage the minecart has taken. Decreases over time. The cart breaks when this is over
++     * 40.
++     */
++    public float getDamage() {
++        return this.entityData.get(DATA_ID_DAMAGE);
++    }
++
++    /**
++     * Sets the rolling amplitude the cart rolls while being attacked.
++     */
++    public void setHurtTime(int amplitude) {
++        this.entityData.set(DATA_ID_HURT, amplitude);
++    }
++
++    /**
++     * Gets the rolling amplitude the cart rolls while being attacked.
++     */
++    public int getHurtTime() {
++        return this.entityData.get(DATA_ID_HURT);
++    }
++
++    /**
++     * Sets the rolling direction the cart rolls while being attacked. Can be 1 or -1.
++     */
++    public void setHurtDir(int direction) {
++        this.entityData.set(DATA_ID_HURTDIR, direction);
++    }
++
++    /**
++     * Gets the rolling direction the cart rolls while being attacked. Can be 1 or -1.
++     */
++    public int getHurtDir() {
++        return this.entityData.get(DATA_ID_HURTDIR);
++    }
++
++    /**
++     * Get's the maximum speed for a vehicle
++     */
++    protected double getMaxSpeed() {
++        return this.maxSpeed;
++    }
++
++    /**
++     * Set's the maximum speed for a vehicle
++     */
++    protected void setMaxSpeed(double speed) {
++        this.maxSpeed = speed;
++    }
++
++    /**
++     * Get's the maximum rotation speed for a vehicle
++     */
++    protected double getRotationSpeed() {
++        return this.rotationSpeed;
++    }
++
++    /**
++     * Set's the maximum rotation speed for a vehicle
++     */
++    protected void setRotationSpeed(double speed) {
++        this.rotationSpeed = speed;
++    }
++
++    @Override
++    public Entity getControllingPassenger() {
++        List<Entity> list = this.getPassengers();
++        return list.isEmpty() ? null : (Entity)list.get(0);
++    }
++
++    /**
++     * Called to update the cannon's position/logic.
++     */
++    @Override
++    public void tick() {
++        if (this.getHurtTime() > 0) {
++            this.setHurtTime(this.getHurtTime() - 1);
++        }
++
++        if (this.getDamage() > 0.0F) {
++            this.setDamage(this.getDamage() - 1.0F);
++        }
++
++        if (this.getY() < -64.0D) {
++            this.outOfWorld();
++        }
++
++        super.tick();
++        this.tickLerp();
++        if (this.isControlledByLocalInstance()) {
++            this.moveVehicle();
++            if (this.level.isClientSide) {
++                this.controlVehicle();
++            }
++
++            this.move(MoverType.SELF, this.getDeltaMovement());
++        } else {
++            this.setDeltaMovement(Vec3.ZERO);
++        }
++
++        this.applyNaturalSlowdown();
++
++        this.handleNetherPortal();
++        if (this.level.isClientSide) {
++            if (!this.isNoGravity()) {
++                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
++            }
++
++            this.checkInsideBlocks();
++
++            this.setRot(this.yRot, this.xRot);
++            if (getHorizontalDistanceSqr(this.getDeltaMovement()) > 0.01D) {
++                List<Entity> list = this.level.getEntities(this,
++                    this.getBoundingBox().inflate((double)0.2F, 0.0D, (double)0.2F), EntitySelector.pushableBy(this));
++                if (!list.isEmpty()) {
++                    for (int l = 0; l < list.size(); ++l) {
++                        Entity entity1 = list.get(l);
++                        if (!(entity1 instanceof Player) && !(entity1 instanceof IronGolem)
++                            && !(entity1 instanceof Cannon) && !this.isVehicle() && !entity1.isPassenger()) {
++                            entity1.startRiding(this);
++                        } else {
++                            entity1.push(this);
++                        }
++                    }
++                }
++            } else {
++                for (Entity entity : this.level.getEntities(this,
++                    this.getBoundingBox().inflate((double)0.2F, 0.0D, (double)0.2F))) {
++                    if (!this.hasPassenger(entity) && entity.isPushable() && entity instanceof Cannon) {
++                        entity.push(this);
++                    }
++                }
++            }
++
++            // Calculate movement to direction detection
++            Vec3 vector = new Vec3(this.getX() - this.xo, 0.0d, this.getZ() - this.zo);
++            float distance = (float)(vector.length() * 3.0F);
++            if (distance > 1.0F) {
++                distance = 1.0F;
++            }
++            boolean forward = vector.normalize().subtract(this.getViewVector(1.0F)).length() >= 0.99F;
++
++            this.animationPositionOld = this.animationPosition;
++            this.animationPosition += forward ? this.animationSpeed : -this.animationSpeed;
++            this.animationSpeed += (distance - this.animationSpeed) * 0.6F;
++        } else {
++            this.updateInWaterState();
++        }
++    }
++
++    protected void tickLerp() {
++        if (this.isControlledByLocalInstance()) {
++            this.lerpSteps = 0;
++            this.setPacketCoordinates(this.getX(), this.getY(), this.getZ());
++        }
++
++        if (this.lerpSteps > 0) {
++            double d0 = this.getX() + (this.lerpX - this.getX()) / (double)this.lerpSteps;
++            double d1 = this.getY() + (this.lerpY - this.getY()) / (double)this.lerpSteps;
++            double d2 = this.getZ() + (this.lerpZ - this.getZ()) / (double)this.lerpSteps;
++            double d3 = Mth.wrapDegrees(this.lerpYRot - (double)this.yRot);
++            this.yRot = (float)((double)this.yRot + d3 / (double)this.lerpSteps);
++            this.xRot = (float)((double)this.xRot + (this.lerpXRot - (double)this.xRot) / (double)this.lerpSteps);
++            --this.lerpSteps;
++            this.setPos(d0, d1, d2);
++            this.setRot(this.yRot, this.xRot);
++        }
++    }
++
++    /**
++     * Applies a velocity to the entities, to push them away from eachother.
++     */
++    @Override
++    public void push(Entity entity) {
++        if (!this.level.isClientSide) {
++            if (!entity.noPhysics && !this.noPhysics) {
++                if (!this.hasPassenger(entity)) {
++                    double d0 = entity.getX() - this.getX();
++                    double d1 = entity.getZ() - this.getZ();
++                    double d2 = d0 * d0 + d1 * d1;
++
++                    if (d2 >= 9.999999747378752E-5D) {
++                        d2 = (double)Mth.sqrt(d2);
++                        d0 = d0 / d2;
++                        d1 = d1 / d2;
++                        double d3 = 1.0D / d2;
++
++                        if (d3 > 1.0D) {
++                            d3 = 1.0D;
++                        }
++
++                        d0 = d0 * d3;
++                        d1 = d1 * d3;
++                        d0 = d0 * 0.10000000149011612D;
++                        d1 = d1 * 0.10000000149011612D;
++                        d0 = d0 * (double)(1.0F - this.pushthrough);
++                        d1 = d1 * (double)(1.0F - this.pushthrough);
++                        d0 = d0 * 0.5D;
++                        d1 = d1 * 0.5D;
++
++                        if (entity instanceof Cannon) {
++                            double d4 = entity.getX() - this.getX();
++                            double d5 = entity.getZ() - this.getZ();
++                            Vec3 vec3d = (new Vec3(d4, 0.0D, d5)).normalize();
++                            Vec3 vec3d1 = (new Vec3((double)Mth.cos(this.yRot * 0.017453292F), 0.0D,
++                                (double)Mth.sin(this.yRot * 0.017453292F))).normalize();
++                            double d6 = Math.abs(vec3d.dot(vec3d1));
++
++                            if (d6 < 0.800000011920929D) {
++                                return;
++                            }
++
++                            Vec3 vec3d2 = this.getDeltaMovement();
++                            Vec3 vec3d3 = entity.getDeltaMovement();
++
++                            double d7 = (vec3d3.x + vec3d2.x) / 2.0D;
++                            double d8 = (vec3d3.z + vec3d2.z) / 2.0D;
++                            this.setDeltaMovement(vec3d2.multiply(0.2D, 1.0D, 0.2D));
++                            this.push(d7 - d0, 0.0D, d8 - d1);
++                            entity.setDeltaMovement(vec3d3.multiply(0.2D, 1.0D, 0.2D));
++                            entity.push(d7 + d0, 0.0D, d8 + d1);
++                        }
++                    } else {
++                        this.push(-d0, 0.0D, -d1);
++                        entity.push(d0 / 4.0D, 0.0D, d1 / 4.0D);
++                    }
++                }
++            }
++        }
++    }
++
++    protected void applyNaturalSlowdown() {
++        double d0 = this.isVehicle() ? 0.95D : 0.35D;
++        this.setDeltaMovement(this.getDeltaMovement().multiply(d0, 1.0D, d0));
++    }
++
++    @Override
++    public boolean interact(Player player, InteractionHand hand) {
++        return !this.level.isClientSide ? player.startRiding(this) : false;
++    }
++
++    @Override
++    public void positionRider(Entity entity) {
++        if (this.hasPassenger(entity)) {
++            float f = -1.0F; // rider offset
++            float f1 = (float)((this.removed ? (double)0.01F : this.getRideHeight()) + entity.getRidingHeight());
++            if (this.getPassengers().size() > 1) {
++                int i = this.getPassengers().indexOf(entity);
++                if (i == 0) {
++                    f = 0.2F;
++                } else {
++                    f = -0.6F;
++                }
++
++                if (entity instanceof Animal) {
++                    f = (float)((double)f + 0.2D);
++                }
++            }
++
++            Vec3 vec3d = (new Vec3((double)f, 0.0D, 0.0D))
++                .yRot(-this.yRot * ((float)Math.PI / 180F) - ((float)Math.PI / 2F));
++            entity.setPos(this.getX() + vec3d.x, this.getY() + (double)f1, this.getZ() + vec3d.z);
++            entity.yRot += this.deltaYRotation;
++            entity.setYHeadRot(entity.getYHeadRot() + this.deltaYRotation);
++            this.clampRotation(entity);
++            if (entity instanceof Animal && this.getPassengers().size() > 1) {
++                int j = entity.getId() % 2 == 0 ? 90 : 270;
++                entity.setYBodyRot(((Animal)entity).yBodyRot + (float)j);
++                entity.setYHeadRot(entity.getYHeadRot() + (float)j);
++            }
++        }
++    }
++
++    /**
++     * Applies this vehicle's yaw to the given entity. Used to update the orientation of its passenger.
++     */
++    protected void clampRotation(Entity entity) {
++        entity.setYBodyRot(this.yRot);
++        float f = Mth.wrapDegrees(entity.yRot - this.yRot);
++        float f1 = Mth.clamp(f, -85.0F, 85.0F);
++        entity.yRotO += f1 - f;
++        entity.yRot += f1 - f;
++        entity.setYHeadRot(entity.yRot);
++    }
++
++    /**
++     * Update the vehicle's speed, based on momentum.
++     */
++    protected void moveVehicle() {
++        double d0 = this.isNoGravity() ? 0.0D : (double)-0.09F;
++        float landFriction = this.getControllingPassenger() instanceof Player ? 0.9F : 0.5F;
++
++        Vec3 vec3d = this.getDeltaMovement();
++        this.setDeltaMovement(vec3d.x * (double)landFriction, vec3d.y + d0, vec3d.z * (double)landFriction);
++        this.deltaYRotation *= landFriction / 2.0F;
++    }
++
++    /**
++     * Used to control cannon.
++     */
++    protected void controlVehicle() {
++        if (this.isVehicle()) {
++            float f = 0.0F;
++
++            if (this.inputLeft) {
++                this.deltaYRotation -= rotationSpeed;
++            }
++
++            if (this.inputRight) {
++                this.deltaYRotation += rotationSpeed;
++            }
++
++            if (this.inputRight != this.inputLeft && !this.inputForward && !this.inputBackward) {
++                f += 0.001F;
++            }
++
++            this.yRot += this.deltaYRotation;
++            if (this.inputForward) {
++                f += getMaxSpeed();
++            }
++
++            if (this.inputBackward) {
++                f -= getMaxSpeed() / 2.0F;
++            }
++
++            // Add vehicle movement
++            this.setDeltaMovement(
++                this.getDeltaMovement().add((double)(Mth.sin(-this.yRot * ((float)Math.PI / 180F)) * f), 0.0D,
++                    (double)(Mth.cos(this.yRot * ((float)Math.PI / 180F)) * f)));
++        }
++    }
++
++    /**
++     * Sets a target for the client to interpolate towards over the next few ticks
++     */
++    @OnlyIn(Dist.CLIENT)
++    @Override
++    public void lerpTo(double x, double y, double z, float yaw, float pitch, int lerpSteps, boolean teleport) {
++        this.lerpX = x;
++        this.lerpY = y;
++        this.lerpZ = z;
++        this.lerpYRot = (double)yaw;
++        this.lerpXRot = (double)pitch;
++        this.lerpSteps = lerpSteps + 2;
++    }
++
++    /**
++     * Setups the entity to do the hurt animation. Only used by packets in multiplayer.
++     */
++    @OnlyIn(Dist.CLIENT)
++    @Override
++    public void animateHurt() {
++        this.setHurtDir(-this.getHurtDir());
++        this.setHurtTime(10);
++        this.setDamage(this.getDamage() + this.getDamage() * 10.0F);
++    }
++
++    /**
++     * Updates the entity motion clientside, called by packets from the server
++     */
++    @OnlyIn(Dist.CLIENT)
++    @Override
++    public void lerpMotion(double x, double y, double z) {
++        this.lerpXDelta = x;
++        this.lerpYDelta = y;
++        this.lerpZDelta = z;
++        this.setDeltaMovement(this.lerpXDelta, this.lerpYDelta, this.lerpZDelta);
++    }
++
++    @OnlyIn(Dist.CLIENT)
++    public void setInput(boolean left, boolean right, boolean forward, boolean backward, boolean jump) {
++        this.inputLeft = left;
++        this.inputRight = right;
++        this.inputForward = forward;
++        this.inputBackward = backward;
++    }
++}

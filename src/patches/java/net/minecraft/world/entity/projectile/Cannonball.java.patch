@@ -1,12 +1,11 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/projectile/Cannonball.java
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,104 @@
 +package net.minecraft.world.entity.projectile;
 +
 +import net.minecraft.world.entity.Entity;
 +import net.minecraft.world.entity.EntityType;
 +import net.minecraft.world.entity.LivingEntity;
-+import net.minecraft.world.entity.vehicle.Cannon;
 +import net.minecraft.world.item.Item;
 +import net.minecraft.world.item.Items;
 +import net.minecraft.world.damagesource.DamageSource;
@@ -33,8 +32,8 @@
 +        super(EntityType.CANNONBALL, p_i1775_2_, p_i1775_4_, p_i1775_6_, p_i1775_1_);
 +    }
 +
-+    public Cannonball(Level level, Cannon cannon, LivingEntity gunner, Cannonball.Type type) {
-+        this(level, cannon.getX(), cannon.getEyeY() - (double)0.1F, cannon.getZ());
++    public Cannonball(Level level, Entity entity, LivingEntity gunner, Cannonball.Type type) {
++        this(level, entity.getX(), entity.getEyeY() - (double)0.1F, entity.getZ());
 +        this.type = type;
 +        this.explosionPower = type.getExplosionPower();
 +        this.setOwner(gunner);
