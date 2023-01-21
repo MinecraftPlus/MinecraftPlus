@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/projectile/Cannonball.java
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,105 @@
 +package net.minecraft.world.entity.projectile;
 +
 +import net.minecraft.world.entity.Entity;
@@ -91,8 +91,9 @@
 +        }
 +    }
 +
-+    public static enum Type {
-+        IMPACT(2.5F), INCENDIARY(1.25F);
++    public static enum Type
++    {
++        IMPACT(3.5F), INCENDIARY(2.05F);
 +
 +        private final float explosionPower;
 +
