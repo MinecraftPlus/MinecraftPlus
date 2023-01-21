@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/item/CannonItem.java
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,72 @@
 +package net.minecraft.world.item;
 +
 +import net.minecraft.stats.Stats;
@@ -21,9 +21,11 @@
 +public class CannonItem extends Item
 +{
 +    private static final Predicate<Entity> ENTITY_PREDICATE = EntitySelector.NO_SPECTATORS.and(Entity::isPickable);
-+
-+    public CannonItem(Item.Properties p_i48526_2_) {
-+        super(p_i48526_2_);
++    private final Cannon.Type type;
++    
++    public CannonItem(Cannon.Type type, Item.Properties properties) {
++        super(properties);
++        this.type = type;
 +    }
 +
 +    public InteractionResultHolder<ItemStack> use(Level p_77659_1_, Player p_77659_2_, InteractionHand p_77659_3_) {
@@ -50,6 +52,7 @@
 +            if (raytraceresult.getType() == HitResult.Type.BLOCK) {
 +                Cannon cannonentity = new Cannon(p_77659_1_, raytraceresult.getLocation().x,
 +                    raytraceresult.getLocation().y, raytraceresult.getLocation().z);
++                cannonentity.setType(this.type);
 +                cannonentity.yRot = p_77659_2_.yRot;
 +                if (!p_77659_1_.noCollision(cannonentity, cannonentity.getBoundingBox().inflate(-0.1D))) {
 +                    return InteractionResultHolder.fail(itemstack);

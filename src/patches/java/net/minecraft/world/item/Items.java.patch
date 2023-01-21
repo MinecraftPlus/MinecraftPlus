@@ -1,18 +1,26 @@
 --- a/net/minecraft/world/item/Items.java
 +++ b/net/minecraft/world/item/Items.java
-@@ -5,6 +5,7 @@
+@@ -5,8 +5,10 @@
  import net.minecraft.sounds.SoundEvents;
  import net.minecraft.world.entity.EntityType;
  import net.minecraft.world.entity.EquipmentSlot;
 +import net.minecraft.world.entity.projectile.Cannonball;
  import net.minecraft.world.entity.vehicle.AbstractMinecart;
  import net.minecraft.world.entity.vehicle.Boat;
++import net.minecraft.world.entity.vehicle.Cannon;
  import net.minecraft.world.food.Foods;
-@@ -898,6 +899,9 @@
+ import net.minecraft.world.level.block.Block;
+ import net.minecraft.world.level.block.Blocks;
+@@ -898,6 +900,14 @@
     public static final Item HONEY_BOTTLE = registerItem("honey_bottle", new HoneyBottleItem((new Item.Properties()).craftRemainder(GLASS_BOTTLE).food(Foods.HONEY_BOTTLE).tab(CreativeModeTab.TAB_FOOD).stacksTo(16)));
     public static final Item HONEY_BLOCK = registerBlock(Blocks.HONEY_BLOCK, CreativeModeTab.TAB_DECORATIONS);
     public static final Item HONEYCOMB_BLOCK = registerBlock(Blocks.HONEYCOMB_BLOCK, CreativeModeTab.TAB_DECORATIONS);
-+   public static final Item CANNON = registerItem("cannon", new CannonItem((new Item.Properties()).stacksTo(1).tab(CreativeModeTab.TAB_TRANSPORTATION)));
++   public static final Item ACACIA_CANNON = registerItem("acacia_cannon", new CannonItem(Cannon.Type.ACACIA, (new Item.Properties()).stacksTo(1).tab(CreativeModeTab.TAB_TRANSPORTATION)));
++   public static final Item BIRCH_CANNON = registerItem("birch_cannon", new CannonItem(Cannon.Type.BIRCH, (new Item.Properties()).stacksTo(1).tab(CreativeModeTab.TAB_TRANSPORTATION)));
++   public static final Item DARK_OAK_CANNON = registerItem("dark_oak_cannon", new CannonItem(Cannon.Type.DARK_OAK, (new Item.Properties()).stacksTo(1).tab(CreativeModeTab.TAB_TRANSPORTATION)));
++   public static final Item JUNGLE_CANNON = registerItem("jungle_cannon", new CannonItem(Cannon.Type.JUNGLE, (new Item.Properties()).stacksTo(1).tab(CreativeModeTab.TAB_TRANSPORTATION)));
++   public static final Item OAK_CANNON = registerItem("oak_cannon", new CannonItem(Cannon.Type.OAK, (new Item.Properties()).stacksTo(1).tab(CreativeModeTab.TAB_TRANSPORTATION)));
++   public static final Item SPRUCE_CANNON = registerItem("spruce_cannon", new CannonItem(Cannon.Type.SPRUCE, (new Item.Properties()).stacksTo(1).tab(CreativeModeTab.TAB_TRANSPORTATION)));
 +   public static final Item CANNONBALL = registerItem("cannonball", new CannonballItem(Cannonball.Type.IMPACT, (new Item.Properties()).stacksTo(8).tab(CreativeModeTab.TAB_COMBAT)));
 +   public static final Item CANNONBALL_INCENDIARY = registerItem("cannonball_incendiary", new CannonballItem(Cannonball.Type.INCENDIARY, (new Item.Properties()).stacksTo(8).tab(CreativeModeTab.TAB_COMBAT)));
  
