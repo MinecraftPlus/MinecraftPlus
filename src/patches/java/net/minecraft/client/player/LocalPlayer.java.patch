@@ -1,14 +1,17 @@
 --- a/net/minecraft/client/player/LocalPlayer.java
 +++ b/net/minecraft/client/player/LocalPlayer.java
-@@ -58,6 +58,7 @@
+@@ -56,8 +56,10 @@
+ import net.minecraft.world.entity.MoverType;
+ import net.minecraft.world.entity.PlayerRideableJumping;
  import net.minecraft.world.entity.Pose;
++import net.minecraft.world.entity.vehicle.AbstractArtillery;
  import net.minecraft.world.entity.vehicle.AbstractMinecart;
  import net.minecraft.world.entity.vehicle.Boat;
 +import net.minecraft.world.entity.vehicle.Cannon;
  import net.minecraft.world.item.ElytraItem;
  import net.minecraft.world.item.Item;
  import net.minecraft.world.item.ItemStack;
-@@ -153,6 +154,12 @@
+@@ -153,6 +155,12 @@
              this.setYHeadRot(entity.yRot);
           }
  
@@ -21,7 +24,7 @@
           return true;
        }
     }
-@@ -781,6 +788,10 @@
+@@ -781,6 +789,10 @@
           Boat boat = (Boat)this.getVehicle();
           boat.setInput(this.input.left, this.input.right, this.input.up, this.input.down);
           this.handsBusy |= this.input.left || this.input.right || this.input.up || this.input.down;
