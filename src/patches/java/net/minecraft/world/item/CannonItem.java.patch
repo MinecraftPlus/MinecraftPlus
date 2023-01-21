@@ -52,7 +52,7 @@
 +            if (raytraceresult.getType() == HitResult.Type.BLOCK) {
 +                Cannon cannonentity = new Cannon(p_77659_1_, raytraceresult.getLocation().x,
 +                    raytraceresult.getLocation().y, raytraceresult.getLocation().z);
-+                cannonentity.setType(this.type);
++                cannonentity.setCannonType(this.type);
 +                cannonentity.yRot = p_77659_2_.yRot;
 +                if (!p_77659_1_.noCollision(cannonentity, cannonentity.getBoundingBox().inflate(-0.1D))) {
 +                    return InteractionResultHolder.fail(itemstack);

@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,1052 @@
+@@ -0,0 +1,1058 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -456,6 +456,10 @@
 +            this.setDisplayOffset(p_70037_1_.getInt("DisplayOffset"));
 +        }
 +
++        if (p_70037_1_.contains("Type", 8)) {
++            this.setCannonType(Cannon.Type.byName(p_70037_1_.getString("Type")));
++        }
++
 +        this.createInventory();
 +        ListTag listnbt = p_70037_1_.getList("Items", 10);
 +        for (int i = 0; i < listnbt.size(); ++i) {
@@ -474,6 +478,8 @@
 +            p_213281_1_.put("DisplayState", NbtUtils.writeBlockState(this.getDisplayBlockState()));
 +            p_213281_1_.putInt("DisplayOffset", this.getDisplayOffset());
 +        }
++
++        p_213281_1_.putString("Type", this.getCannonType().getName());
 +
 +        ListTag listnbt = new ListTag();
 +        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
@@ -594,7 +600,7 @@
 +        return this.entityData.get(DATA_ID_HURTDIR);
 +    }
 +
-+    public void setType(Cannon.Type type) {
++    public void setCannonType(Cannon.Type type) {
 +        this.entityData.set(DATA_ID_TYPE, type.ordinal());
 +    }
 +
