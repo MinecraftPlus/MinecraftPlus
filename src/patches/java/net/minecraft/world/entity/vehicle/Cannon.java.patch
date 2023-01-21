@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/net/minecraft/world/entity/vehicle/Cannon.java
-@@ -0,0 +1,956 @@
+@@ -0,0 +1,966 @@
 +package net.minecraft.world.entity.vehicle;
 +
 +import java.util.List;
@@ -20,6 +20,7 @@
 +import net.minecraft.util.Mth;
 +import net.minecraft.world.Container;
 +import net.minecraft.world.ContainerListener;
++import net.minecraft.world.Containers;
 +import net.minecraft.world.InteractionHand;
 +import net.minecraft.world.InteractionResult;
 +import net.minecraft.world.MenuProvider;
@@ -78,6 +79,7 @@
 +
 +    /** Cannon inventory for explosives and bullet */
 +    protected SimpleContainer inventory;
++    private boolean dropEquipment = true;
 +
 +    /** Barrel angle */
 +    private float deltaXRotation;
@@ -214,6 +216,15 @@
 +        }
 +    }
 +
++    @Override
++    public void remove() {
++        if (!this.level.isClientSide && this.dropEquipment) {
++            Containers.dropContents(this.level, this, this.inventory);
++        }
++
++        super.remove();
++    }
++
 +    /**
 +     * Same as {@link #remove()} but adds entity drop
 +     * 
@@ -229,7 +240,6 @@
 +
 +            this.spawnAtLocation(itemstack);
 +        }
-+
 +    }
 +
 +    /**
