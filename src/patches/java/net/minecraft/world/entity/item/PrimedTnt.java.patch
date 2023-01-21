@@ -1,0 +1,21 @@
+--- a/net/minecraft/world/entity/item/PrimedTnt.java
++++ b/net/minecraft/world/entity/item/PrimedTnt.java
+@@ -15,6 +15,7 @@
+ import net.minecraft.world.entity.MoverType;
+ import net.minecraft.world.entity.Pose;
+ import net.minecraft.world.level.Explosion;
++import net.minecraft.world.level.GameRules;
+ import net.minecraft.world.level.Level;
+ 
+ public class PrimedTnt extends Entity {
+@@ -79,8 +80,8 @@
+    }
+ 
+    private void explode() {
+-      float f = 4.0F;
+-      this.level.explode(this, this.getX(), this.getY(0.0625D), this.getZ(), 4.0F, Explosion.BlockInteraction.BREAK);
++      boolean ruleDoExplosions = this.level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS);
++      this.level.explode(this, this.getX(), this.getY(0.0625D), this.getZ(), 4.0F, ruleDoExplosions ? Explosion.BlockInteraction.BREAK : Explosion.BlockInteraction.NONE);
+    }
+ 
+    protected void addAdditionalSaveData(CompoundTag tag) {

@@ -83,10 +83,10 @@
 +                entity.hurt(DamageSource.cannonball(this, this.owner), 6.0F);
 +                this.doEnchantDamageEffects(this.owner, entity);
 +            } else {
-+                boolean flag = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
++                boolean flag = this.level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS);
 +                boolean incendiary = this.type == Cannonball.Type.INCENDIARY;
 +                this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower,
-+                    incendiary, flag ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
++                    incendiary, flag ? Explosion.BlockInteraction.BREAK : Explosion.BlockInteraction.NONE);
 +                this.remove();
 +            }
 +        }

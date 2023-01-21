@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/boss/wither/WitherBoss.java
++++ b/net/minecraft/world/entity/boss/wither/WitherBoss.java
+@@ -212,7 +212,7 @@
+       if (this.getInvulnerableTicks() > 0) {
+          int i = this.getInvulnerableTicks() - 1;
+          if (i <= 0) {
+-            Explosion.BlockInteraction blockinteraction = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE;
++            Explosion.BlockInteraction blockinteraction = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS) ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE;
+             this.level.explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, blockinteraction);
+             this.level.globalLevelEvent(1023, new BlockPos(this), 0);
+          }
