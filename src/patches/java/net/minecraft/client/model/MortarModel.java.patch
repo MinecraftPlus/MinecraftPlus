@@ -1,0 +1,109 @@
+--- /dev/null
++++ b/net/minecraft/client/model/MortarModel.java
+@@ -0,0 +1,106 @@
++package net.minecraft.client.model;
++
++import java.util.Arrays;
++import net.minecraft.client.model.geom.ModelPart;
++import net.minecraft.world.entity.vehicle.Mortar;
++import net.minecraftforge.api.distmarker.Dist;
++import net.minecraftforge.api.distmarker.OnlyIn;
++
++@OnlyIn(Dist.CLIENT)
++public class MortarModel extends ListModel<Mortar>
++{
++    private ModelPart frame;
++    private ModelPart[] wheels = new ModelPart[4];
++    private ModelPart barrel;
++    private ModelPart barrel_ignitor;
++
++    public MortarModel() {
++        build();
++    }
++
++    public void build() {
++        // Frame
++        this.frame = new ModelPart(this, 0, 0).setTexSize(128, 64);
++        this.frame.texOffs(0, 31).addBox(0.0F, 0.0F, 0.0F, 23, 3, 15, 0.0F);
++        this.frame.texOffs(31, 0).addBox(3.5F, 3.0F, 0.5F, 16, 9, 2, 0.0F);
++        this.frame.texOffs(31, 0).addBox(3.5F, 3.0F, 12.5F, 16, 9, 2, 0.0F);
++        this.frame.setPos(7.5F, 1.5F, -10.0F);
++        this.frame.yRot = (float)-(Math.PI / 2D);
++
++        // Wheels
++        this.wheels[0] = creteWheel();
++        this.wheels[1] = creteWheel();
++        this.wheels[2] = creteWheel();
++        this.wheels[3] = creteWheel();
++
++        // Wheels positioning
++        this.wheels[0].setPos(-8.75F, 3.0F, 11.0F);
++        this.wheels[1].setPos(8.75F, 3.0F, 11.0F);
++        this.wheels[2].setPos(-8.75F, 3.0F, -8.0F);
++        this.wheels[3].setPos(8.75F, 3.0F, -8.0F);
++
++        this.barrel = createBarrel();
++
++    }
++
++    private ModelPart createBarrel() {
++        ModelPart barrel = new ModelPart(this, 0, 10).setTexSize(128, 64);
++
++        // Barrel down
++        barrel.addBox(-2.0F, -8.0F, -2.0F, 4, 2, 4, 0.0F);
++        barrel.texOffs(2, 2).addBox(-3.5F, -6.0F, -3.5F, 7, 2, 7, 0.25F);
++
++        // Barrel section
++        barrel.texOffs(0, 2).addBox(-3.5F, -4.0F, -3.5F, 7, 6, 7, 0.0F);
++
++        // Barrel top
++        barrel.texOffs(2, 21).addBox(-3.5F, 2.0F, -3.5F, 7, 2, 7, 0.5F);
++
++        // Barrel hinge
++        barrel.addBox(-7.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
++        barrel.addBox(3.5F, -1.0F, -1.0F, 4, 2, 2, 0.0F);
++
++        barrel.setPos(0.0F, 13.0F, 1.0F);
++        barrel.xRot = (float)-(Math.PI / 2D);
++
++        // Ignitor
++        this.barrel_ignitor = new ModelPart(this).setTexSize(128, 64);
++        barrel_ignitor.texOffs(0, 31).addBox(-1.0F, -1.0F, 0.0F, 2, 3, 2, -0.5F);
++        barrel_ignitor.setPos(0.0F, -6.0F, 2.0F);
++        barrel_ignitor.xRot = 1.85F;
++        barrel.addChild(barrel_ignitor);
++
++        return barrel;
++    }
++
++    private ModelPart creteWheel() {
++        ModelPart wheel = new ModelPart(this, 15, 31).setTexSize(128, 64);
++        wheel.addBox(-1.0F, -3.0F, -2.0F, 2, 6, 4, 0.0F);
++        wheel.addBox(-1.01F, -2.0F, -3.0F, 2, 4, 6, 0.0F);
++        wheel.texOffs(0, 0).addBox(-1.5F, -1.0F, -1.0F, 3, 2, 2, -0.1F);
++
++        return wheel;
++    }
++
++    /**
++     * Sets this entity's model rotation angles
++     */
++    @Override
++    public void setupAnim(Mortar mortar, float barrelRotation, float wheelsRotation, float shock, float dummy1,
++        float dummy2) {
++        build();
++        // Rotate barrel
++        this.barrel.xRot = (shock / 100.0F) + (float)(-(barrelRotation * (Math.PI / 180F)) - (Math.PI / 2));
++
++        // Rotate wheels
++        this.wheels[0].xRot = this.wheels[1].xRot = this.wheels[2].xRot = this.wheels[3].xRot = wheelsRotation;
++
++        // Show ignitor when cannon ready to shoot
++        this.barrel_ignitor.visible = mortar.isReady();
++    }
++
++    @Override
++    public Iterable<ModelPart> parts() {
++        return Arrays.asList(this.frame, this.wheels[0], this.wheels[1], this.wheels[2], this.wheels[3], this.barrel);
++    }
++}
