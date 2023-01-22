@@ -1,0 +1,10 @@
+--- a/net/minecraft/sounds/SoundEvents.java
++++ b/net/minecraft/sounds/SoundEvents.java
+@@ -96,6 +96,7 @@
+    public static final SoundEvent BUCKET_FILL_FISH = register("item.bucket.fill_fish");
+    public static final SoundEvent BUCKET_FILL_LAVA = register("item.bucket.fill_lava");
+    public static final SoundEvent CAMPFIRE_CRACKLE = register("block.campfire.crackle");
++    public static final SoundEvent CANNON_SHOOT = register("entity.cannon.shoot");
+    public static final SoundEvent CAT_AMBIENT = register("entity.cat.ambient");
+    public static final SoundEvent CAT_STRAY_AMBIENT = register("entity.cat.stray_ambient");
+    public static final SoundEvent CAT_DEATH = register("entity.cat.death");

@@ -18,6 +18,6 @@ dependencies {
     implementation 'org.tukaani:xz:1.8' // Extract API, to extract the runtime jars, as Mojang uses lzma
     implementation 'net.minecraftforge:mapping-verifier:2.0.2'
     implementation 'net.sf.jopt-simple:jopt-simple:5.0.4' // Needed for verifier
-    implementation 'org.minecraftplus.gradle:propatcher:2.0.1'
+    implementation 'org.minecraftplus.gradle:propatcher:2.1.+'
     implementation 'commons-io:commons-io:2.11.0'
 }

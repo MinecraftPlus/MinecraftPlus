@@ -1,0 +1,21 @@
+--- a/net/minecraft/client/model/EntityModel.java
++++ b/net/minecraft/client/model/EntityModel.java
+@@ -21,7 +21,17 @@
+       super(function);
+    }
+ 
+-   public abstract void setupAnim(T entity, float entity1, float entity2, float entity3, float entity4, float entity5);
++   /**
++    * Sets this entity's model rotation angles
++    *
++    * @param entity model entity
++    * @param phase limb swing phase
++    * @param swing limb swing amount
++    * @param age age in ticks
++    * @param yaw head yaw
++    * @param pitch head pitch
++    */
++   public abstract void setupAnim(T entity, float phase, float swing, float age, float yaw, float pitch);
+ 
+    public void prepareMobModel(T entity, float f, float f1, float f2) {
+    }

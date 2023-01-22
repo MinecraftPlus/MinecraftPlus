@@ -1,0 +1,13 @@
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -1929,8 +1929,8 @@
+       }
+ 
+       this.animationSpeedOld = this.animationSpeed;
+-      double d13 = this.getX() - this.xo;
+-      double d14 = this.getZ() - this.zo;
++      double d13 = !this.isPassenger() ? this.getX() - this.xo : this.getVehicle().getX() - this.getVehicle().xo;
++      double d14 = !this.isPassenger() ? this.getZ() - this.zo : this.getVehicle().getZ() - this.getVehicle().zo;
+       double d15 = this instanceof FlyingAnimal ? this.getY() - this.yo : 0.0D;
+       float f8 = Mth.sqrt(d13 * d13 + d15 * d15 + d14 * d14) * 4.0F;
+       if (f8 > 1.0F) {

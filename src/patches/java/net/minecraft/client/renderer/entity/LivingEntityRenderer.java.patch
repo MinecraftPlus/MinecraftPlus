@@ -1,0 +1,11 @@
+--- a/net/minecraft/client/renderer/entity/LivingEntityRenderer.java
++++ b/net/minecraft/client/renderer/entity/LivingEntityRenderer.java
+@@ -92,7 +92,7 @@
+       posestack.translate(0.0D, (double)-1.501F, 0.0D);
+       float f9 = 0.0F;
+       float f10 = 0.0F;
+-      if (!livingentity.isPassenger() && livingentity.isAlive()) {
++      if (livingentity.isAlive()) {
+          f9 = Mth.lerp(f1, livingentity.animationSpeedOld, livingentity.animationSpeed);
+          f10 = livingentity.animationPosition - livingentity.animationSpeed * (1.0F - f1);
+          if (livingentity.isBaby()) {

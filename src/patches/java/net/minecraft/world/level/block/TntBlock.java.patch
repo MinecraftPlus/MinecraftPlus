@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/TntBlock.java
++++ b/net/minecraft/world/level/block/TntBlock.java
+@@ -59,7 +59,7 @@
+    public void wasExploded(Level level, BlockPos blockpos, Explosion explosion) {
+       if (!level.isClientSide) {
+          PrimedTnt primedtnt = new PrimedTnt(level, (double)((float)blockpos.getX() + 0.5F), (double)blockpos.getY(), (double)((float)blockpos.getZ() + 0.5F), explosion.getSourceMob());
+-         primedtnt.setFuse((short)(level.random.nextInt(primedtnt.getLife() / 4) + primedtnt.getLife() / 8));
++         primedtnt.setFuse(level.random.nextInt(1 + primedtnt.getLife() / 8));
+          level.addFreshEntity(primedtnt);
+       }
+    }

@@ -1,0 +1,40 @@
+--- /dev/null
++++ b/data/minecraft/advancements/story/artillery.json
+@@ -0,0 +1,36 @@
++{
++  "parent": "minecraft:story/smelt_iron",
++  "display": {
++    "icon": {
++      "item": "minecraft:cannon",
++      "nbt": "{Damage:0}"
++    },
++    "title": {
++      "translate": "advancements.story.artillery.title"
++    },
++    "description": {
++      "translate": "advancements.story.artillery.description"
++    },
++    "frame": "task",
++    "show_toast": true,
++    "announce_to_chat": true,
++    "hidden": true
++  },
++  "criteria": {
++    "cannon": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:cannon"
++          }
++        ]
++      }
++    }
++  },
++  "requirements": [
++    [
++      "cannon"
++    ]
++  ]
++}
+\ No newline at end of file

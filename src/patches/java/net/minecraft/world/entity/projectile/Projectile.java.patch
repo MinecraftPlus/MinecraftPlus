@@ -1,0 +1,17 @@
+--- a/net/minecraft/world/entity/projectile/Projectile.java
++++ b/net/minecraft/world/entity/projectile/Projectile.java
+@@ -1,5 +1,14 @@
+ package net.minecraft.world.entity.projectile;
+ 
+ public interface Projectile {
++   /**
++    * Similar to setArrowHeading, it's point the throwable entity to a x, y, z direction.
++     *
++     * @param d X vector
++     * @param d1 Y vector
++     * @param d2 Z vector
++     * @param d3 motion scale
++     * @param d4 direction deviation
++    */
+    void shoot(double d, double d1, double d2, float d3, float d4);
+ }

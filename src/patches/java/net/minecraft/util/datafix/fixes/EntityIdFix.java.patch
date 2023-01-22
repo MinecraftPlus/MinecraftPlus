@@ -1,6 +1,15 @@
 --- a/net/minecraft/util/datafix/fixes/EntityIdFix.java
 +++ b/net/minecraft/util/datafix/fixes/EntityIdFix.java
-@@ -93,8 +93,8 @@
+@@ -17,6 +17,8 @@
+       map.put("Bat", "minecraft:bat");
+       map.put("Blaze", "minecraft:blaze");
+       map.put("Boat", "minecraft:boat");
++      map.put("Cannon", "minecraft:cannon");
++      map.put("Cannonball", "minecraft:cannonball");
+       map.put("CaveSpider", "minecraft:cave_spider");
+       map.put("Chicken", "minecraft:chicken");
+       map.put("Cow", "minecraft:cow");
+@@ -93,8 +95,8 @@
     }
  
     public TypeRewriteRule makeRule() {

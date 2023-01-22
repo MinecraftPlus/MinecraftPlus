@@ -50,7 +50,7 @@ class SmartExtractCommits extends DefaultTask {
             if (!commits.isEmpty()) {
                 logger.lifecycle("Loaded {} commits:", commits.size())
                 commits.each {
-                    logger.lifecycle(" # {} {}", it.id, it.message)
+                    logger.lifecycle(" = {} @ {}", shortenCommitId(it.id), it.message)
                 }
             }
         }
@@ -60,7 +60,7 @@ class SmartExtractCommits extends DefaultTask {
             def repository = git.getRepository()
 
             // Prepare git log command to get commit list
-            def scannedRef = repository.findRef(config.branch as String);
+            def scannedRef = repository.findRef(config.branch as String)
             if (scannedRef == null) {
                 throw new GradleException("Target repository does not contain branch '${config.branch}'")
             }
@@ -141,7 +141,7 @@ class SmartExtractCommits extends DefaultTask {
                     RevFilter clone() { return this }
                 })
 
-            logger.lifecycle("Finding commit list:")
+            logger.lifecycle("Finding new commits at range:")
             if (config.lastcommit != null) {
                 def startRev = repository.resolve(config.lastcommit as String)
                 if (startRev == null) {
@@ -159,7 +159,7 @@ class SmartExtractCommits extends DefaultTask {
             if (!revisions.isEmpty()) {
                 logger.lifecycle("Found {} new commits:", revisions.size())
                 revisions.each {
-                    logger.lifecycle(" # {} {}", it.getId().name(), it.getShortMessage())
+                    logger.lifecycle(" + {} @ {}", shortenCommitId(it.getId().name()), it.getShortMessage())
                 }
             } else {
                 logger.lifecycle("No new commits found.")
@@ -187,6 +187,23 @@ class SmartExtractCommits extends DefaultTask {
             return
         }
 
+        if (commits.size() > config.maxCount) {
+            def overflow = commits.size() - config.maxCount as int
+            logger.lifecycle("Smartlist is longer [{}] than max [{}], trying to shrink {} commits", commits.size(), config.maxCount, overflow)
+
+            def available = commits.findAll { c -> c.maked && c.applied }
+            def toRemove = available.subList(0, Math.min(available.size(), overflow))
+
+            commits.removeAll(toRemove)
+
+            if (!toRemove.isEmpty()) {
+                logger.lifecycle("Shrinked {} commits:", toRemove.size())
+                toRemove.each {
+                    logger.lifecycle(" - {} @ {}", shortenCommitId(it.id), shortenCommitMessage(it.message))
+                }
+            }
+        }
+
         // Generate smart list JSON
         def oldest = commits.first()
         def latest = commits.last()
@@ -200,5 +217,13 @@ class SmartExtractCommits extends DefaultTask {
         // Update smart config last commit
         config.lastcommit = latest.id
         smartconfig.text = new JsonBuilder(config).toPrettyString()
+    }
+
+    String shortenCommitId(def id) {
+        return id.substring(0, 8)
+    }
+
+    String shortenCommitMessage(def message) {
+        return message.substring(0, Math.min(80, message.length()))
     }
 }

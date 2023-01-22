@@ -1,0 +1,28 @@
+--- a/assets/minecraft/sounds.json
++++ b/assets/minecraft/sounds.json
+@@ -20,6 +20,9 @@
+       "ambient/cave/cave17",
+       "ambient/cave/cave18",
+       "ambient/cave/cave19"
++
++
++
+     ],
+     "subtitle": "subtitles.ambient.cave"
+   },
+@@ -2761,6 +2764,15 @@
+       }
+     ]
+   },
++  "entity.cannon.shoot": {
++    "sounds": [
++      {
++        "name": "entity/cannon/shoot1",
++        "volume": 0.8
++      }
++    ],
++    "subtitle": "subtitles.entity.cannon.shoot"
++  },
+   "entity.cat.ambient": {
+     "sounds": [
+       {

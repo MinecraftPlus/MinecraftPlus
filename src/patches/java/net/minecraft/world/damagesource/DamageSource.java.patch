@@ -1,0 +1,24 @@
+--- a/net/minecraft/world/damagesource/DamageSource.java
++++ b/net/minecraft/world/damagesource/DamageSource.java
+@@ -8,6 +8,7 @@
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.entity.projectile.AbstractArrow;
+ import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
++import net.minecraft.world.entity.projectile.Cannonball;
+ import net.minecraft.world.level.Explosion;
+ import net.minecraft.world.phys.Vec3;
+ 
+@@ -73,6 +74,13 @@
+       return entity == null ? (new IndirectEntityDamageSource("onFire", abstracthurtingprojectile, abstracthurtingprojectile)).setIsFire().setProjectile() : (new IndirectEntityDamageSource("fireball", abstracthurtingprojectile, entity)).setIsFire().setProjectile();
+    }
+ 
++   /**
++    * returns EntityDamageSourceIndirect of an cannonball
++    */
++   public static DamageSource cannonball(Cannonball cannonball, @Nullable Entity owner) {
++      return (new IndirectEntityDamageSource("cannonball", cannonball, owner)).setProjectile();
++   }
++
+    public static DamageSource thrown(Entity entity, @Nullable Entity entity1) {
+       return (new IndirectEntityDamageSource("thrown", entity, entity1)).setProjectile();
+    }

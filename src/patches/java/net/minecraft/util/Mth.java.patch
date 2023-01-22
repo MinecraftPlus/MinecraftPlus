@@ -1,0 +1,37 @@
+--- a/net/minecraft/util/Mth.java
++++ b/net/minecraft/util/Mth.java
+@@ -504,12 +504,30 @@
+       return i;
+    }
+ 
+-   public static float lerp(float f, float f1, float f2) {
+-      return f1 + f * (f2 - f1);
++   /**
++    * Linear interpolation of floating point
++    *
++    * @param setpoint value between 0 and 1
++    * @param start start value of interpolation
++    * @param end end value of interpolation
++    *
++    * @return interpolated value {@code y} between {@code start} and {@code end}
++    */
++   public static float lerp(float setpoint, float start, float end) {
++      return start + setpoint * (end - start);
+    }
+ 
+-   public static double lerp(double d, double d1, double d2) {
+-      return d1 + d * (d2 - d1);
++   /**
++    * Linear interpolation of floating point
++    *
++    * @param setpoint value between 0 and 1
++    * @param start start value of interpolation
++    * @param end end value of interpolation
++    *
++    * @return interpolated value {@code y} between {@code start} and {@code end}
++    */
++   public static double lerp(double setpoint, double start, double end) {
++      return start + setpoint * (end - start);
+    }
+ 
+    public static double lerp2(double d, double d1, double d2, double d3, double d4, double d5) {
