@@ -2,14 +2,14 @@
 # MinecraftPlus build main configuration
 #
 ---
-project_version: &project_version 1.1.0
+project_version: &project_version 1.1.1
 minecraft_version: 1.15.2
 java_target: 8
 
 # This information will be used when preparing version.json information file used by game JAR
 version_info:
   id: *project_version
-  name: "Zero Update"
+  name: "Cannon Update"
   release_target: "Zero Update"
   world_version: 2230               # Should be incerased when map/chunk implementation changes
   protocol_version: 578             # Should be incerased when packet-based communication between client and server changes
