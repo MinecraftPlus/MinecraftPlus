@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'me.qoomon.git-versioning' version '5.2.0'
     id 'de.undercouch.download'
     id 'uk.jamierocks.propatcher' apply false
     id 'org.barfuin.gradle.taskinfo' version '1.0.5'
@@ -83,6 +84,25 @@ project.ext {
 group = "org.minecraftplus"
 version = PROJECT_VERSION
 
+gitVersioning.apply {
+    refs {
+        branch('master') {
+            version = '${version}'
+        }
+        branch('(release|hotfix)/(?<branch>.*)') {
+            version = '${version}-SNAPSHOT'
+        }
+        branch('development') {
+            version = '${commit.short}-DEV-SNAPSHOT'
+        }
+        branch('(feature|dev)/(?<branch>.*)') {
+            version = '${commit.short}-${ref.branch}-SNAPSHOT'
+        }
+        rev {
+            version = '${commit.short}-SNAPSHOT'
+        }
+    }
+}
 
 java.toolchain {
     languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
