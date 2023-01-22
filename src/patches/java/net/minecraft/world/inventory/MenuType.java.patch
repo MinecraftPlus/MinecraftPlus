@@ -4,7 +4,7 @@
     public static final MenuType<SmokerMenu> SMOKER = register("smoker", SmokerMenu::new);
     public static final MenuType<CartographyTableMenu> CARTOGRAPHY_TABLE = register("cartography_table", CartographyTableMenu::new);
     public static final MenuType<StonecutterMenu> STONECUTTER = register("stonecutter", StonecutterMenu::new);
-+   public static final MenuType<CannonMenu> CANNON = register("cannon", CannonMenu::new);
++   public static final MenuType<ArtilleryMenu> ARTILLERY = register("artillery", ArtilleryMenu::new);
     private final MenuType.MenuSupplier<T> constructor;
  
     private static <T extends AbstractContainerMenu> MenuType<T> register(String s, MenuType.MenuSupplier<T> menusupplier) {

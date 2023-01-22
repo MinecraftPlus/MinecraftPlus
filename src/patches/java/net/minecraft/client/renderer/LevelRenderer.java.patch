@@ -6,7 +6,7 @@
           this.level.playLocalSound(blockpos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 64.0F, 0.8F + this.level.random.nextFloat() * 0.3F, false);
 +         break;
 +      case 4000:
-+         this.level.playLocalSound(blockpos, SoundEvents.CANNON_SHOOT, SoundSource.HOSTILE, 64.0F, 0.8F + this.level.random.nextFloat() * 0.3F, false);
++         this.level.playLocalSound(blockpos, SoundEvents.ARTILLERY_SHOOT, SoundSource.HOSTILE, 64.0F, 0.8F + this.level.random.nextFloat() * 0.3F, false);
        }
  
     }

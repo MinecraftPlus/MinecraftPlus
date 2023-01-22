@@ -1,0 +1,54 @@
+--- /dev/null
++++ b/data/minecraft/advancements/recipes/combat/artillery.json
+@@ -0,0 +1,50 @@
++{
++  "parent": "minecraft:recipes/root",
++  "rewards": {
++    "recipes": [
++      "minecraft:oak_cannon",
++      "minecraft:spruce_cannon",
++      "minecraft:birch_cannon",
++      "minecraft:jungle_cannon",
++      "minecraft:acacia_cannon",
++      "minecraft:dark_oak_cannon",
++      "minecraft:oak_mortar",
++      "minecraft:spruce_mortar",
++      "minecraft:birch_mortar",
++      "minecraft:jungle_mortar",
++      "minecraft:acacia_mortar",
++      "minecraft:dark_oak_mortar"
++    ]
++  },
++  "criteria": {
++    "has_iron_block": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:iron_block"
++          }
++        ]
++      }
++    },
++    "has_the_cannon_recipe": {
++      "trigger": "minecraft:recipe_unlocked",
++      "conditions": {
++        "recipe": "minecraft:oak_cannon"
++      }
++    },
++    "has_the_mortar_recipe": {
++      "trigger": "minecraft:recipe_unlocked",
++      "conditions": {
++        "recipe": "minecraft:oak_mortar"
++      }
++    }
++  },
++  "requirements": [
++    [
++      "has_iron_block",
++      "has_the_cannon_recipe",
++      "has_the_mortar_recipe"
++    ]
++  ]
++}
+\ No newline at end of file

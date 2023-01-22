@@ -1,0 +1,75 @@
+--- /dev/null
++++ b/net/minecraft/client/renderer/entity/MortarRenderer.java
+@@ -0,0 +1,72 @@
++package net.minecraft.client.renderer.entity;
++
++import com.mojang.blaze3d.vertex.PoseStack;
++import com.mojang.blaze3d.vertex.VertexConsumer;
++import net.minecraft.client.renderer.MultiBufferSource;
++import com.mojang.math.Vector3f;
++import net.minecraft.client.model.MortarModel;
++import net.minecraft.client.renderer.texture.OverlayTexture;
++import net.minecraft.world.entity.vehicle.Mortar;
++import net.minecraft.resources.ResourceLocation;
++import net.minecraft.util.Mth;
++import net.minecraftforge.api.distmarker.Dist;
++import net.minecraftforge.api.distmarker.OnlyIn;
++
++@OnlyIn(Dist.CLIENT)
++public class MortarRenderer extends EntityRenderer<Mortar>
++{
++    private static final ResourceLocation[] MORTAR_TEXTURE_LOCATION = new ResourceLocation[] {
++        new ResourceLocation("textures/entity/mortar/oak.png"),
++        new ResourceLocation("textures/entity/mortar/spruce.png"),
++        new ResourceLocation("textures/entity/mortar/birch.png"),
++        new ResourceLocation("textures/entity/mortar/jungle.png"),
++        new ResourceLocation("textures/entity/mortar/acacia.png"),
++        new ResourceLocation("textures/entity/mortar/dark_oak.png") };
++    protected final MortarModel model;
++
++    public MortarRenderer(EntityRenderDispatcher renderDispatcher) {
++        super(renderDispatcher);
++        this.model = new MortarModel();
++        this.shadowRadius = 1.0F;
++    }
++
++    @Override
++    public void render(Mortar mortar, float yaw, float partialTicks, PoseStack poseStack,
++        MultiBufferSource renderBuffer, int packedLight) {
++        poseStack.pushPose();
++        poseStack.translate(0.0D, 0.0D, 0.0D);
++        poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - yaw));
++        float f = (float)mortar.getHurtTime() - partialTicks;
++        float f1 = mortar.getDamage() - partialTicks;
++        if (f1 < 0.0F) {
++            f1 = 0.0F;
++        }
++
++        // Animate hurt
++        if (f > 0.0F) {
++            poseStack.mulPose(Vector3f.ZP.rotationDegrees(Mth.sin(f) * f * f1 / 25.0F * (float)mortar.getHurtDir()));
++        } else {
++            f = 0.0F;
++        }
++
++        // Lerp rotations
++        float wheelsRotation = Mth.lerp(partialTicks, mortar.animationPositionOld, mortar.animationPosition);
++        float barrelRotation = Mth.lerp(partialTicks, mortar.xRotO, mortar.xRot);
++
++        this.model.setupAnim(mortar, barrelRotation, wheelsRotation, f, 0.0F, 0.0F);
++        VertexConsumer ivertexbuilder = renderBuffer.getBuffer(this.model.renderType(this.getTextureLocation(mortar)));
++        this.model.renderToBuffer(poseStack, ivertexbuilder, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F,
++            1.0F);
++
++        poseStack.popPose();
++        super.render(mortar, yaw, partialTicks, poseStack, renderBuffer, packedLight);
++    }
++
++    /**
++     * Returns the location of an entity's texture.
++     */
++    @Override
++    public ResourceLocation getTextureLocation(Mortar mortar) {
++        return MORTAR_TEXTURE_LOCATION[mortar.getWoodType().ordinal()];
++    }
++}

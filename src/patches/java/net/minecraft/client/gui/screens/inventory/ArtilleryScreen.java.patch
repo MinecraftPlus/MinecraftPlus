@@ -1,22 +1,22 @@
 --- /dev/null
-+++ b/net/minecraft/client/gui/screens/inventory/CannonScreen.java
++++ b/net/minecraft/client/gui/screens/inventory/ArtilleryScreen.java
 @@ -0,0 +1,43 @@
 +package net.minecraft.client.gui.screens.inventory;
 +
 +import com.mojang.blaze3d.systems.RenderSystem;
 +import net.minecraft.world.entity.player.Inventory;
-+import net.minecraft.world.inventory.CannonMenu;
++import net.minecraft.world.inventory.ArtilleryMenu;
 +import net.minecraft.network.chat.Component;
 +import net.minecraft.resources.ResourceLocation;
 +import net.minecraftforge.api.distmarker.Dist;
 +import net.minecraftforge.api.distmarker.OnlyIn;
 +
 +@OnlyIn(Dist.CLIENT)
-+public class CannonScreen extends AbstractContainerScreen<CannonMenu>
++public class ArtilleryScreen extends AbstractContainerScreen<ArtilleryMenu>
 +{
-+    private static final ResourceLocation CANNON_LOCATION = new ResourceLocation("textures/gui/container/cannon.png");
++    private static final ResourceLocation ARTILLERY_LOCATION = new ResourceLocation("textures/gui/container/artillery.png");
 +
-+    public CannonScreen(CannonMenu menu, Inventory inventory, Component title) {
++    public ArtilleryScreen(ArtilleryMenu menu, Inventory inventory, Component title) {
 +        super(menu, inventory, title);
 +    }
 +
@@ -38,7 +38,7 @@
 +    @Override
 +    protected void renderBg(float partialTicks, int mouseX, int mouseY) {
 +        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-+        this.minecraft.getTextureManager().bind(CANNON_LOCATION);
++        this.minecraft.getTextureManager().bind(ARTILLERY_LOCATION);
 +        int i = (this.width - this.imageWidth) / 2;
 +        int j = (this.height - this.imageHeight) / 2;
 +        this.blit(i, j, 0, 0, this.imageWidth, this.imageHeight);

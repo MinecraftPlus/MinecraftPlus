@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/level/block/BedBlock.java
++++ b/net/minecraft/world/level/block/BedBlock.java
+@@ -21,6 +21,7 @@
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.BlockGetter;
+ import net.minecraft.world.level.Explosion;
++import net.minecraft.world.level.GameRules;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.LevelAccessor;
+ import net.minecraft.world.level.LevelReader;
+@@ -111,7 +112,8 @@
+                level.removeBlock(blockpos1, false);
+             }
+ 
+-            level.explode((Entity)null, DamageSource.netherBedExplosion(), (double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D, 5.0F, true, Explosion.BlockInteraction.DESTROY);
++            boolean flag = level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS);
++            level.explode((Entity)null, DamageSource.netherBedExplosion(), (double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D, 5.0F, true, flag ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
+             return InteractionResult.SUCCESS;
+          }
+       }

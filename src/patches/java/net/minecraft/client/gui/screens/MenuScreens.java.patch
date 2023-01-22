@@ -4,7 +4,7 @@
  import net.minecraft.client.gui.screens.inventory.BeaconScreen;
  import net.minecraft.client.gui.screens.inventory.BlastFurnaceScreen;
  import net.minecraft.client.gui.screens.inventory.BrewingStandScreen;
-+import net.minecraft.client.gui.screens.inventory.CannonScreen;
++import net.minecraft.client.gui.screens.inventory.ArtilleryScreen;
  import net.minecraft.client.gui.screens.inventory.CartographyTableScreen;
  import net.minecraft.client.gui.screens.inventory.ContainerScreen;
  import net.minecraft.client.gui.screens.inventory.CraftingScreen;
@@ -21,7 +21,7 @@
        register(MenuType.SMOKER, SmokerScreen::new);
        register(MenuType.CARTOGRAPHY_TABLE, CartographyTableScreen::new);
        register(MenuType.STONECUTTER, StonecutterScreen::new);
-+        register(MenuType.CANNON, CannonScreen::new);
++        register(MenuType.ARTILLERY, ArtilleryScreen::new);
     }
  
     @OnlyIn(Dist.CLIENT)

@@ -1,0 +1,27 @@
+--- /dev/null
++++ b/data/minecraft/recipes/dark_oak_cannon.json
+@@ -0,0 +1,23 @@
++{
++  "type": "minecraft:crafting_shaped",
++  "group": "cannon",
++  "pattern": [
++    "###",
++    "PSP",
++    "PPP"
++  ],
++  "key": {
++    "#": {
++      "item": "minecraft:iron_block"
++    },
++    "S": {
++      "item": "minecraft:stick"
++    },
++    "P": {
++      "item": "minecraft:dark_oak_planks"
++    }
++  },
++  "result": {
++    "item": "minecraft:dark_oak_cannon"
++  }
++}
+\ No newline at end of file

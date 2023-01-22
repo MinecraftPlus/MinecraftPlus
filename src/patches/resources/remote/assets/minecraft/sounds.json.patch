@@ -10,19 +10,37 @@
      ],
      "subtitle": "subtitles.ambient.cave"
    },
-@@ -2761,6 +2764,15 @@
-       }
-     ]
+@@ -2497,6 +2500,33 @@
+     ],
+     "subtitle": "subtitles.entity.arrow.shoot"
    },
-+  "entity.cannon.shoot": {
++  "entity.artillery.shoot": {
 +    "sounds": [
 +      {
-+        "name": "entity/cannon/shoot1",
++        "name": "entity/artillery/shoot1",
 +        "volume": 0.8
 +      }
 +    ],
-+    "subtitle": "subtitles.entity.cannon.shoot"
++    "subtitle": "subtitles.entity.artillery.shoot"
 +  },
-   "entity.cat.ambient": {
++  "entity.artillery.load.explosive": {
++    "sounds": [
++      {
++        "name": "mob/horse/leather",
++        "volume": 0.8
++      }
++    ],
++    "subtitle": "subtitles.entity.artillery.load.explosive"
++  },
++  "entity.artillery.load.bullet": {
++    "sounds": [
++      {
++        "name": "random/anvil_land",
++        "volume": 0.8
++      }
++    ],
++    "subtitle": "subtitles.entity.artillery.load.bullet"
++  },
+   "entity.bat.ambient": {
      "sounds": [
-       {
+       "mob/bat/idle1",

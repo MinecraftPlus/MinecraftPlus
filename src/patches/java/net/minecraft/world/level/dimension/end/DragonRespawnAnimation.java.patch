@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/level/dimension/end/DragonRespawnAnimation.java
++++ b/net/minecraft/world/level/dimension/end/DragonRespawnAnimation.java
+@@ -8,6 +8,7 @@
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+ import net.minecraft.world.level.Explosion;
++import net.minecraft.world.level.GameRules;
+ import net.minecraft.world.level.levelgen.feature.Feature;
+ import net.minecraft.world.level.levelgen.feature.SpikeFeature;
+ import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
+@@ -57,7 +58,8 @@
+                      level.removeBlock(blockpos1, false);
+                   }
+ 
+-                  level.explode((Entity)null, (double)((float)endspike.getCenterX() + 0.5F), (double)endspike.getHeight(), (double)((float)endspike.getCenterZ() + 0.5F), 5.0F, Explosion.BlockInteraction.DESTROY);
++                  boolean ruleDoExplosion = level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS);
++                  level.explode((Entity)null, (double)((float)endspike.getCenterX() + 0.5F), (double)endspike.getHeight(), (double)((float)endspike.getCenterZ() + 0.5F), 5.0F, ruleDoExplosion ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
+                   SpikeConfiguration spikeconfiguration = new SpikeConfiguration(true, ImmutableList.of(endspike), new BlockPos(0, 128, 0));
+                   Feature.END_SPIKE.configured(spikeconfiguration).place(level, level.getChunkSource().getGenerator(), new Random(), new BlockPos(endspike.getCenterX(), 45, endspike.getCenterZ()));
+                }

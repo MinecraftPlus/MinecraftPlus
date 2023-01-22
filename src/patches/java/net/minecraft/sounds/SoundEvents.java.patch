@@ -1,10 +1,12 @@
 --- a/net/minecraft/sounds/SoundEvents.java
 +++ b/net/minecraft/sounds/SoundEvents.java
-@@ -96,6 +96,7 @@
-    public static final SoundEvent BUCKET_FILL_FISH = register("item.bucket.fill_fish");
-    public static final SoundEvent BUCKET_FILL_LAVA = register("item.bucket.fill_lava");
-    public static final SoundEvent CAMPFIRE_CRACKLE = register("block.campfire.crackle");
-+    public static final SoundEvent CANNON_SHOOT = register("entity.cannon.shoot");
-    public static final SoundEvent CAT_AMBIENT = register("entity.cat.ambient");
-    public static final SoundEvent CAT_STRAY_AMBIENT = register("entity.cat.stray_ambient");
-    public static final SoundEvent CAT_DEATH = register("entity.cat.death");
+@@ -34,6 +34,9 @@
+    public static final SoundEvent ARROW_HIT = register("entity.arrow.hit");
+    public static final SoundEvent ARROW_HIT_PLAYER = register("entity.arrow.hit_player");
+    public static final SoundEvent ARROW_SHOOT = register("entity.arrow.shoot");
++    public static final SoundEvent ARTILLERY_SHOOT = register("entity.artillery.shoot");
++    public static final SoundEvent ARTILLERY_LOAD_EXPLOSIVE = register("entity.artillery.load.explosive");
++    public static final SoundEvent ARTILLERY_LOAD_BULLET = register("entity.artillery.load.bullet");
+    public static final SoundEvent AXE_STRIP = register("item.axe.strip");
+    public static final SoundEvent BAMBOO_BREAK = register("block.bamboo.break");
+    public static final SoundEvent BAMBOO_FALL = register("block.bamboo.fall");

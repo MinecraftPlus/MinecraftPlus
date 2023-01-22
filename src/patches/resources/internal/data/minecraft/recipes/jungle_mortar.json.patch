@@ -1,10 +1,11 @@
 --- /dev/null
-+++ b/data/minecraft/recipes/cannon.json
-@@ -0,0 +1,22 @@
++++ b/data/minecraft/recipes/jungle_mortar.json
+@@ -0,0 +1,23 @@
 +{
 +  "type": "minecraft:crafting_shaped",
++  "group": "mortar",
 +  "pattern": [
-+    "###",
++    " ##",
 +    "PSP",
 +    "PPP"
 +  ],
@@ -16,11 +17,11 @@
 +      "item": "minecraft:stick"
 +    },
 +    "P": {
-+      "item": "minecraft:oak_planks"
++      "item": "minecraft:jungle_planks"
 +    }
 +  },
 +  "result": {
-+    "item": "minecraft:cannon"
++    "item": "minecraft:jungle_mortar"
 +  }
 +}
 \ No newline at end of file

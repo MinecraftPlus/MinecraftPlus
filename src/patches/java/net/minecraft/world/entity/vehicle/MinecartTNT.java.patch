@@ -1,0 +1,12 @@
+--- a/net/minecraft/world/entity/vehicle/MinecartTNT.java
++++ b/net/minecraft/world/entity/vehicle/MinecartTNT.java
+@@ -94,7 +94,8 @@
+             d1 = 5.0D;
+          }
+ 
+-         this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)(4.0D + this.random.nextDouble() * 1.5D * d1), Explosion.BlockInteraction.BREAK);
++         boolean ruleDoExplosions = this.level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS);
++         this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)(4.0D + this.random.nextDouble() * 1.5D * d1), ruleDoExplosions ? Explosion.BlockInteraction.BREAK : Explosion.BlockInteraction.NONE);
+          this.remove();
+       }
+ 
