@@ -1,0 +1,12 @@
+--- a/net/minecraft/world/phys/Vec3.java
++++ b/net/minecraft/world/phys/Vec3.java
+@@ -11,6 +11,9 @@
+ 
+ public class Vec3 implements Position {
+    public static final Vec3 ZERO = new Vec3(0.0D, 0.0D, 0.0D);
++   public static final Vec3 X = new Vec3(1.0D, 0.0D, 0.0D);
++   public static final Vec3 Y = new Vec3(0.0D, 1.0D, 0.0D);
++   public static final Vec3 Z = new Vec3(0.0D, 0.0D, 1.0D);
+    public final double x;
+    public final double y;
+    public final double z;

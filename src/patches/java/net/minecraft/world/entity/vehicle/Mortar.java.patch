@@ -1,0 +1,92 @@
+--- /dev/null
++++ b/net/minecraft/world/entity/vehicle/Mortar.java
+@@ -0,0 +1,88 @@
++package net.minecraft.world.entity.vehicle;
++
++import net.minecraft.world.entity.EntityType;
++import net.minecraft.world.entity.player.Player;
++import net.minecraft.world.item.Item;
++import net.minecraft.world.item.Items;
++import net.minecraft.world.level.Level;
++import net.minecraft.world.phys.Vec3;
++
++public class Mortar extends AbstractArtillery<Mortar>
++{
++    public Mortar(EntityType<? extends Mortar> entityType, Level level) {
++        super(entityType, level);
++    }
++
++    public Mortar(Level level, double x, double y, double z) {
++        super(EntityType.MORTAR, level, x, y, z);
++        this.setMaxSpeed(0.00825D);
++        this.setRotationSpeed(0.415F);
++        this.setBarrelRotationSpeed(0.585F);
++    }
++
++    @Override
++    public float getBarrelAngleMin() {
++        return -85.0f;
++    }
++
++    @Override
++    public float getBarrelAngleMax() {
++        return -55.0f;
++    }
++
++    @Override
++    public float getShootPower() {
++        return super.getShootPower() * 0.75F;
++    }
++
++    /**
++     * Returns mortar's barrel top position
++     */
++    @Override
++    protected Vec3 getBarrelTop() {
++        return this.getEyePosition(1.0F).add(this.getViewVector(1.0F).scale(0.3f));
++    }
++
++    @Override
++    protected boolean isLookingAtTrigger(Player player) {
++        Vec3 vec3dplayer = player.getViewVector(1.0F);
++        Vec3 vec3dtrigger = this.getEyePosition(1.0F).subtract(this.getViewVector(1.0F).scale(0.6F));
++        Vec3 vec3dbetween = vec3dtrigger.subtract(player.getEyePosition(1.0F)).normalize();
++
++        boolean lookingOnTrigger = vec3dbetween.dot(vec3dplayer) > 0.985D;
++        boolean behind = this.getViewVector(1.0F).multiply(1, 0, 1).dot(vec3dplayer.multiply(1, 0, 1)) > 0.0D;
++
++        return lookingOnTrigger && behind;
++    }
++
++    @Override
++    protected boolean isLookingAtBarrel(Player player) {
++        Vec3 vec3dbarrel = this.getBarrelTop();
++        Vec3 vec3dbetween = vec3dbarrel.subtract(player.getEyePosition(1.0F)).normalize();
++
++        Vec3 vec3dplayer = player.getViewVector(1.0F);
++        boolean lookingOnBarrel = vec3dbetween.dot(vec3dplayer) > 0.965D;
++        boolean inFront = this.getViewVector(1.0F).multiply(1, 0, 1).dot(vec3dplayer.multiply(1, 0, 1)) < 0.0D;
++
++        return lookingOnBarrel && (inFront || getBarrelAngle() < -77.5F);
++    }
++
++    @Override
++    public Item getDropItem() {
++        switch (this.getWoodType()) {
++        case OAK:
++        default:
++            return Items.OAK_MORTAR;
++        case SPRUCE:
++            return Items.SPRUCE_MORTAR;
++        case BIRCH:
++            return Items.BIRCH_MORTAR;
++        case JUNGLE:
++            return Items.JUNGLE_MORTAR;
++        case ACACIA:
++            return Items.ACACIA_MORTAR;
++        case DARK_OAK:
++            return Items.DARK_OAK_MORTAR;
++        }
++    }
++}
+\ No newline at end of file

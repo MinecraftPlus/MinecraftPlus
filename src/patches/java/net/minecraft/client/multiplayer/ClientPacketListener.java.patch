@@ -16,18 +16,28 @@
  import net.minecraft.world.entity.vehicle.Minecart;
  import net.minecraft.world.entity.vehicle.MinecartChest;
  import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
-@@ -463,6 +465,10 @@
+@@ -250,6 +252,7 @@
+ import net.minecraft.world.entity.vehicle.MinecartHopper;
+ import net.minecraft.world.entity.vehicle.MinecartSpawner;
+ import net.minecraft.world.entity.vehicle.MinecartTNT;
++import net.minecraft.world.entity.vehicle.Mortar;
+ import net.minecraft.world.inventory.AbstractContainerMenu;
+ import net.minecraft.world.inventory.HorseInventoryMenu;
+ import net.minecraft.world.inventory.MerchantMenu;
+@@ -463,6 +466,12 @@
           entity = new FallingBlockEntity(this.level, d, d1, d2, Block.stateById(clientboundaddentitypacket.getData()));
        } else if (type == EntityType.AREA_EFFECT_CLOUD) {
           entity = new AreaEffectCloud(this.level, d, d1, d2);
 +      } else if (type == EntityType.CANNON) {
 +         entity = new Cannon(this.level, d, d1, d2);
++      } else if (type == EntityType.MORTAR) {
++         entity = new Mortar(this.level, d, d1, d2);
 +      } else if (type == EntityType.CANNONBALL) {
 +         entity = new Cannonball(this.level, d, d1, d2);
        } else {
           entity = null;
        }
-@@ -1544,23 +1550,23 @@
+@@ -1544,23 +1553,23 @@
                 this.minecraft.execute(() -> {
                    this.minecraft.setScreen(new ConfirmScreen((flag) -> {
                       this.minecraft = Minecraft.getInstance();

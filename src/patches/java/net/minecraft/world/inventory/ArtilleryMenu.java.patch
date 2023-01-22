@@ -1,29 +1,30 @@
 --- /dev/null
-+++ b/net/minecraft/world/inventory/CannonMenu.java
-@@ -0,0 +1,110 @@
++++ b/net/minecraft/world/inventory/ArtilleryMenu.java
+@@ -0,0 +1,111 @@
 +package net.minecraft.world.inventory;
 +
 +import net.minecraft.world.Container;
 +import net.minecraft.world.SimpleContainer;
++import net.minecraft.world.entity.vehicle.AbstractArtillery;
 +import net.minecraft.world.entity.player.Inventory;
 +import net.minecraft.world.entity.player.Player;
-+import net.minecraft.world.entity.vehicle.Cannon;
 +import net.minecraft.world.item.ItemStack;
 +import net.minecraft.world.item.Items;
 +
-+public class CannonMenu extends AbstractContainerMenu
++public class ArtilleryMenu extends AbstractContainerMenu
 +{
-+    private final Container cannonContainer;
-+    private final Cannon cannon;
++    private final Container container;
++    private final AbstractArtillery<?> artillery;
 +
-+    public CannonMenu(int containerId, Inventory inventory) {
-+        this(MenuType.CANNON, containerId, inventory, new SimpleContainer(2), null);
++    public ArtilleryMenu(int containerId, Inventory inventory) {
++        this(MenuType.ARTILLERY, containerId, inventory, new SimpleContainer(2), null);
 +    }
 +
-+    public CannonMenu(MenuType<?> menuType, int containerId, Inventory inventory, Container container, Cannon cannon) {
++    public ArtilleryMenu(MenuType<?> menuType, int containerId, Inventory inventory, Container container,
++        AbstractArtillery<?> artillery) {
 +        super(menuType, containerId);
-+        this.cannonContainer = container;
-+        this.cannon = cannon;
++        this.container = container;
++        this.artillery = artillery;
 +
 +        checkContainerSize(container, 2);
 +
@@ -69,13 +70,13 @@
 +    @Override
 +    public void removed(Player player) {
 +        super.removed(player);
-+        this.cannonContainer.stopOpen(player);
++        this.container.stopOpen(player);
 +    }
 +
 +    @Override
 +    public boolean stillValid(Player player) {
-+        return this.cannonContainer.stillValid(player) && this.cannon.isAlive()
-+            && this.cannon.distanceTo(player) < 8.0F;
++        return this.container.stillValid(player) && this.artillery.isAlive()
++            && this.artillery.distanceTo(player) < 8.0F;
 +    }
 +
 +    @Override

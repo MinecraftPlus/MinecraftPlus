@@ -1,12 +1,10 @@
 --- /dev/null
 +++ b/net/minecraft/client/renderer/entity/CannonRenderer.java
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,72 @@
 +package net.minecraft.client.renderer.entity;
 +
 +import com.mojang.blaze3d.vertex.PoseStack;
 +import com.mojang.blaze3d.vertex.VertexConsumer;
-+import net.minecraft.world.level.block.RenderShape;
-+import net.minecraft.world.level.block.state.BlockState;
 +import net.minecraft.client.renderer.MultiBufferSource;
 +import com.mojang.math.Vector3f;
 +import net.minecraft.client.model.CannonModel;
@@ -20,8 +18,13 @@
 +@OnlyIn(Dist.CLIENT)
 +public class CannonRenderer extends EntityRenderer<Cannon>
 +{
-+    private static final ResourceLocation CANNON_TEXTURE_LOCATION = new ResourceLocation(
-+        "textures/entity/cannon/cannon.png");
++    private static final ResourceLocation[] CANNON_TEXTURE_LOCATION = new ResourceLocation[] {
++        new ResourceLocation("textures/entity/cannon/oak.png"),
++        new ResourceLocation("textures/entity/cannon/spruce.png"),
++        new ResourceLocation("textures/entity/cannon/birch.png"),
++        new ResourceLocation("textures/entity/cannon/jungle.png"),
++        new ResourceLocation("textures/entity/cannon/acacia.png"),
++        new ResourceLocation("textures/entity/cannon/dark_oak.png") };
 +    protected final CannonModel model;
 +
 +    public CannonRenderer(EntityRenderDispatcher renderDispatcher) {
@@ -49,18 +52,6 @@
 +            f = 0.0F;
 +        }
 +
-+        // TODO: Check if this works
-+        int j = cannon.getDisplayOffset();
-+        BlockState blockstate = cannon.getDisplayBlockState();
-+        if (blockstate.getRenderShape() != RenderShape.INVISIBLE) {
-+            poseStack.pushPose();
-+            float f4 = 0.75F;
-+            poseStack.scale(0.75F, 0.75F, 0.75F);
-+            poseStack.translate(-0.5D, (double)((float)(j - 8) / 16.0F), 0.5D);
-+            poseStack.mulPose(Vector3f.YP.rotationDegrees(90.0F));
-+            poseStack.popPose();
-+        }
-+
 +        // Lerp rotations
 +        float wheelsRotation = Mth.lerp(partialTicks, cannon.animationPositionOld, cannon.animationPosition);
 +        float barrelRotation = Mth.lerp(partialTicks, cannon.xRotO, cannon.xRot);
@@ -79,6 +70,6 @@
 +     */
 +    @Override
 +    public ResourceLocation getTextureLocation(Cannon cannon) {
-+        return CANNON_TEXTURE_LOCATION;
++        return CANNON_TEXTURE_LOCATION[cannon.getWoodType().ordinal()];
 +    }
 +}

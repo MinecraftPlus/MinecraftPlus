@@ -1,0 +1,16 @@
+--- a/net/minecraft/world/entity/monster/Creeper.java
++++ b/net/minecraft/world/entity/monster/Creeper.java
+@@ -213,7 +213,12 @@
+ 
+    private void explodeCreeper() {
+       if (!this.level.isClientSide) {
+-         Explosion.BlockInteraction blockinteraction = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE;
++         Explosion.BlockInteraction blockinteraction = Explosion.BlockInteraction.NONE;
++
++         if (this.level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS) && this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
++            blockinteraction = this.isPowered() ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.BREAK;
++         }
++
+          float f = this.isPowered() ? 2.0F : 1.0F;
+          this.dead = true;
+          this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * f, blockinteraction);

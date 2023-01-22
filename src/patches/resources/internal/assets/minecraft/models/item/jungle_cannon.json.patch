@@ -1,9 +1,9 @@
 --- /dev/null
-+++ b/assets/minecraft/models/item/cannon.json
++++ b/assets/minecraft/models/item/jungle_cannon.json
 @@ -0,0 +1,6 @@
 +{
 +    "parent": "item/generated",
 +    "textures": {
-+        "layer0": "item/cannon"
++        "layer0": "item/jungle_cannon"
 +    }
 +}

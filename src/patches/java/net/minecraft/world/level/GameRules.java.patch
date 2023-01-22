@@ -1,6 +1,14 @@
 --- a/net/minecraft/world/level/GameRules.java
 +++ b/net/minecraft/world/level/GameRules.java
-@@ -114,7 +114,7 @@
+@@ -72,6 +72,7 @@
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_FIRE_DAMAGE = register("fireDamage", GameRules.BooleanValue.create(true));
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_DO_PATROL_SPAWNING = register("doPatrolSpawning", GameRules.BooleanValue.create(true));
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_DO_TRADER_SPAWNING = register("doTraderSpawning", GameRules.BooleanValue.create(true));
++   public static final GameRules.Key<GameRules.BooleanValue> RULE_DO_EXPLOSIONS = register("doExplosions", GameRules.BooleanValue.create(true));
+    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules = GAME_RULE_TYPES.entrySet().stream().collect(ImmutableMap.toImmutableMap(Entry::getKey, (entry) -> {
+       return entry.getValue().createRule();
+    }));
+@@ -114,7 +115,7 @@
     }
  
     private static <T extends GameRules.Value<T>> void cap(GameRules.GameRuleTypeVisitor gameruletypevisitor, GameRules.Key<?> key, GameRules.Type<?> type) {

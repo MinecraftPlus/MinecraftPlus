@@ -1,11 +1,11 @@
 --- /dev/null
 +++ b/data/minecraft/advancements/story/artillery.json
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,91 @@
 +{
 +  "parent": "minecraft:story/smelt_iron",
 +  "display": {
 +    "icon": {
-+      "item": "minecraft:cannon",
++      "item": "minecraft:oak_cannon",
 +      "nbt": "{Damage:0}"
 +    },
 +    "title": {
@@ -20,12 +20,62 @@
 +    "hidden": true
 +  },
 +  "criteria": {
-+    "cannon": {
++    "oak_cannon": {
 +      "trigger": "minecraft:inventory_changed",
 +      "conditions": {
 +        "items": [
 +          {
-+            "item": "minecraft:cannon"
++            "item": "minecraft:oak_cannon"
++          }
++        ]
++      }
++    },
++	"spruce_cannon": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:spruce_cannon"
++          }
++        ]
++      }
++    },
++	"birch_cannon": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:birch_cannon"
++          }
++        ]
++      }
++    },
++	"jungle_cannon": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:jungle_cannon"
++          }
++        ]
++      }
++    },
++	"acacia_cannon": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:acacia_cannon"
++          }
++        ]
++      }
++    },
++	"dark_oak_cannon": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:dark_oak_cannon"
 +          }
 +        ]
 +      }
@@ -33,7 +83,12 @@
 +  },
 +  "requirements": [
 +    [
-+      "cannon"
++      "oak_cannon",
++      "spruce_cannon",
++      "birch_cannon",
++      "jungle_cannon",
++      "acacia_cannon",
++      "dark_oak_cannon"
 +    ]
 +  ]
 +}

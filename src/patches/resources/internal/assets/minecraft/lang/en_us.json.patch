@@ -1,25 +1,47 @@
 --- a/assets/minecraft/lang/en_us.json
 +++ b/assets/minecraft/lang/en_us.json
-@@ -1851,6 +1851,8 @@
+@@ -1851,6 +1851,9 @@
    "entity.minecraft.bee": "Bee",
    "entity.minecraft.blaze": "Blaze",
    "entity.minecraft.boat": "Boat",
 +  "entity.minecraft.cannon": "Cannon",
++  "entity.minecraft.mortar": "Mortar",
 +  "entity.minecraft.cannonball": "Cannonball",
    "entity.minecraft.cat": "Cat",
    "entity.minecraft.cave_spider": "Cave Spider",
    "entity.minecraft.chest_minecart": "Minecart with Chest",
-@@ -2205,6 +2207,9 @@
+@@ -2205,6 +2208,20 @@
    "item.minecraft.lingering_potion.effect.luck": "Lingering Potion of Luck",
    "item.minecraft.lingering_potion.effect.turtle_master": "Lingering Potion of the Turtle Master",
    "item.minecraft.lingering_potion.effect.slow_falling": "Lingering Potion of Slow Falling",
-+  "item.minecraft.cannon": "Cannon",
++  "item.minecraft.oak_cannon": "Oak Cannon",
++  "item.minecraft.birch_cannon": "Birch Cannon",
++  "item.minecraft.jungle_cannon": "Jungle Cannon",
++  "item.minecraft.dark_oak_cannon": "Dark Oak Cannon",
++  "item.minecraft.acacia_cannon": "Acacia Cannon",
++  "item.minecraft.spruce_cannon": "Spruce Cannon",
++  "item.minecraft.oak_mortar": "Oak Mortar",
++  "item.minecraft.birch_mortar": "Birch Mortar",
++  "item.minecraft.jungle_mortar": "Jungle Mortar",
++  "item.minecraft.dark_oak_mortar": "Dark Oak Mortar",
++  "item.minecraft.acacia_mortar": "Acacia Mortar",
++  "item.minecraft.spruce_mortar": "Spruce Mortar",
 +  "item.minecraft.cannonball": "Cannonball",
 +  "item.minecraft.cannonball_incendiary": "Incendiary cannonball",
    "potion.potency.0": "",
    "potion.potency.1": "II",
    "potion.potency.2": "III",
-@@ -3761,6 +3766,8 @@
+@@ -3140,6 +3157,9 @@
+   "subtitles.entity.arrow.hit": "Arrow hits",
+   "subtitles.entity.arrow.hit_player": "Player hit",
+   "subtitles.entity.arrow.shoot": "Arrow fired",
++  "subtitles.entity.artillery.shoot": "Artillery fired",
++  "subtitles.entity.artillery.load.bullet": "Cannonball twang",
++  "subtitles.entity.artillery.load.explosive": "Gunpowder rustle",
+   "subtitles.entity.bat.ambient": "Bat screeches",
+   "subtitles.entity.bat.death": "Bat dies",
+   "subtitles.entity.bat.hurt": "Bat hurts",
+@@ -3761,6 +3781,8 @@
    "advancements.story.smelt_iron.description": "Smelt an iron ingot",
    "advancements.story.upgrade_tools.title": "Getting an Upgrade",
    "advancements.story.upgrade_tools.description": "Construct a better pickaxe",

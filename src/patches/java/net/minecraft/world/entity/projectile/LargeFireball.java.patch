@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/projectile/LargeFireball.java
++++ b/net/minecraft/world/entity/projectile/LargeFireball.java
+@@ -38,7 +38,7 @@
+             this.doEnchantDamageEffects(this.owner, entity);
+          }
+ 
+-         boolean flag = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
++         boolean flag = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.level.getGameRules().getBoolean(GameRules.RULE_DO_EXPLOSIONS);
+          this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, flag, flag ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
+          this.remove();
+       }
