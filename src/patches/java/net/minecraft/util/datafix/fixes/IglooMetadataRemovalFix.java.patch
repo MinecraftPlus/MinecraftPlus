@@ -1,0 +1,13 @@
+--- a/net/minecraft/util/datafix/fixes/IglooMetadataRemovalFix.java
++++ b/net/minecraft/util/datafix/fixes/IglooMetadataRemovalFix.java
+@@ -26,8 +26,8 @@
+ 
+    private static <T> Dynamic<T> removeIglooPieces(Dynamic<T> dynamic) {
+       return dynamic.asStreamOpt().map((stream) -> {
+-         return stream.filter((dynamic) -> {
+-            return !isIglooPiece(dynamic);
++         return stream.filter((dynamic1) -> {
++            return !isIglooPiece(dynamic1);
+          });
+       }).map(dynamic::createList).orElse(dynamic);
+    }

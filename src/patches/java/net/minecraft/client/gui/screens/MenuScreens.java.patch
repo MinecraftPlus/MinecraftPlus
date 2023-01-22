@@ -1,0 +1,11 @@
+--- a/net/minecraft/client/gui/screens/MenuScreens.java
++++ b/net/minecraft/client/gui/screens/MenuScreens.java
+@@ -53,7 +53,7 @@
+ 
+    @Nullable
+    private static <T extends AbstractContainerMenu> MenuScreens.ScreenConstructor<T, ?> getConstructor(MenuType<T> type) {
+-      return SCREENS.get(type);
++      return (ScreenConstructor<T, ?>) SCREENS.get(type);
+    }
+ 
+    private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(MenuType<? extends M> type, MenuScreens.ScreenConstructor<M, U> screenconstructor) {

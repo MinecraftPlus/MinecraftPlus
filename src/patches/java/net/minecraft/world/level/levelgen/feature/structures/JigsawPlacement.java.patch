@@ -1,0 +1,15 @@
+--- a/net/minecraft/world/level/levelgen/feature/structures/JigsawPlacement.java
++++ b/net/minecraft/world/level/levelgen/feature/structures/JigsawPlacement.java
+@@ -154,9 +154,9 @@
+                               return 0;
+                            } else {
+                               ResourceLocation resource = new ResourceLocation(infox.nbt.getString("target_pool"));
+-                              StructureTemplatePool structuretemplatepool = JigsawPlacement.POOLS.getPool(resource);
+-                              StructureTemplatePool structuretemplatepool1 = JigsawPlacement.POOLS.getPool(structuretemplatepool.getFallback());
+-                              return Math.max(structuretemplatepool.getMaxSize(this.structureManager), structuretemplatepool1.getMaxSize(this.structureManager));
++                              StructureTemplatePool structuretemplatepool2 = JigsawPlacement.POOLS.getPool(resource);
++                              StructureTemplatePool structuretemplatepool3 = JigsawPlacement.POOLS.getPool(structuretemplatepool2.getFallback());
++                              return Math.max(structuretemplatepool2.getMaxSize(this.structureManager), structuretemplatepool3.getMaxSize(this.structureManager));
+                            }
+                         }).max().orElse(0);
+                      }

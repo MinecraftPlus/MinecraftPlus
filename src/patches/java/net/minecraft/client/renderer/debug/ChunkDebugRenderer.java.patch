@@ -1,0 +1,23 @@
+--- a/net/minecraft/client/renderer/debug/ChunkDebugRenderer.java
++++ b/net/minecraft/client/renderer/debug/ChunkDebugRenderer.java
+@@ -117,17 +117,17 @@
+ 
+          this.clientData = builder.build();
+          this.serverData = server.submit(() -> {
+-            Builder<ChunkPos, String> builder = ImmutableMap.builder();
++            Builder<ChunkPos, String> builder1 = ImmutableMap.builder();
+             ServerChunkCache serverchunkcache = level1.getChunkSource();
+ 
+             for(int i2 = i - 12; i2 <= i + 12; ++i2) {
+                for(int i3 = i1 - 12; i3 <= i1 + 12; ++i3) {
+                   ChunkPos chunkpos = new ChunkPos(i2, i3);
+-                  builder.put(chunkpos, "Server: " + serverchunkcache.getChunkDebugData(chunkpos));
++                  builder1.put(chunkpos, "Server: " + serverchunkcache.getChunkDebugData(chunkpos));
+                }
+             }
+ 
+-            return builder.build();
++            return builder1.build();
+          });
+       }
+    }

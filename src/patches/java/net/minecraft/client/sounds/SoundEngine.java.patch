@@ -1,0 +1,18 @@
+--- a/net/minecraft/client/sounds/SoundEngine.java
++++ b/net/minecraft/client/sounds/SoundEngine.java
+@@ -104,12 +104,12 @@
+             this.listener.setGain(f);
+          } else {
+             this.instanceToChannel.forEach((soundinstance, channelhandle) -> {
+-               float f = this.calculateVolume(soundinstance);
++               float volume = this.calculateVolume(soundinstance);
+                channelhandle.execute((channel) -> {
+-                  if (f <= 0.0F) {
++                  if (volume <= 0.0F) {
+                      channel.stop();
+                   } else {
+-                     channel.setVolume(f);
++                     channel.setVolume(volume);
+                   }
+ 
+                });

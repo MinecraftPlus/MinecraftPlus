@@ -1,0 +1,766 @@
+plugins {
+    id 'java'
+    id 'me.qoomon.git-versioning' version '5.2.0'
+    id 'de.undercouch.download'
+    id 'uk.jamierocks.propatcher' apply false
+    id 'org.barfuin.gradle.taskinfo' version '1.0.5'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+}
+
+// Project special customized gradle tasks
+import org.minecraftplus.gradle.tasks.Utils
+import org.minecraftplus.gradle.tasks.*
+import org.minecraftplus.gradle.tasks.assets.*
+import org.minecraftplus.gradle.tasks.jars.*
+import org.minecraftplus.gradle.tasks.mapping.*
+import org.minecraftplus.gradle.tasks.maven.*
+import org.minecraftplus.gradle.tasks.meta.*
+import org.minecraftplus.gradle.tasks.smart.*
+import org.minecraftplus.gradle.tasks.repo.*
+import de.undercouch.gradle.tasks.download.Download
+import org.minecraftplus.gradle.tasks.RunApplication
+// Inherit some tasks from MinecraftForge
+import net.minecraftforge.mcpconfig.tasks.DownloadTool
+import net.minecraftforge.mcpconfig.tasks.DownloadAssets
+import net.minecraftforge.mcpconfig.tasks.CreateFernflowerLibraries
+import net.minecraftforge.mcpconfig.tasks.ExtractNatives
+import net.minecraftforge.mcpconfig.tasks.FernflowerTask
+// ProPatcher to generate diffs
+import uk.jamierocks.propatcher.task.*
+
+org.minecraftplus.gradle.tasks.Utils.init()
+
+project.ext {
+    PATH_SOURCE = file('src').absolutePath + '/'
+    PATH_SOURCE_PATCHES = PATH_SOURCE + 'patches/'
+
+    PATH_BUILD = file('build').absolutePath + '/'
+    PATH_BUILD_LIBRARIES = PATH_BUILD + 'libraries/'
+    PATH_BUILD_META = PATH_BUILD + 'meta/'
+    PATH_BUILD_SMARTPATCHES = PATH_BUILD + 'smart/'
+
+    PATH_PROJECT = file('project').absolutePath + '/'
+
+    PATH_CONFIG = file('config').absolutePath + '/'
+    PATH_CONFIG_TEMPLATES = PATH_CONFIG + 'templates/'
+
+    CONFIG = file(PATH_CONFIG + 'config.yaml').yaml
+    PROJECT_CONFIG = Utils.projectConfig(CONFIG)
+
+    PROJECT_VERSION = CONFIG.get('project_version', '0.0.0-SNAPSHOT')
+    MINECRAFT_VERSION = CONFIG.get('minecraft_version', '1.15.2')
+    JAVA_TARGET = CONFIG.get('java_target', 8)
+
+    FERNFLOWER = Utils.toolConfig(CONFIG, 'fernflower', [
+            version: 'net.minecraftforge:forgeflower:1.5.498.22',
+            args: ["-din=1", "-rbr=1", "-dgs=1", "-asc=1", "-rsy=1", "-iec=1", "-isl=0", "-log=TRACE", "-cfg", "{libraries}", "{input}", "{output}"],
+            jvmargs: ["-Xmx4G"]
+    ])
+    MERGETOOL = Utils.toolConfig(CONFIG, 'merge', [
+            version: 'net.minecraftforge:mergetool:1.1.3:fatjar',
+            args: ["--client", "{client}", "--server", "{server}", "--ann", "{version}", "--output", "{output}"]
+    ])
+    RENAMETOOL = Utils.toolConfig(CONFIG, 'rename', [
+            version: 'org.minecraftplus:vignette:0.3.0.0',
+            args: ["--jar-in", "{input}", "--jar-out", "{output}", "--mapping-format", "tsrg2", "--mappings", "{mappings}", "--cfg", "{libraries}", "--deduce-param-names", "--dictionary", "{dictionary}", "--create-inits", "--fernflower-meta"]
+    ])
+
+    PRODUCTION_MODE = project.hasProperty('ENV_MODE') && project.property('ENV_MODE') == 'PRODUCTION'
+
+    SOURCE_SETS = PROJECT_CONFIG.sources ?: [
+        [ name: 'java', task: 'decompileVersionJoinedJar', outputDir: 'src/main/java' ],
+        [ name: 'resources/internal', task: 'mergeJoinedResources', outputDir: 'src/main/resources/internal' ],
+        [ name: 'resources/remote', task: 'packageVersionAssets', outputDir: 'src/main/resources/remote' ],
+    ]
+}
+
+group = "org.minecraftplus"
+version = PROJECT_VERSION
+
+gitVersioning.apply {
+    refs {
+        branch('master') {
+            version = '${version}'
+        }
+        branch('(release|hotfix)/(?<branch>.*)') {
+            version = '${version}-SNAPSHOT'
+        }
+        branch('development') {
+            version = '${commit.short}-DEV-SNAPSHOT'
+        }
+        branch('(feature|dev)/(?<branch>.*)') {
+            version = '${commit.short}-${ref.branch}-SNAPSHOT'
+        }
+        rev {
+            version = '${commit.short}-SNAPSHOT'
+        }
+    }
+}
+
+java.toolchain {
+    languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
+}
+
+
+if (PRODUCTION_MODE) {
+    logger.lifecycle('Project is in PRODUCTION environment mode!')
+}
+
+tasks.register('downloadMergeTool', DownloadTool) {
+    group = 'mcplus download'
+    description = 'Downloads merge tool'
+
+    config MERGETOOL, PATH_BUILD_LIBRARIES
+}
+tasks.register('downloadRenameTool', DownloadTool) {
+    group = 'mcplus download'
+    description = 'Downloads rename tool'
+
+    config RENAMETOOL, PATH_BUILD_LIBRARIES
+}
+tasks.register('downloadFernflower', DownloadTool) {
+    group = 'mcplus download'
+    description = 'Downloads decompiler'
+
+    config FERNFLOWER, PATH_BUILD_LIBRARIES
+}
+
+tasks.register('downloadManifest', Download) {
+    group = 'mcplus download'
+    description = 'Downloads version manifest from mojang.com.'
+
+    src 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json'
+    dest file(PATH_BUILD + 'version/manifest.json')
+    useETag 'all'
+    onlyIfModified true
+    quiet true
+}
+
+tasks.register('downloadVersionJson', Download) {
+    group = 'mcplus download'
+    description = 'Downloads minecraft version JSON configuration.'
+    dependsOn tasks.downloadManifest
+
+    inputs.file tasks.downloadManifest.dest
+    src { tasks.downloadManifest.dest.json.versions.find { it.id == MINECRAFT_VERSION }.url }
+    dest file(PATH_BUILD + 'version/version.json')
+    useETag 'all'
+    onlyIfModified true
+    quiet true
+}
+
+/**
+ * Generate JSON version manifest to pass it to game launcher
+ */
+tasks.register('generateVersionJsonMeta', GenerateVersionManifest) {
+    group = 'mcplus meta'
+    description = "Generates version's launcher meta"
+
+    parent tasks.downloadVersionJson.dest
+    id "${project.name}-${project.version}"
+    type project.version.endsWith("SNAPSHOT") ? "snapshot" : "release"
+
+    manifest file(PATH_BUILD_META + id + '.json')
+    manifestFull file(PATH_BUILD_META + id + '_full.json')
+}
+
+/**
+ * Download client and server JARs
+ */
+tasks.register('downloadVersionJars') {
+    group = 'mcplus download'
+    description = 'Downloads minecraft version jars (client and server).'
+}
+
+['client', 'server'].each { id ->
+    def taskName = 'downloadVersion' + id.capitalize() + "Jar"
+    def versionTask = tasks.register(taskName, Download) {
+        group = 'mcplus download'
+        dependsOn tasks.downloadVersionJson
+
+        inputs.file tasks.downloadVersionJson.dest
+        src { tasks.downloadVersionJson.dest.json.downloads.get(id).url }
+        dest file(PATH_BUILD + 'version/' + id + '.jar')
+        useETag 'all'
+        onlyIfModified true
+        quiet true
+    }
+    tasks.downloadVersionJars.dependsOn(versionTask)
+}
+
+/**
+ * Download version libraries with extra added by project configuration
+ */
+tasks.register('downloadVersionLibraries', DownloadLibraries) {
+    group = 'mcplus download'
+    description = 'Downloads libraries needed by game version.'
+    dependsOn tasks.downloadVersionJson
+
+    json = tasks.downloadVersionJson.dest // TODO Need way to override library version with config? Can client libraries be "hardcoded" in config?
+    config = CONFIG
+    destination = file(PATH_BUILD_LIBRARIES)
+}
+
+/**
+ * Download client assets
+ */
+tasks.register('downloadVersionAssets', DownloadAssets) {
+    group = 'mcplus download'
+    description = 'Downloads assets used by game version.'
+    dependsOn tasks.downloadVersionJson
+
+    json = tasks.downloadVersionJson.dest
+    dest = file(PATH_BUILD + 'assets/')
+}
+
+/**
+ * Package remote assets
+ */
+tasks.register('packageVersionAssets', PackageAssets) {
+    group = 'mcplus process'
+    description = 'Packages remote assets used by game version into JAR.'
+    dependsOn tasks.downloadVersionJson
+    dependsOn tasks.downloadVersionAssets
+
+    json = tasks.downloadVersionJson.dest
+    input = tasks.downloadVersionAssets.dest
+    dest = file(PATH_BUILD + 'assets/package.jar')
+}
+
+/**
+ * Extract natives for client
+ */
+tasks.register('extractNatives', ExtractNatives) {
+    group = 'mcplus project'
+    dependsOn tasks.downloadVersionJson
+    dependsOn tasks.downloadVersionLibraries
+
+    meta tasks.downloadVersionJson.dest
+    cache file(PATH_BUILD_LIBRARIES)
+    dest file(PATH_BUILD + 'natives/')
+}
+
+/**
+ * Download official mappings for client and server
+ */
+tasks.register('downloadMappings') {
+    group = 'mcplus download'
+    description = 'Downloads official mappings.'
+}
+
+['client', 'server'].each { side ->
+    def taskName = 'download' + side.capitalize() + "Mappings"
+    def mappingsTask = tasks.register(taskName, Download) {
+        group = 'mcplus process'
+        dependsOn tasks.downloadVersionJson
+
+        inputs.file tasks.downloadVersionJson.dest
+        src { tasks.downloadVersionJson.dest.json.downloads.get(side + '_mappings').url }
+        dest file(PATH_BUILD + 'mappings/' + side + '_mappings.txt')
+        useETag 'all'
+        onlyIfModified true
+        quiet true
+    }
+    tasks.downloadMappings.dependsOn(mappingsTask)
+}
+
+/**
+ * Convert official mappings to TSRG2 format
+ */
+tasks.register('convertMappings') {
+    group = 'mcplus process'
+    description = 'Converts official mappings to TSRG format.'
+}
+
+['client', 'server'].each { side ->
+    def taskName = 'convert' + side.capitalize() + "Mappings"
+    def convertTask = tasks.register(taskName, ConvertMappings) {
+        group = 'mcplus process'
+        dependsOn tasks.named("download${side.capitalize()}Mappings")
+
+        input =  tasks.named("download${side.capitalize()}Mappings").get().dest
+        dest = file(PATH_BUILD + 'mappings/' + side + '_mappings.tsrg')
+    }
+    tasks.convertMappings.dependsOn(convertTask)
+}
+
+
+/**
+ * Filter version jars to contain only classes
+ */
+tasks.register('filterVersionJars') {
+    group = 'mcplus process'
+    description = 'Filters version jars.'
+}
+
+['client', 'server'].each { side ->
+    def taskName = 'filterVersion' + side.capitalize() + "Jar"
+    def filterTask = tasks.register(taskName, SplitJar) {
+        group = 'mcplus process'
+        dependsOn tasks.named("convert${side.capitalize()}Mappings")
+        dependsOn tasks.named("downloadVersion${side.capitalize()}Jar")
+
+        input = tasks.named("downloadVersion${side.capitalize()}Jar").get().dest
+        mappings = tasks.named("convert${side.capitalize()}Mappings").get().dest
+        acceptable = [ "assets/", "data/", "net/minecraft/", "com/mojang/blaze3d", "com/mojang/realms",
+                       "log4j2.xml", "Log4j-config.xsd", "Log4j-events.dtd", "Log4j-events.xsd", "Log4j-levels.xsd",
+                       "pack.mcmeta", "pack.png", "version.json"]
+        sources = file(PATH_BUILD + 'version/' + side + '.sources.jar')
+        resources = file(PATH_BUILD + 'version/' + side + '.resources.jar')
+        libraries = file(PATH_BUILD + 'version/' + side + '.libraries.jar')
+    }
+    tasks.filterVersionJars.dependsOn(filterTask)
+}
+
+
+/**
+ * Merge client and server JAR to one annotated with @OnlyIn(Dist.<SIDE>)
+ */
+tasks.register('mergeVersionJoinedJar', MergeJar) {
+    group = 'mcplus process'
+    description = 'Merges source JARs into one annotated with Dist marker.'
+    dependsOn tasks.downloadMergeTool
+    dependsOn tasks.filterVersionClientJar
+    dependsOn tasks.filterVersionServerJar
+
+    config MERGETOOL, tasks.downloadMergeTool
+    client tasks.filterVersionClientJar.sources
+    server tasks.filterVersionServerJar.sources
+    dest file(PATH_BUILD + 'version/joined.jar')
+    annotations 'API'
+}
+
+
+/**
+ * Merge client and server internal resources to joined
+ */
+tasks.register('mergeJoinedResources', CombineArchives) {
+    group = 'mcplus process'
+    description = 'Merges JARs into one.'
+    dependsOn tasks.filterVersionClientJar
+    dependsOn tasks.filterVersionServerJar
+
+    first tasks.filterVersionClientJar.resources
+    second tasks.filterVersionServerJar.resources
+    dest file(PATH_BUILD + 'version/joined.resources.jar')
+}
+tasks.filterVersionJars.dependsOn(tasks.mergeJoinedResources)
+
+/**
+ * Prepare list of libraries for Vignette and Fernflower
+ */
+tasks.register('generateProcessLibraries', CreateFernflowerLibraries) {
+    group = 'mcplus process'
+    description = 'Prepare list of libraries for Vignette and Fernflower'
+
+    dependsOn tasks.downloadVersionLibraries
+    dependsOn tasks.downloadVersionJson
+
+    meta = tasks.downloadVersionJson.dest
+    config = CONFIG
+    root = file(PATH_BUILD_LIBRARIES)
+    dest file(PATH_BUILD + 'mapped/fernflower.libs.txt')
+}
+
+/**
+ * Vignette renaming
+ */
+tasks.register('renameVersionJoinedJar', RemapJar) {
+    group = 'mcplus process'
+    description = 'Renames jars using mappings'
+
+    dependsOn tasks.downloadRenameTool
+    dependsOn tasks.mergeVersionJoinedJar
+    dependsOn tasks.convertClientMappings
+    dependsOn tasks.generateProcessLibraries
+
+    config RENAMETOOL, tasks.downloadRenameTool
+    input = tasks.mergeVersionJoinedJar.dest
+    mappings = tasks.convertClientMappings.dest
+    libraries = tasks.generateProcessLibraries.dest
+    dictionary = file(PATH_CONFIG + 'dictionary.dict')
+    dest = file(PATH_BUILD + 'mapped/mapped.jar')
+    log = file(PATH_BUILD + 'mapped/mapped.log')
+}
+
+/**
+ * Fernflower decompilation
+ */
+tasks.register('decompileVersionJoinedJar', FernflowerTask) {
+    group = 'mcplus process'
+    description = 'Decompiles jars'
+
+    dependsOn tasks.downloadFernflower
+    dependsOn tasks.generateProcessLibraries
+    dependsOn tasks.renameVersionJoinedJar
+
+    config FERNFLOWER, tasks.downloadFernflower
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(JAVA_TARGET)
+    }
+    libraries = tasks.generateProcessLibraries.dest
+    input = tasks.renameVersionJoinedJar.dest
+
+    log = file(PATH_BUILD + '/decompile/decompile.log')
+    dest = file(PATH_BUILD + '/decompile/decompile.jar')
+}
+
+
+/**
+ * Create project root directory
+ */
+def project_dir = project.file(PATH_PROJECT)
+
+tasks.register('projectRootCreate', Delete) {
+    group = 'mcplus project'
+    description = 'Creates project root directory'
+
+    onlyIf { !project_dir.exists() }
+
+    doLast {
+        logger.info("Creating project root directory {}", project_dir)
+        mkdir project_dir
+    }
+}
+
+tasks.register('projectDelete', Delete) {
+    group = 'mcplus project'
+
+    delete project_dir
+}
+
+tasks.register('projectCreate', CreateProjectWithTemplate) {
+    group = 'mcplus project'
+    dependsOn tasks.projectRootCreate
+    dependsOn tasks.downloadVersionJson
+    mustRunAfter tasks.projectDelete
+
+    dest project_dir
+    template project.file(PATH_CONFIG_TEMPLATES + 'project_build.gradle')
+    gitignore project.file(PATH_CONFIG_TEMPLATES + 'project_gitignore')
+
+    meta tasks.downloadVersionJson.dest
+    serverlibraries = CONFIG.server_libraries ?: [] //TODO Replace this with bundle processing in later versions
+    PROJECT_CONFIG.libraries?.each { library it }
+
+    doFirst {
+        SOURCE_SETS.each {
+            def directory = new File(project_dir, it.outputDir as String)
+            logger.info("Creating sourceset directory {}", directory)
+            mkdir directory
+        }
+    }
+}
+
+tasks.register('projectReset') {
+    group = 'mcplus project'
+    description = 'Resets all sourcesets in project'
+}
+
+SOURCE_SETS.each {
+    def taskSuffix = it.name as String
+    def sourceTask = tasks.named(it.task as String).get()
+    def outputDirectory = new File(project_dir, it.outputDir as String)
+
+    def taskName = 'projectReset' + taskSuffix.split("/").collect { it.capitalize() }.join('')
+    def resetTask = tasks.register(taskName, ResetSourcesTask) {
+        group = 'mcplus project'
+        dependsOn sourceTask
+        dependsOn tasks.projectCreate
+
+        rootZip sourceTask.dest
+        target outputDirectory
+    }
+    tasks.projectReset.dependsOn(resetTask)
+}
+
+
+/**
+ * Apply patches for all
+ */
+tasks.register('patchesApply') {
+    group = 'mcplus patches'
+    description = 'Applies patches to all projects'
+}
+
+/**
+ * Make patches for all
+ */
+tasks.register('patchesMake') {
+    group = 'mcplus patches'
+    description = 'Makes patches of all sourcesets in project'
+}
+
+def patches_dir = project.file(PATH_SOURCE_PATCHES)
+
+tasks.register('patchesDirectories') {
+    group = 'mcplus patches'
+    doLast {
+        mkdir patches_dir
+        SOURCE_SETS.each {
+            def directory = new File(patches_dir, it.name as String)
+            logger.info("Creating patches directory {}", directory)
+            mkdir directory
+        }
+    }
+}
+
+SOURCE_SETS.each {
+    def taskSuffix = it.name as String
+    def sourceTask = tasks.named(it.task as String).get()
+    def outputDirectory = new File(project_dir, it.outputDir as String)
+    def patchesDirectory = new File(patches_dir, taskSuffix as String)
+
+    def makeTaskName = 'patchesMake' + taskSuffix.split("/").collect { it.capitalize() }.join('')
+    def makeTask = tasks.register(makeTaskName, MakePatchesTask) {
+        group = 'mcplus patches'
+        dependsOn sourceTask
+        dependsOn tasks.projectCreate
+        dependsOn tasks.patchesDirectories
+
+        rootZip sourceTask.dest
+        target outputDirectory
+        patches patchesDirectory
+    }
+    tasks.patchesMake.dependsOn(makeTask)
+
+    def applyTaskName = 'patchesApply' + taskSuffix.split("/").collect { it.capitalize() }.join('')
+    def applyTask = tasks.register(applyTaskName, ApplyPatchesTask) {
+        group = 'mcplus patches'
+        dependsOn tasks.projectCreate
+        dependsOn tasks.projectReset
+        dependsOn tasks.patchesDirectories
+
+        target makeTask.get().target
+        patches makeTask.get().patches
+    }
+    tasks.patchesApply.dependsOn(applyTask)
+}
+
+
+/**
+ * SMART PATCHES
+ *
+ * It's used to generate one commit witch generated patches, from each commit in subproject branch.
+ */
+
+def smartpatches_dir = project.file(PATH_BUILD_SMARTPATCHES)
+
+tasks.register('smartpatchCreateConfig', CreateSmartConfig) {
+    group = 'mcplus smartpatch'
+    description = 'Create configuration for SmartPatch scripts'
+
+    // Do not overwrite previously generated configuration
+    onlyIf { !output.exists() }
+
+    def branches = PROJECT_CONFIG.repository.branches
+    branch = branches.development
+    output = new File(project_dir, ".smartconfig")
+
+    include = [branches.development]
+    ignore = branches.collect { it.value }
+            .minus([branches.release, branches.development])
+}
+
+tasks.register('smartpatchExtractCommits', SmartExtractCommits) {
+    group = 'mcplus smartpatch'
+    description = 'Extract commits list from the subproject repository'
+    dependsOn tasks.smartpatchCreateConfig
+
+    smartconfig = tasks.smartpatchCreateConfig.output
+    gitrepo = project_dir
+
+    output = new File(smartpatches_dir, '.smartlist')
+
+    outputs.upToDateWhen { false }
+}
+
+
+
+/**
+ * Smart patch make task.
+ * It depends on all generated tasks based on smartlist
+ */
+tasks.register('smartpatchMakePatches') {
+    group = 'mcplus smartpatch'
+    description = 'Make sets of patches of all sourcesets in subproject, one for each commit'
+    dependsOn tasks.smartpatchExtractCommits
+}
+
+/**
+ * Smart patch commit task.
+ * Applies all smart commits for given project side
+ */
+tasks.register('smartpatchCommitPatches') {
+    group = 'mcplus smartpatch'
+    description = 'Commit all generated patch sets to the main project, with one commit per set'
+    dependsOn tasks.smartpatchMakePatches
+}
+
+/**
+ * Smartpatch generation tasks.
+ * For each of commit in smartlist one task is generated.
+ */
+def smartlist = tasks.smartpatchExtractCommits.output
+if (smartlist.exists()) {
+    def commits = []
+
+    // Load  generated list if exist
+    def json = smartlist.json
+    logger.info("Smartlist found: {}/{}", json.info.branch, json.info.latest, json.toString())
+
+    // Load commits
+    commits = json.commits
+    if (!commits.isEmpty()) {
+        logger.info("Loaded {} commits:", commits.size())
+
+        def lastCommitTask = null
+        commits.each { commit ->
+            logger.info(" # {} {}", commit.id, commit.message)
+
+            // Commit task
+            def commitTask = tasks.register("smartpatchCommit@${commit.id}", SmartCommitPatches) {
+                group 'mcplus smartpatch'
+                description = "Commit generated patch set of extracted commit ${commit.id}"
+                if (lastCommitTask) { dependsOn lastCommitTask } // depend on previous commit
+
+                // Do not duplicate commits
+                onlyIf { !commit.applied ?: true == false }
+
+                branchName = json.info.branch
+                commitId = commit.id
+                commitMessage = commit.message
+                gitRepo = projectDir
+
+                doLast {
+                    // Find staged commit in smartlist and mark as 'applied'
+                    def list = smartlist.json
+                    list.commits.find { it.id == commitId }.applied = true
+                    smartlist.json = list
+                }
+            }
+            tasks.smartpatchCommitPatches.dependsOn(commitTask)
+            lastCommitTask = commitTask.get()
+
+            // Collective task for all source sets
+            def makeTask = tasks.register("smartpatchMake@${commit.id}") {
+                group = 'mcplus smartpatch'
+                description = "Make patch set of extracted commit ${commit.id}"
+
+                doLast {
+                    // Find commit in smartlist and mark as 'maked'
+                    def list = smartlist.json
+                    list.commits.find { it.id == commit.id }.maked = true
+                    smartlist.json = list
+                }
+            }
+
+            def sourceSetMakeTask = null
+            SOURCE_SETS.each {
+                def taskSuffix = it.name as String
+                def sourceTask = tasks.named(it.task as String).get()
+                def outputDirectory = new File(project_dir, it.outputDir as String)
+                def patchesDirectory = new File(smartpatches_dir, commit.id)
+
+                def sourceSetTaskName = "smartpatchMake@${commit.id}_" + taskSuffix.split("/").collect { it.capitalize() }.join('')
+                sourceSetMakeTask = tasks.register(sourceSetTaskName, SmartMakePatches) {
+                    group 'mcplus smartpatch'
+                    description = "Make patch set of extracted commit ${commit.id} for sourceset ${taskSuffix}"
+                    dependsOn tasks.smartpatchExtractCommits
+                    dependsOn sourceTask
+
+                    commitId = commit.id
+                    gitrepo = project_dir
+
+                    rootZip sourceTask.dest
+                    target outputDirectory
+                    patches new File(patchesDirectory, taskSuffix)
+                }
+                makeTask.get().dependsOn sourceSetMakeTask
+
+                commitTask.configure {
+                    patchSet(sourceSetMakeTask.get().patches, new File(patches_dir, taskSuffix as String))
+                }
+            }
+
+            commitTask.configure {
+                dependsOn(makeTask)
+            }
+            tasks.smartpatchMakePatches.dependsOn(makeTask)
+        }
+    }
+}
+
+
+/**
+ * Create project repository
+ */
+tasks.register('repositoryCreate', CreateRepository) {
+    group = 'mcplus repository'
+    description = 'Creates empty git repository for project'
+
+    dependsOn tasks.projectRootCreate
+
+    // Skip git repository creating when .git folder exists
+    onlyIf { !new File(target, '.git').exists() }
+
+    target = project_dir
+}
+
+/**
+ * Init project repository
+ */
+tasks.register('repositoryInit', InitRepository) {
+    group = 'mcplus repository'
+    description = "Initiates repository with initial commit and starting branches"
+
+    dependsOn tasks.repositoryCreate
+    dependsOn tasks.patchesApply
+
+    target = tasks.repositoryCreate.target
+    branchName = PROJECT_CONFIG.repository.branches.development
+    commitMessage = "Initial commit"
+    additionalBranches = PROJECT_CONFIG.repository.branches.collect { type, name -> name }
+}
+
+/**
+ * Checks if repository is in clean state and checked out on development branch
+ */
+tasks.register('repositoryCheckState', CheckRepositoryState) {
+    group = 'mcplus repository'
+    description = "Checks if repository is in clean state and checked out on development branch"
+
+    dependsOn tasks.repositoryCreate
+    mustRunAfter tasks.repositoryInit
+
+    target = tasks.repositoryCreate.target
+    isClean = true
+    containsBranch = [PROJECT_CONFIG.repository.branches.development, PROJECT_CONFIG.repository.branches.buildscript]
+    checkedOn = PROJECT_CONFIG.repository.branches.development
+}
+
+
+
+/**
+ * Overbuild everything
+ *
+ * Run this task to build everything needed to result in ready to go
+ * project with output binaries built
+ */
+tasks.register('buildAll') {
+    group = 'mcplus build'
+    description = 'Builds everything'
+
+    dependsOn tasks.build
+    dependsOn tasks.repositoryInit
+    project.subprojects.each { sub ->
+        dependsOn sub.getTasksByName('build', false)
+    }
+}

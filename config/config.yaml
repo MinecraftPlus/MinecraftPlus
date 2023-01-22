@@ -1,0 +1,111 @@
+##
+# MinecraftPlus build main configuration
+#
+---
+project_version: &project_version 0.0.0
+minecraft_version: 1.15.2
+java_target: 8
+
+# This information will be used when preparing version.json information file used by game JAR
+version_info:
+  id: *project_version
+  name: "Zero Update"
+  release_target: "Zero Update"
+  world_version: 2230               # Should be incerased when map/chunk implementation changes
+  protocol_version: 578             # Should be incerased when packet-based communication between client and server changes
+  pack_version: 5                   # Should be incerased when resource-pack implementation changes
+
+# This is list of dependencies shared between server and client.
+# TODO Later it will be replaced with server bundle processing
+server_libraries:
+  - com.mojang:javabridge
+  - net.sf.jopt-simple:jopt-simple
+  - io.netty:netty-all
+  - com.google.guava:guava
+  - org.apache.commons:commons-lang3
+  - commons-io:commons-io
+  - commons-codec:commons-codec
+  - com.mojang:brigadier
+  - com.mojang:datafixerupper
+  - com.google.code.gson:gson
+  - com.mojang:authlib
+  - it.unimi.dsi:fastutil
+  - org.apache.logging.log4j:log4j-api
+  - org.apache.logging.log4j:log4j-core
+  - com.google.code.findbugs:jsr305
+  - net.minecraftforge:mergetool
+
+##
+# TOOLS CONFIGURATION
+#
+# This section specifies tool versions and parameter mappings
+##
+tools:
+  merge:
+    version: net.minecraftforge:mergetool:1.1.3:fatjar
+    args: [
+      --client, "{client}",
+      --server, "{server}",
+      --ann,    "{annotations}",
+      --output, "{output}",
+      --inject, 'false'
+    ]
+    jvmargs: []
+  rename:
+    version: org.minecraftplus:vignette:0.3.0.2
+    args: [
+      "--jar-in", "{input}",
+      "--jar-out", "{output}",
+      "--mapping-format", "tsrg2",
+      "--mappings", "{mappings}",
+      "--cfg", "{libraries}",
+      "--deduce-param-names",
+      "--dictionary", "{dictionary}",
+      "--create-inits",
+      "--fernflower-meta"
+    ]
+  fernflower:
+    version: net.minecraftforge:forgeflower:1.5.498.22
+    args: [
+      "-din=1", # decompile inner classes
+      "-rbr=1", # hide bridge methods
+      "-dgs=1", # decompile generic signatures
+      "-asc=1", # encode non-ASCII characters in string and character literals as Unicode escapes
+      "-rsy=1", # hide synthetic class members
+      "-iec=1", # include entire classpath
+      "-isl=0", # inline simple lambdas
+      "-log=TRACE", "-cfg", "{libraries}",
+      "{input}", "{output}"
+    ]
+    jvmargs: ["-Xmx4G"]
+##
+# PROJECT CONFIGURATION
+##
+project:
+  libraries:
+    - net.minecraftforge:mergetool:1.1.3:api
+    - com.google.code.findbugs:jsr305:3.0.1
+  resources:
+    index: mcplus-0.0.0
+  runnables: # This section specifies runnable parts (each main's) which is used only for testing purposes, not used in generating output artifact jar
+    client: &client_runnable
+      type: CLIENT
+      mainclass: &client_mainclass 'net.minecraft.client.main.Main'
+      args:
+        manifest: true # If true then application arguments were loaded from version manifest
+        jvm: [-Xms512m, -Xmx1G]
+      natives: true
+      assets: true
+    server: &server_runnable
+      type: SERVER
+      mainclass: &server_mainclass 'net.minecraft.server.MinecraftServer'
+      args:
+        application: [
+          -universe, "worlds"
+        ]
+        jvm: [-Xms512m, -Xmx1G]
+  repository:
+    branches: &repository_joined_branches
+      release: "master"                 # This branch is used to store working 'snapshots' of code
+      development: "development"        # This branch is used to work with code, from there are patches generated
+      buildscript: "buildscript"        # This branch is used to synchronize repository when buildscript changes (eg. distro templates)

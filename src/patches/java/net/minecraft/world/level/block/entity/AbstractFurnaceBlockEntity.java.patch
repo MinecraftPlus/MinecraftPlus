@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+@@ -211,7 +211,7 @@
+       if (!this.level.isClientSide) {
+          ItemStack itemstack = this.items.get(1);
+          if (this.isLit() || !itemstack.isEmpty() && !this.items.get(0).isEmpty()) {
+-            Recipe<?> recipe = this.level.getRecipeManager().getRecipeFor(this.recipeType, this, this.level).orElse((AbstractCookingRecipe)null);
++            Recipe<?> recipe = this.level.getRecipeManager().getRecipeFor((RecipeType<AbstractCookingRecipe>)this.recipeType, this, this.level).orElse(null);
+             if (!this.isLit() && this.canBurn(recipe)) {
+                this.litTime = this.getBurnDuration(itemstack);
+                this.litDuration = this.litTime;
+@@ -310,7 +310,7 @@
+    }
+ 
+    protected int getTotalCookTime() {
+-      return this.level.getRecipeManager().getRecipeFor(this.recipeType, this, this.level).map(AbstractCookingRecipe::getCookingTime).orElse(200);
++      return this.level.getRecipeManager().getRecipeFor((RecipeType<AbstractCookingRecipe>)this.recipeType, this, this.level).map(AbstractCookingRecipe::getCookingTime).orElse(200);
+    }
+ 
+    public static boolean isFuel(ItemStack itemstack) {

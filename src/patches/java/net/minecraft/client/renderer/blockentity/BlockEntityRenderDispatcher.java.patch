@@ -1,0 +1,11 @@
+--- a/net/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher.java
++++ b/net/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher.java
+@@ -61,7 +61,7 @@
+ 
+    @Nullable
+    public <E extends BlockEntity> BlockEntityRenderer<E> getRenderer(E blockentity) {
+-      return this.renderers.get(blockentity.getType());
++      return (BlockEntityRenderer<E>) this.renderers.get(blockentity.getType());
+    }
+ 
+    public void prepare(Level level, TextureManager manager, Font font, Camera camera, HitResult hitresult) {

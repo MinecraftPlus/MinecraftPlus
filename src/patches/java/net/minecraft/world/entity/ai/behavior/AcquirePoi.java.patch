@@ -1,0 +1,19 @@
+--- a/net/minecraft/world/entity/ai/behavior/AcquirePoi.java
++++ b/net/minecraft/world/entity/ai/behavior/AcquirePoi.java
+@@ -44,13 +44,13 @@
+       this.lastUpdate = level.getGameTime() + (long)level.getRandom().nextInt(20);
+       PoiManager manager = level.getPoiManager();
+       Predicate<BlockPos> predicate = (blockposx) -> {
+-         long i = blockposx.asLong();
+-         if (this.batchCache.containsKey(i)) {
++         long i1 = blockposx.asLong();
++         if (this.batchCache.containsKey(i1)) {
+             return false;
+          } else if (++this.triedCount >= 5) {
+             return false;
+          } else {
+-            this.batchCache.put(i, this.lastUpdate + 40L);
++            this.batchCache.put(i1, this.lastUpdate + 40L);
+             return true;
+          }
+       };

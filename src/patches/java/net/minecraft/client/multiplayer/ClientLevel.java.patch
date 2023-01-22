@@ -1,0 +1,15 @@
+--- a/net/minecraft/client/multiplayer/ClientLevel.java
++++ b/net/minecraft/client/multiplayer/ClientLevel.java
+@@ -123,9 +123,9 @@
+ 
+       for(int i = 0; i < this.globalEntities.size(); ++i) {
+          Entity entity = this.globalEntities.get(i);
+-         this.guardEntityTick((entity) -> {
+-            ++entity.tickCount;
+-            entity.tick();
++         this.guardEntityTick((e) -> {
++            ++e.tickCount;
++            e.tick();
+          }, entity);
+          if (entity.removed) {
+             this.globalEntities.remove(i--);

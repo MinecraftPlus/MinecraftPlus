@@ -1,0 +1,24 @@
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -328,9 +328,9 @@
+ 
+          for(int i4 = 0; i4 < this.globalEntities.size(); ++i4) {
+             Entity entity = this.globalEntities.get(i4);
+-            this.guardEntityTick((entity) -> {
+-               ++entity.tickCount;
+-               entity.tick();
++            this.guardEntityTick((ent) -> {
++               ++ent.tickCount;
++               ent.tick();
+             }, entity);
+             if (entity.removed) {
+                this.globalEntities.remove(i4--);
+@@ -905,7 +905,7 @@
+ 
+    public void unload(LevelChunk levelchunk) {
+       this.blockEntitiesToUnload.addAll(levelchunk.getBlockEntities().values());
+-      ClassInstanceMultiMap[] var2 = levelchunk.getEntitySections();
++      ClassInstanceMultiMap<Entity>[] var2 = levelchunk.getEntitySections();
+       int var3 = var2.length;
+ 
+       for(int var4 = 0; var4 < var3; ++var4) {

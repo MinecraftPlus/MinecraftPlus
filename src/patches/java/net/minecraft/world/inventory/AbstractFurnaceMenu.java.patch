@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/inventory/AbstractFurnaceMenu.java
++++ b/net/minecraft/world/inventory/AbstractFurnaceMenu.java
+@@ -63,7 +63,7 @@
+    }
+ 
+    public void handlePlacement(boolean flag, Recipe<?> recipe, ServerPlayer serverplayer) {
+-      (new ServerPlaceSmeltingRecipe<>(this)).recipeClicked(serverplayer, recipe, flag);
++      (new ServerPlaceSmeltingRecipe<>(this)).recipeClicked(serverplayer, (Recipe<Container>)recipe, flag);
+    }
+ 
+    public boolean recipeMatches(Recipe<? super Container> recipe) {
+@@ -140,7 +140,7 @@
+    }
+ 
+    protected boolean canSmelt(ItemStack itemstack) {
+-      return this.level.getRecipeManager().getRecipeFor(this.recipeType, new SimpleContainer(itemstack), this.level).isPresent();
++      return this.level.getRecipeManager().getRecipeFor((RecipeType)this.recipeType, new SimpleContainer(itemstack), this.level).isPresent();
+    }
+ 
+    protected boolean isFuel(ItemStack itemstack) {

@@ -1,0 +1,13 @@
+--- a/net/minecraft/util/datafix/fixes/ForcePoiRebuild.java
++++ b/net/minecraft/util/datafix/fixes/ForcePoiRebuild.java
+@@ -30,8 +30,8 @@
+    private static <T> Dynamic<T> cap(Dynamic<T> dynamic) {
+       return dynamic.update("Sections", (dynamicx) -> {
+          return dynamicx.updateMapValues((pair) -> {
+-            return pair.mapSecond((dynamic) -> {
+-               return dynamic.remove("Valid");
++            return pair.mapSecond((dynamic1) -> {
++               return dynamic1.remove("Valid");
+             });
+          });
+       });

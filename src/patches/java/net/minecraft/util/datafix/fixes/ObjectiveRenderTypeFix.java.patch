@@ -1,0 +1,13 @@
+--- a/net/minecraft/util/datafix/fixes/ObjectiveRenderTypeFix.java
++++ b/net/minecraft/util/datafix/fixes/ObjectiveRenderTypeFix.java
+@@ -31,8 +31,8 @@
+                   Optional<String> optional = dynamic.get("RenderType").asString();
+                   if (!optional.isPresent()) {
+                      String s = dynamic.get("CriteriaName").asString("");
+-                     ObjectiveCriteria.RenderType type = getRenderType(s);
+-                     return dynamic.set("RenderType", dynamic.createString(type.getId()));
++                     ObjectiveCriteria.RenderType type1 = getRenderType(s);
++                     return dynamic.set("RenderType", dynamic.createString(type1.getId()));
+                   } else {
+                      return dynamic;
+                   }
