@@ -1,0 +1,60 @@
+--- /dev/null
++++ b/data/minecraft/advancements/recipes/combat/cannonball_incendiary.json
+@@ -0,0 +1,56 @@
++{
++  "parent": "minecraft:recipes/root",
++  "rewards": {
++    "recipes": [
++      "minecraft:cannonball_incendiary"
++    ]
++  },
++  "criteria": {
++    "has_gunpowder": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:gunpowder"
++          }
++        ]
++      }
++    },
++    "has_iron_ingot": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:iron_ingot"
++          }
++        ]
++      }
++    },
++    "has_magma_cream": {
++      "trigger": "minecraft:inventory_changed",
++      "conditions": {
++        "items": [
++          {
++            "item": "minecraft:magma_cream"
++          }
++        ]
++      }
++    },
++    "has_the_recipe": {
++      "trigger": "minecraft:recipe_unlocked",
++      "conditions": {
++        "recipe": "minecraft:cannonball_incendiary"
++      }
++    }
++  },
++  "requirements": [
++    [
++      "has_gunpowder",
++      "has_iron_ingot"
++    ],
++    [
++      "has_magma_cream",
++      "has_the_recipe"
++    ]
++  ]
++}
+\ No newline at end of file

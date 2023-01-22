@@ -1,0 +1,27 @@
+--- /dev/null
++++ b/data/minecraft/recipes/cannonball_incendiary.json
+@@ -0,0 +1,23 @@
++{
++  "type": "minecraft:crafting_shaped",
++  "group": "cannonball",
++  "pattern": [
++    "#P#",
++    "PMP",
++    "#P#"
++  ],
++  "key": {
++    "#": {
++      "item": "minecraft:iron_ingot"
++    },
++    "P": {
++      "item": "minecraft:gunpowder"
++    },
++    "M": {
++      "item": "minecraft:magma_cream"
++    }
++  },
++  "result": {
++    "item": "minecraft:cannonball_incendiary"
++  }
++}
+\ No newline at end of file

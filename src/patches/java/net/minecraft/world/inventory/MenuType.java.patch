@@ -1,0 +1,10 @@
+--- a/net/minecraft/world/inventory/MenuType.java
++++ b/net/minecraft/world/inventory/MenuType.java
+@@ -31,6 +31,7 @@
+    public static final MenuType<SmokerMenu> SMOKER = register("smoker", SmokerMenu::new);
+    public static final MenuType<CartographyTableMenu> CARTOGRAPHY_TABLE = register("cartography_table", CartographyTableMenu::new);
+    public static final MenuType<StonecutterMenu> STONECUTTER = register("stonecutter", StonecutterMenu::new);
++   public static final MenuType<CannonMenu> CANNON = register("cannon", CannonMenu::new);
+    private final MenuType.MenuSupplier<T> constructor;
+ 
+    private static <T extends AbstractContainerMenu> MenuType<T> register(String s, MenuType.MenuSupplier<T> menusupplier) {

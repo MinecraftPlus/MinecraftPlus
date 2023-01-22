@@ -1,0 +1,12 @@
+--- a/net/minecraft/world/level/Explosion.java
++++ b/net/minecraft/world/level/Explosion.java
+@@ -186,6 +186,9 @@
+                   double d14 = d13;
+                   if (entity instanceof LivingEntity) {
+                      d14 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity)entity, d13);
++                  } else if (entity instanceof PrimedTnt) {
++                     PrimedTnt primedTnt = (PrimedTnt)entity;
++                     primedTnt.setFuse(this.level.random.nextInt(1 + primedTnt.getLife() / 8));
+                   }
+ 
+                   entity.setDeltaMovement(entity.getDeltaMovement().add(d8 * d14, d9 * d14, d10 * d14));

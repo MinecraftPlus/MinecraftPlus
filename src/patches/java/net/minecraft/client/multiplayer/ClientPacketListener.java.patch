@@ -1,6 +1,33 @@
 --- a/net/minecraft/client/multiplayer/ClientPacketListener.java
 +++ b/net/minecraft/client/multiplayer/ClientPacketListener.java
-@@ -1544,23 +1544,23 @@
+@@ -225,6 +225,7 @@
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.entity.projectile.AbstractArrow;
+ import net.minecraft.world.entity.projectile.Arrow;
++import net.minecraft.world.entity.projectile.Cannonball;
+ import net.minecraft.world.entity.projectile.DragonFireball;
+ import net.minecraft.world.entity.projectile.EvokerFangs;
+ import net.minecraft.world.entity.projectile.EyeOfEnder;
+@@ -243,6 +244,7 @@
+ import net.minecraft.world.entity.projectile.WitherSkull;
+ import net.minecraft.world.entity.vehicle.AbstractMinecart;
+ import net.minecraft.world.entity.vehicle.Boat;
++import net.minecraft.world.entity.vehicle.Cannon;
+ import net.minecraft.world.entity.vehicle.Minecart;
+ import net.minecraft.world.entity.vehicle.MinecartChest;
+ import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+@@ -463,6 +465,10 @@
+          entity = new FallingBlockEntity(this.level, d, d1, d2, Block.stateById(clientboundaddentitypacket.getData()));
+       } else if (type == EntityType.AREA_EFFECT_CLOUD) {
+          entity = new AreaEffectCloud(this.level, d, d1, d2);
++      } else if (type == EntityType.CANNON) {
++         entity = new Cannon(this.level, d, d1, d2);
++      } else if (type == EntityType.CANNONBALL) {
++         entity = new Cannonball(this.level, d, d1, d2);
+       } else {
+          entity = null;
+       }
+@@ -1544,23 +1550,23 @@
                 this.minecraft.execute(() -> {
                    this.minecraft.setScreen(new ConfirmScreen((flag) -> {
                       this.minecraft = Minecraft.getInstance();

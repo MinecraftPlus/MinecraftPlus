@@ -1,0 +1,12 @@
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -126,7 +126,9 @@
+    private double y;
+    private double z;
+    private Vec3 deltaMovement = Vec3.ZERO;
++    /** rotation yaw */
+    public float yRot;
++    /** rotation pitch */
+    public float xRot;
+    public float yRotO;
+    public float xRotO;

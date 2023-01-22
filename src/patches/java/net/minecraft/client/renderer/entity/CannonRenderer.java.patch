@@ -1,0 +1,84 @@
+--- /dev/null
++++ b/net/minecraft/client/renderer/entity/CannonRenderer.java
+@@ -0,0 +1,81 @@
++package net.minecraft.client.renderer.entity;
++
++import com.mojang.blaze3d.vertex.PoseStack;
++import com.mojang.blaze3d.vertex.VertexConsumer;
++import net.minecraft.world.level.block.RenderShape;
++import net.minecraft.world.level.block.state.BlockState;
++import net.minecraft.client.renderer.MultiBufferSource;
++import com.mojang.math.Vector3f;
++import net.minecraft.client.model.CannonModel;
++import net.minecraft.client.renderer.texture.OverlayTexture;
++import net.minecraft.world.entity.vehicle.Cannon;
++import net.minecraft.resources.ResourceLocation;
++import net.minecraft.util.Mth;
++import net.minecraftforge.api.distmarker.Dist;
++import net.minecraftforge.api.distmarker.OnlyIn;
++
++@OnlyIn(Dist.CLIENT)
++public class CannonRenderer extends EntityRenderer<Cannon>
++{
++    private static final ResourceLocation CANNON_TEXTURE_LOCATION = new ResourceLocation(
++        "textures/entity/cannon/cannon.png");
++    protected final CannonModel model;
++
++    public CannonRenderer(EntityRenderDispatcher renderDispatcher) {
++        super(renderDispatcher);
++        this.model = new CannonModel();
++        this.shadowRadius = 1.0F;
++    }
++
++    @Override
++    public void render(Cannon cannon, float yaw, float partialTicks, PoseStack poseStack,
++        MultiBufferSource renderBuffer, int packedLight) {
++        poseStack.pushPose();
++        poseStack.translate(0.0D, 0.0D, 0.0D);
++        poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - yaw));
++        float f = (float)cannon.getHurtTime() - partialTicks;
++        float f1 = cannon.getDamage() - partialTicks;
++        if (f1 < 0.0F) {
++            f1 = 0.0F;
++        }
++
++        // Animate hurt
++        if (f > 0.0F) {
++            poseStack.mulPose(Vector3f.ZP.rotationDegrees(Mth.sin(f) * f * f1 / 25.0F * (float)cannon.getHurtDir()));
++        } else {
++            f = 0.0F;
++        }
++
++        // TODO: Check if this works
++        int j = cannon.getDisplayOffset();
++        BlockState blockstate = cannon.getDisplayBlockState();
++        if (blockstate.getRenderShape() != RenderShape.INVISIBLE) {
++            poseStack.pushPose();
++            float f4 = 0.75F;
++            poseStack.scale(0.75F, 0.75F, 0.75F);
++            poseStack.translate(-0.5D, (double)((float)(j - 8) / 16.0F), 0.5D);
++            poseStack.mulPose(Vector3f.YP.rotationDegrees(90.0F));
++            poseStack.popPose();
++        }
++
++        // Lerp rotations
++        float wheelsRotation = Mth.lerp(partialTicks, cannon.animationPositionOld, cannon.animationPosition);
++        float barrelRotation = Mth.lerp(partialTicks, cannon.xRotO, cannon.xRot);
++
++        this.model.setupAnim(cannon, barrelRotation, wheelsRotation, f, 0.0F, 0.0F);
++        VertexConsumer ivertexbuilder = renderBuffer.getBuffer(this.model.renderType(this.getTextureLocation(cannon)));
++        this.model.renderToBuffer(poseStack, ivertexbuilder, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F,
++            1.0F);
++
++        poseStack.popPose();
++        super.render(cannon, yaw, partialTicks, poseStack, renderBuffer, packedLight);
++    }
++
++    /**
++     * Returns the location of an entity's texture.
++     */
++    @Override
++    public ResourceLocation getTextureLocation(Cannon cannon) {
++        return CANNON_TEXTURE_LOCATION;
++    }
++}

@@ -1,0 +1,30 @@
+--- a/assets/minecraft/lang/en_us.json
++++ b/assets/minecraft/lang/en_us.json
+@@ -1851,6 +1851,8 @@
+   "entity.minecraft.bee": "Bee",
+   "entity.minecraft.blaze": "Blaze",
+   "entity.minecraft.boat": "Boat",
++  "entity.minecraft.cannon": "Cannon",
++  "entity.minecraft.cannonball": "Cannonball",
+   "entity.minecraft.cat": "Cat",
+   "entity.minecraft.cave_spider": "Cave Spider",
+   "entity.minecraft.chest_minecart": "Minecart with Chest",
+@@ -2205,6 +2207,9 @@
+   "item.minecraft.lingering_potion.effect.luck": "Lingering Potion of Luck",
+   "item.minecraft.lingering_potion.effect.turtle_master": "Lingering Potion of the Turtle Master",
+   "item.minecraft.lingering_potion.effect.slow_falling": "Lingering Potion of Slow Falling",
++  "item.minecraft.cannon": "Cannon",
++  "item.minecraft.cannonball": "Cannonball",
++  "item.minecraft.cannonball_incendiary": "Incendiary cannonball",
+   "potion.potency.0": "",
+   "potion.potency.1": "II",
+   "potion.potency.2": "III",
+@@ -3761,6 +3766,8 @@
+   "advancements.story.smelt_iron.description": "Smelt an iron ingot",
+   "advancements.story.upgrade_tools.title": "Getting an Upgrade",
+   "advancements.story.upgrade_tools.description": "Construct a better pickaxe",
++  "advancements.story.artillery.title": "Some firepower",
++  "advancements.story.artillery.description": "Construct a cannon",
+   "team.visibility.always": "Always",
+   "team.visibility.never": "Never",
+   "team.visibility.hideForOtherTeams": "Hide for other teams",

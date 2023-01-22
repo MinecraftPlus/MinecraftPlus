@@ -1,0 +1,31 @@
+--- a/assets/minecraft/lang/pl_pl.json
++++ b/assets/minecraft/lang/pl_pl.json
+@@ -166,6 +166,8 @@
+     "advancements.story.smelt_iron.title": "Ci\u0119\u017cki sprz\u0119t",
+     "advancements.story.upgrade_tools.description": "Stw\u00f3rz lepszy kilof",
+     "advancements.story.upgrade_tools.title": "Ulepszenie",
++    "advancements.story.artillery.title": "Si\u0142a ognia",
++    "advancements.story.artillery.description": "Zbuduj dzia\u0142o",
+     "advancements.toast.challenge": "Wyzwanie uko\u0144czone!",
+     "advancements.toast.goal": "Cel osi\u0105gni\u0119ty!",
+     "advancements.toast.task": "Post\u0119p dokonany!",
+@@ -2482,6 +2484,8 @@
+     "entity.minecraft.bee": "Pszczo\u0142a",
+     "entity.minecraft.blaze": "P\u0142omyk",
+     "entity.minecraft.boat": "\u0141\u00f3dka",
++    "entity.minecraft.cannon": "Dzia\u0142o",
++    "entity.minecraft.cannonball": "Kula armatnia",
+     "entity.minecraft.cat": "Kot",
+     "entity.minecraft.cave_spider": "Paj\u0105k jaskiniowy",
+     "entity.minecraft.chest_minecart": "Wagonik ze skrzyni\u0105",
+@@ -3148,6 +3152,9 @@
+     "item.minecraft.zombie_pigman_spawn_egg": "Jajo przyzywaj\u0105ce \u015bwini\u0119-zombie",
+     "item.minecraft.zombie_spawn_egg": "Jajo przyzywaj\u0105ce zombie",
+     "item.minecraft.zombie_villager_spawn_egg": "Jajo przyzywaj\u0105ce osadnika-zombie",
++    "item.minecraft.cannon": "Dzia\u0142o",
++    "item.minecraft.cannonball": "Kula armatnia",
++    "item.minecraft.cannonball_incendiary": "Zapalaj\u0105ca kula armatnia",
+\ No newline at end of file
+     "item.modifiers.chest": "Kiedy na ciele:",
+     "item.modifiers.feet": "Kiedy na stopach:",
+     "item.modifiers.head": "Kiedy na g\u0142owie:",

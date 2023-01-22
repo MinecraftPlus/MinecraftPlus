@@ -1,0 +1,12 @@
+--- a/net/minecraft/client/renderer/LevelRenderer.java
++++ b/net/minecraft/client/renderer/LevelRenderer.java
+@@ -2385,6 +2385,9 @@
+          break;
+       case 3001:
+          this.level.playLocalSound(blockpos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 64.0F, 0.8F + this.level.random.nextFloat() * 0.3F, false);
++         break;
++      case 4000:
++         this.level.playLocalSound(blockpos, SoundEvents.CANNON_SHOOT, SoundSource.HOSTILE, 64.0F, 0.8F + this.level.random.nextFloat() * 0.3F, false);
+       }
+ 
+    }
