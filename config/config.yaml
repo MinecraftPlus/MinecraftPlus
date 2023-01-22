@@ -9,7 +9,7 @@ java_target: 8
 # This information will be used when preparing version.json information file used by game JAR
 version_info:
   id: *project_version
-  name: "Zero Update"
+  name: "Cannon Update"
   release_target: "Zero Update"
   world_version: 2230               # Should be incerased when map/chunk implementation changes
   protocol_version: 578             # Should be incerased when packet-based communication between client and server changes
